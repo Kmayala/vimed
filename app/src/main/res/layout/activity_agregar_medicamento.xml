@@ -1,0 +1,591 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/paper">
+
+    <!-- ══ HEADER ══════════════════════════════════════════════ -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingLeft="8dp"
+        android:paddingRight="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
+
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_arrow_back"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Volver" />
+
+        <TextView
+            android:id="@+id/tv_titulo_paso"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/texto_principal"
+            android:layout_marginLeft="4dp" />
+
+        <TextView
+            android:id="@+id/tv_contador_paso"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textColor="@color/gris_texto" />
+
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/progress_pasos"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:max="7"
+        android:progress="1"
+        android:progressTint="@color/turquesa"
+        android:progressBackgroundTint="@color/gris_borde" />
+
+    <!-- ══ CONTENIDO (ScrollView con todos los pasos) ══════════ -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- ═══════════════════════════════════════════════ -->
+            <!-- PASO 1 — Nombre                                 -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <LinearLayout
+                android:id="@+id/paso1_nombre"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingLeft="24dp"
+                android:paddingRight="24dp"
+                android:paddingTop="32dp"
+                android:paddingBottom="32dp"
+                android:visibility="visible">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/paso1_pregunta"
+                    android:textSize="20sp"
+                    android:textColor="@color/texto_principal"
+                    android:layout_marginBottom="24dp" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/hint_nombre_med"
+                    android:layout_marginBottom="32dp">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/et_nombre"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="17sp"
+                        android:completionThreshold="1" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <Button
+                    android:id="@+id/btn_siguiente_1"
+                    style="@style/Widget.Material3.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="@string/btn_siguiente"
+                    android:textSize="16sp" />
+
+            </LinearLayout>
+
+            <!-- ═══════════════════════════════════════════════ -->
+            <!-- PASO 2 — Dosis                                  -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <LinearLayout
+                android:id="@+id/paso2_dosis"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingLeft="24dp"
+                android:paddingRight="24dp"
+                android:paddingTop="32dp"
+                android:paddingBottom="32dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/paso2_pregunta"
+                    android:textSize="20sp"
+                    android:textColor="@color/texto_principal"
+                    android:layout_marginBottom="24dp" />
+
+                <!-- Presets de dosis -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="12dp">
+
+                    <Button
+                        android:id="@+id/btn_500"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="56dp"
+                        android:layout_weight="1"
+                        android:text="500 mg"
+                        android:layout_marginRight="6dp" />
+
+                    <Button
+                        android:id="@+id/btn_850"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="56dp"
+                        android:layout_weight="1"
+                        android:text="850 mg"
+                        android:layout_marginLeft="3dp"
+                        android:layout_marginRight="3dp" />
+
+                    <Button
+                        android:id="@+id/btn_1000"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="56dp"
+                        android:layout_weight="1"
+                        android:text="1000 mg"
+                        android:layout_marginLeft="6dp" />
+
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/btn_otra_dosis"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/btn_otra_dosis"
+                    android:layout_marginBottom="8dp" />
+
+                <!-- Campo manual (oculto por defecto) -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_dosis_manual"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/hint_dosis_manual"
+                    android:layout_marginBottom="12dp"
+                    android:visibility="gone">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_dosis_manual"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="numberDecimal"
+                        android:textSize="16sp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <Spinner
+                    android:id="@+id/sp_unidad"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:visibility="gone"
+                    android:layout_marginBottom="24dp" />
+
+                <Button
+                    android:id="@+id/btn_siguiente_2"
+                    style="@style/Widget.Material3.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="@string/btn_siguiente"
+                    android:textSize="16sp"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+            <!-- ═══════════════════════════════════════════════ -->
+            <!-- PASO 3 — Presentación + Color                   -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <LinearLayout
+                android:id="@+id/paso3_presentacion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingLeft="24dp"
+                android:paddingRight="24dp"
+                android:paddingTop="32dp"
+                android:paddingBottom="32dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/paso3_pregunta"
+                    android:textSize="20sp"
+                    android:textColor="@color/texto_principal"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Fila 1 -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:layout_marginBottom="8dp">
+                    <Button android:tag="Comprimido" style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp" android:layout_height="52dp" android:layout_weight="1"
+                        android:text="@string/pres_comprimido" android:layout_marginRight="6dp" />
+                    <Button android:tag="Cápsula" style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp" android:layout_height="52dp" android:layout_weight="1"
+                        android:text="@string/pres_capsula" android:layout_marginLeft="6dp" />
+                </LinearLayout>
+                <!-- Fila 2 -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:layout_marginBottom="8dp">
+                    <Button android:tag="Jarabe" style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp" android:layout_height="52dp" android:layout_weight="1"
+                        android:text="@string/pres_jarabe" android:layout_marginRight="6dp" />
+                    <Button android:tag="Inyectable" style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp" android:layout_height="52dp" android:layout_weight="1"
+                        android:text="@string/pres_inyectable" android:layout_marginLeft="6dp" />
+                </LinearLayout>
+                <!-- Fila 3 -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:layout_marginBottom="8dp">
+                    <Button android:tag="Gotas" style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp" android:layout_height="52dp" android:layout_weight="1"
+                        android:text="@string/pres_gotas" android:layout_marginRight="6dp" />
+                    <Button android:tag="Parche" style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp" android:layout_height="52dp" android:layout_weight="1"
+                        android:text="@string/pres_parche" android:layout_marginLeft="6dp" />
+                </LinearLayout>
+                <!-- Fila 4 -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:layout_marginBottom="24dp">
+                    <Button android:tag="Inhalador" style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp" android:layout_height="52dp" android:layout_weight="1"
+                        android:text="@string/pres_inhalador" android:layout_marginRight="6dp" />
+                    <Button android:tag="Otro" style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp" android:layout_height="52dp" android:layout_weight="1"
+                        android:text="@string/pres_otro" android:layout_marginLeft="6dp" />
+                </LinearLayout>
+
+                <!-- Selector de color -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/paso3_color_label"
+                    android:textSize="14sp"
+                    android:textColor="@color/gris_texto"
+                    android:layout_marginBottom="12dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_marginBottom="32dp">
+
+                    <View android:id="@+id/color_rojo"
+                        android:layout_width="44dp" android:layout_height="44dp"
+                        android:layout_marginLeft="6dp" android:layout_marginRight="6dp"
+                        android:background="@drawable/shape_circle"
+                        android:backgroundTint="#F44336"
+                        android:clickable="true" android:focusable="true" />
+                    <View android:id="@+id/color_azul"
+                        android:layout_width="44dp" android:layout_height="44dp"
+                        android:layout_marginLeft="6dp" android:layout_marginRight="6dp"
+                        android:background="@drawable/shape_circle"
+                        android:backgroundTint="#2196F3"
+                        android:clickable="true" android:focusable="true" />
+                    <View android:id="@+id/color_amarillo"
+                        android:layout_width="44dp" android:layout_height="44dp"
+                        android:layout_marginLeft="6dp" android:layout_marginRight="6dp"
+                        android:background="@drawable/shape_circle"
+                        android:backgroundTint="#FFC107"
+                        android:clickable="true" android:focusable="true" />
+                    <View android:id="@+id/color_verde"
+                        android:layout_width="44dp" android:layout_height="44dp"
+                        android:layout_marginLeft="6dp" android:layout_marginRight="6dp"
+                        android:background="@drawable/shape_circle"
+                        android:backgroundTint="#4CAF50"
+                        android:clickable="true" android:focusable="true" />
+                    <View android:id="@+id/color_morado"
+                        android:layout_width="44dp" android:layout_height="44dp"
+                        android:layout_marginLeft="6dp" android:layout_marginRight="6dp"
+                        android:background="@drawable/shape_circle"
+                        android:backgroundTint="#9C27B0"
+                        android:clickable="true" android:focusable="true" />
+                    <View android:id="@+id/color_gris"
+                        android:layout_width="44dp" android:layout_height="44dp"
+                        android:layout_marginLeft="6dp" android:layout_marginRight="6dp"
+                        android:background="@drawable/shape_circle"
+                        android:backgroundTint="#BDBDBD"
+                        android:clickable="true" android:focusable="true" />
+
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/btn_siguiente_3"
+                    style="@style/Widget.Material3.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="@string/btn_siguiente"
+                    android:textSize="16sp" />
+
+            </LinearLayout>
+
+            <!-- ═══════════════════════════════════════════════ -->
+            <!-- PASO 4 — Instrucciones de toma                  -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <LinearLayout
+                android:id="@+id/paso4_instrucciones"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingLeft="24dp"
+                android:paddingRight="24dp"
+                android:paddingTop="32dp"
+                android:paddingBottom="32dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/paso4_pregunta"
+                    android:textSize="20sp"
+                    android:textColor="@color/texto_principal"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Fila 1 -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:layout_marginBottom="8dp">
+                    <Button android:tag="despues_comer" style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp" android:layout_height="52dp" android:layout_weight="1"
+                        android:text="@string/inst_despues_comer" android:layout_marginRight="6dp" />
+                    <Button android:tag="antes_comer" style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp" android:layout_height="52dp" android:layout_weight="1"
+                        android:text="@string/inst_antes_comer" android:layout_marginLeft="6dp" />
+                </LinearLayout>
+                <!-- Fila 2 -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:layout_marginBottom="8dp">
+                    <Button android:tag="ayunas" style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp" android:layout_height="52dp" android:layout_weight="1"
+                        android:text="@string/inst_ayunas" android:layout_marginRight="6dp" />
+                    <Button android:tag="con_agua" style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp" android:layout_height="52dp" android:layout_weight="1"
+                        android:text="@string/inst_con_agua" android:layout_marginLeft="6dp" />
+                </LinearLayout>
+                <!-- Fila 3 -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:layout_marginBottom="8dp">
+                    <Button android:tag="con_leche" style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp" android:layout_height="52dp" android:layout_weight="1"
+                        android:text="@string/inst_con_leche" android:layout_marginRight="6dp" />
+                    <Button android:tag="antes_dormir" style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp" android:layout_height="52dp" android:layout_weight="1"
+                        android:text="@string/inst_antes_dormir" android:layout_marginLeft="6dp" />
+                </LinearLayout>
+                <!-- Fila 4 -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:layout_marginBottom="32dp">
+                    <Button android:tag="al_despertar" style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp" android:layout_height="52dp" android:layout_weight="1"
+                        android:text="@string/inst_al_despertar" android:layout_marginRight="6dp" />
+                    <Button android:tag="sin_restriccion" style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp" android:layout_height="52dp" android:layout_weight="1"
+                        android:text="@string/inst_sin_restriccion" android:layout_marginLeft="6dp" />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/btn_siguiente_4"
+                    style="@style/Widget.Material3.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="@string/btn_siguiente"
+                    android:textSize="16sp" />
+
+            </LinearLayout>
+
+            <!-- ═══════════════════════════════════════════════ -->
+            <!-- PASO 5a — Hora de inicio (TimePicker tambor)    -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <LinearLayout
+                android:id="@+id/paso5a_hora"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingLeft="24dp"
+                android:paddingRight="24dp"
+                android:paddingTop="32dp"
+                android:paddingBottom="32dp"
+                android:gravity="center_horizontal"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/paso5a_pregunta"
+                    android:textSize="20sp"
+                    android:textColor="@color/texto_principal"
+                    android:layout_marginBottom="24dp" />
+
+                <TimePicker
+                    android:id="@+id/time_picker"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:timePickerMode="spinner"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="32dp" />
+
+                <Button
+                    android:id="@+id/btn_siguiente_5a"
+                    style="@style/Widget.Material3.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="@string/btn_siguiente"
+                    android:textSize="16sp" />
+
+            </LinearLayout>
+
+            <!-- ═══════════════════════════════════════════════ -->
+            <!-- PASO 5b — Frecuencia                            -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <LinearLayout
+                android:id="@+id/paso5b_frecuencia"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingLeft="24dp"
+                android:paddingRight="24dp"
+                android:paddingTop="32dp"
+                android:paddingBottom="32dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/paso5b_pregunta"
+                    android:textSize="20sp"
+                    android:textColor="@color/texto_principal"
+                    android:layout_marginBottom="24dp" />
+
+                <!-- Fila 1 -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:layout_marginBottom="12dp">
+                    <Button android:id="@+id/btn_6h"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp" android:layout_height="64dp" android:layout_weight="1"
+                        android:text="@string/btn_cada_6h" android:textSize="15sp"
+                        android:layout_marginRight="6dp" />
+                    <Button android:id="@+id/btn_8h"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp" android:layout_height="64dp" android:layout_weight="1"
+                        android:text="@string/btn_cada_8h" android:textSize="15sp"
+                        android:layout_marginLeft="6dp" />
+                </LinearLayout>
+                <!-- Fila 2 -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:layout_marginBottom="12dp">
+                    <Button android:id="@+id/btn_12h"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp" android:layout_height="64dp" android:layout_weight="1"
+                        android:text="@string/btn_cada_12h" android:textSize="15sp"
+                        android:layout_marginRight="6dp" />
+                    <Button android:id="@+id/btn_24h"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp" android:layout_height="64dp" android:layout_weight="1"
+                        android:text="@string/btn_cada_24h" android:textSize="15sp"
+                        android:layout_marginLeft="6dp" />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/btn_personalizado"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="@string/btn_frecuencia_personalizada"
+                    android:textSize="15sp" />
+
+            </LinearLayout>
+
+            <!-- ═══════════════════════════════════════════════ -->
+            <!-- PASO 6 — Stock                                  -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <LinearLayout
+                android:id="@+id/paso6_stock"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingLeft="24dp"
+                android:paddingRight="24dp"
+                android:paddingTop="32dp"
+                android:paddingBottom="32dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/paso6_pregunta"
+                    android:textSize="20sp"
+                    android:textColor="@color/texto_principal"
+                    android:layout_marginBottom="24dp" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/hint_stock"
+                    android:layout_marginBottom="16dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_stock"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="number"
+                        android:textSize="17sp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/hint_stock_minimo"
+                    android:layout_marginBottom="40dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_stock_minimo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="number"
+                        android:textSize="17sp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <Button
+                    android:id="@+id/btn_guardar"
+                    style="@style/Widget.Material3.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="@string/btn_guardar_med"
+                    android:textSize="16sp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

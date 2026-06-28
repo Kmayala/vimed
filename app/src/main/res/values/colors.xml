@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Paleta principal Vimed — turquesa (brand) -->
+    <color name="brand_50">#e8f7f5</color>
+    <color name="brand_100">#c6ebe5</color>
+    <color name="brand_200">#92d8cc</color>
+    <color name="brand_300">#56beae</color>
+    <color name="brand_400">#1ea897</color>
+    <color name="brand_500">#0d8b7d</color>   <!-- primary -->
+    <color name="brand_600">#0a6f65</color>
+    <color name="brand_700">#08584f</color>
+    <color name="brand_800">#063f38</color>
+    <color name="brand_900">#042824</color>
+
+    <!-- Alias legacy (para compatibilidad con código existente) -->
+    <color name="turquesa">#0d8b7d</color>
+    <color name="turquesa_dark">#0a6f65</color>
+    <color name="turquesa_light">#e8f7f5</color>
+    <color name="turquesa_border">#c6ebe5</color>
+
+    <!-- Neutrales cálidos (ink) -->
+    <color name="ink">#0f1513</color>
+    <color name="ink_2">#2a322f</color>
+    <color name="ink_3">#4b5551</color>
+    <color name="ink_4">#6d7874</color>
+    <color name="ink_5">#9aa39f</color>
+    <color name="ink_6">#c6cdc9</color>
+    <color name="ink_7">#e2e7e4</color>
+    <color name="ink_8">#eef2ef</color>
+    <color name="paper">#f8faf8</color>
+    <color name="paper_2">#ffffff</color>
+
+    <!-- Alias legacy -->
+    <color name="gris_fondo">#f8faf8</color>
+    <color name="gris_borde">#e2e7e4</color>
+    <color name="gris_texto">#6d7874</color>
+
+    <!-- Semánticos -->
+    <color name="success">#2e7d58</color>
+    <color name="success_bg">#dff2e6</color>
+    <color name="warn">#b86a00</color>
+    <color name="warn_bg">#fdecd0</color>
+    <color name="danger">#b3261e</color>
+    <color name="danger_bg">#fbe3e1</color>
+    <color name="info">#1e5ca8</color>
+    <color name="info_bg">#dbeaff</color>
+
+    <!-- Colores de pastillas -->
+    <color name="pill_rojo">#b3261e</color>
+    <color name="pill_azul">#1e5ca8</color>
+    <color name="pill_amarillo">#b86a00</color>
+    <color name="pill_verde">#2e7d58</color>
+    <color name="pill_morado">#6750A4</color>
+    <color name="pill_gris">#9aa39f</color>
+
+    <!-- Texto -->
+    <color name="texto_principal">#0f1513</color>
+    <color name="white">#ffffff</color>
+    <color name="black">#000000</color>
+    <color name="rojo_error">#b3261e</color>
+
+    <!-- Modo oscuro -->
+    <color name="dark_bg">#0f1513</color>
+    <color name="dark_card">#161c19</color>
+    <color name="dark_border">#262b29</color>
+</resources>

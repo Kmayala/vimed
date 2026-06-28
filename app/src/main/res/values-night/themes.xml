@@ -1,0 +1,8 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Base.Theme.Vimed" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/turquesa</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/turquesa_dark</item>
+        <item name="colorOnPrimaryContainer">@color/white</item>
+    </style>
+</resources>

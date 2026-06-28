@@ -1,0 +1,20 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Base.Theme.Vimed" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/brand_500</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/brand_100</item>
+        <item name="colorOnPrimaryContainer">@color/brand_800</item>
+        <item name="colorSecondary">@color/brand_400</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="android:colorBackground">@color/paper</item>
+        <item name="colorSurface">@color/paper_2</item>
+        <item name="colorOnSurface">@color/ink</item>
+        <item name="colorSurfaceVariant">@color/ink_8</item>
+        <item name="colorOnSurfaceVariant">@color/ink_3</item>
+        <item name="colorOutline">@color/ink_6</item>
+        <item name="colorError">@color/danger</item>
+    </style>
+
+    <style name="Theme.Vimed" parent="Base.Theme.Vimed" />
+
+</resources>

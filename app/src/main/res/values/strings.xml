@@ -1,0 +1,110 @@
+<resources>
+    <string name="app_name">Vimed</string>
+    <string name="app_tagline">SU MEDICACIÓN, A TIEMPO</string>
+
+    <!-- Bienvenida -->
+    <string name="welcome_headline">Sus remedios,\nsin olvidos.</string>
+    <string name="welcome_subtitle">Le avisamos a la hora justa, anotamos cada toma y avisamos a su familia si hace falta.</string>
+    <string name="btn_google_signin">Continuar con Google</string>
+    <string name="btn_create_account">Crear cuenta con correo</string>
+    <string name="btn_login_link">Ya tengo cuenta · Entrar</string>
+    <string name="btn_email_signin">Iniciar sesión con correo</string>
+    <string name="lbl_or">o</string>
+    <string name="tv_no_account">¿No tenés cuenta? Registrate</string>
+    <string name="google_soon">La integración con Google estará disponible próximamente</string>
+
+    <!-- Login -->
+    <string name="login_title">Iniciar sesión</string>
+    <string name="hint_email">Correo electrónico</string>
+    <string name="hint_password">Contraseña</string>
+    <string name="btn_login">Ingresar</string>
+    <string name="tv_no_account_login">¿No tenés cuenta? Registrate</string>
+
+    <!-- Registro -->
+    <string name="register_title">Crear cuenta</string>
+    <string name="hint_name">Nombre completo</string>
+    <string name="hint_confirm_password">Confirmar contraseña</string>
+    <string name="btn_register">Registrarme</string>
+    <string name="tv_have_account">¿Ya tenés cuenta? Iniciá sesión</string>
+
+    <!-- Selección de rol -->
+    <string name="role_title">¿Quién usará Vimed?</string>
+    <string name="role_subtitle">Puede cambiar esto después en los ajustes.</string>
+    <string name="role_adult">Soy yo</string>
+    <string name="role_adult_desc">Voy a registrar mi medicación</string>
+    <string name="role_family">Un familiar o cuidador</string>
+    <string name="role_family_desc">Acompaño a alguien con su tratamiento</string>
+    <string name="role_info">Los dos roles pueden vincularse después por correo. La información se comparte con su permiso.</string>
+    <string name="btn_continue">Continuar</string>
+
+    <!-- Home -->
+    <string name="btn_logout">Cerrar sesión</string>
+
+    <!-- Agregar medicamento — General -->
+    <string name="agregar_med_title">Agregar medicamento</string>
+    <string name="btn_siguiente">Siguiente</string>
+    <string name="btn_guardar_med">Guardar medicamento</string>
+
+    <!-- Paso 1 — Nombre -->
+    <string name="paso1_pregunta">¿Cuál es el nombre del medicamento?</string>
+    <string name="hint_nombre_med">Escribí o elegí de la lista…</string>
+
+    <!-- Paso 2 — Dosis -->
+    <string name="paso2_pregunta">¿Cuál es la dosis?</string>
+    <string name="btn_otra_dosis">Otra dosis</string>
+    <string name="hint_dosis_manual">Cantidad</string>
+    <string name="hint_unidad">Unidad</string>
+
+    <!-- Paso 3 — Presentación -->
+    <string name="paso3_pregunta">¿Cómo es el medicamento?</string>
+    <string name="paso3_color_label">Elegí un color identificador</string>
+    <string name="pres_comprimido">Comprimido</string>
+    <string name="pres_capsula">Cápsula</string>
+    <string name="pres_jarabe">Jarabe</string>
+    <string name="pres_inyectable">Inyectable</string>
+    <string name="pres_gotas">Gotas</string>
+    <string name="pres_parche">Parche</string>
+    <string name="pres_inhalador">Inhalador</string>
+    <string name="pres_otro">Otro</string>
+
+    <!-- Paso 4 — Instrucciones -->
+    <string name="paso4_pregunta">¿Cómo se toma?</string>
+    <string name="inst_despues_comer">Después de comer</string>
+    <string name="inst_antes_comer">Antes de comer</string>
+    <string name="inst_ayunas">En ayunas</string>
+    <string name="inst_con_agua">Con agua</string>
+    <string name="inst_con_leche">Con leche</string>
+    <string name="inst_antes_dormir">Antes de dormir</string>
+    <string name="inst_al_despertar">Al despertar</string>
+    <string name="inst_sin_restriccion">Sin restricción</string>
+
+    <!-- Paso 5a — Hora -->
+    <string name="paso5a_pregunta">¿A qué hora lo tomás por primera vez?</string>
+
+    <!-- Paso 5b — Frecuencia -->
+    <string name="paso5b_pregunta">¿Cada cuánto lo tomás?</string>
+    <string name="btn_cada_6h">Cada 6 h</string>
+    <string name="btn_cada_8h">Cada 8 h</string>
+    <string name="btn_cada_12h">Cada 12 h</string>
+    <string name="btn_cada_24h">Una vez al día</string>
+    <string name="btn_frecuencia_personalizada">Personalizado…</string>
+
+    <!-- Paso 6 — Stock -->
+    <string name="paso6_pregunta">¿Cuántas unidades tenés ahora?</string>
+    <string name="hint_stock">Cantidad actual (ej: 30)</string>
+    <string name="hint_stock_minimo">Avisarme cuando queden (ej: 5)</string>
+
+    <!-- Bottom sheet personalizado -->
+    <string name="personalizado_title">Horario personalizado</string>
+    <string name="personalizado_hora_label">Hora de inicio</string>
+    <string name="hint_intervalo_horas">Repetir cada ___ horas (ej: 4)</string>
+    <string name="btn_confirmar">Confirmar</string>
+
+    <!-- Errores -->
+    <string name="error_empty_field">Este campo es obligatorio</string>
+    <string name="error_invalid_email">Ingresá un correo válido</string>
+    <string name="error_password_short">La contraseña debe tener al menos 6 caracteres</string>
+    <string name="error_passwords_mismatch">Las contraseñas no coinciden</string>
+    <string name="error_invalid_credentials">Correo o contraseña incorrectos</string>
+    <string name="error_email_exists">Ya existe una cuenta con ese correo</string>
+</resources>

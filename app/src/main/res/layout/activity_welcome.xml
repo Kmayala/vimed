@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/bg_welcome_gradient">
+
+    <!-- Top spacer -->
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="48dp" />
+
+    <!-- Content area with side padding -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:paddingLeft="28dp"
+        android:paddingRight="28dp">
+
+        <!-- Logotype row: icon + text -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="0dp">
+
+            <!-- Icon container 52x52 brand-500 bg, 16dp radius -->
+            <FrameLayout
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:background="@drawable/shape_logo_container"
+                android:elevation="4dp">
+
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_vimed_logo"
+                    android:contentDescription="Logo Vimed" />
+            </FrameLayout>
+
+            <!-- App name + tagline -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginStart="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/app_name"
+                    android:textSize="30sp"
+                    android:fontFamily="serif"
+                    android:textStyle="normal"
+                    android:textColor="@color/ink"
+                    android:letterSpacing="-0.02" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/app_tagline"
+                    android:textSize="11sp"
+                    android:textColor="@color/ink_4"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.12"
+                    android:layout_marginTop="-2dp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Hero headline — Fraunces display font, weight 500, design: .h1 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/welcome_headline"
+            android:textSize="38sp"
+            android:fontFamily="serif"
+            android:textStyle="normal"
+            android:textColor="@color/ink"
+            android:letterSpacing="-0.02"
+            android:lineSpacingMultiplier="1.05"
+            android:layout_marginTop="48dp" />
+
+        <!-- Hero subtitle -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/welcome_subtitle"
+            android:textSize="18sp"
+            android:textColor="@color/ink_3"
+            android:lineSpacingMultiplier="1.4"
+            android:layout_marginTop="16dp" />
+
+        <!-- Illustration — fills remaining space -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="32dp">
+
+            <ImageView
+                android:layout_width="280dp"
+                android:layout_height="180dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_illustration_pills"
+                android:contentDescription="Ilustración de medicamentos" />
+        </FrameLayout>
+
+    </LinearLayout>
+
+    <!-- Buttons — anchored to bottom -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingLeft="28dp"
+        android:paddingRight="28dp"
+        android:paddingBottom="24dp">
+
+        <!-- Primary: Continuar con Google -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_google"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="@string/btn_google_signin"
+            android:textSize="18sp"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:letterSpacing="-0.01"
+            app:backgroundTint="@color/brand_500"
+            app:cornerRadius="16dp"
+            app:iconGravity="textStart"
+            app:iconPadding="10dp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Ghost: Crear cuenta con correo -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_create_account"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="@string/btn_create_account"
+            android:textSize="18sp"
+            android:textColor="@color/ink_2"
+            android:textStyle="bold"
+            android:letterSpacing="-0.01"
+            app:backgroundTint="@android:color/transparent"
+            app:strokeColor="@color/ink_6"
+            app:strokeWidth="1.5dp"
+            app:cornerRadius="16dp"
+            android:layout_marginBottom="4dp" />
+
+        <!-- Text link: Ya tengo cuenta -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_login_link"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="@string/btn_login_link"
+            android:textSize="16sp"
+            android:textColor="@color/brand_600"
+            android:textStyle="bold"
+            app:backgroundTint="@android:color/transparent"
+            app:rippleColor="@color/brand_50" />
+
+    </LinearLayout>
+
+</LinearLayout>

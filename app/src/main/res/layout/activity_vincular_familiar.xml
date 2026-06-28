@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/paper">
+
+    <!-- AppBar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:paddingTop="14dp"
+        android:paddingBottom="10dp">
+
+        <FrameLayout
+            android:id="@+id/btn_back"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="@drawable/shape_neutral_icon_container"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_marginEnd="12dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_arrow_back"
+                android:contentDescription="Volver" />
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Vincular familiar"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/ink"
+            android:letterSpacing="-0.015" />
+
+    </LinearLayout>
+
+    <!-- Contenido -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingLeft="24dp"
+            android:paddingRight="24dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="32dp">
+
+            <!-- Título e intro -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Invite a un cuidador"
+                android:textSize="30sp"
+                android:fontFamily="serif"
+                android:textStyle="normal"
+                android:textColor="@color/ink"
+                android:letterSpacing="-0.02"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Recibirá avisos de olvidos, stock bajo y citas próximas. Usted decide qué comparte."
+                android:textSize="15sp"
+                android:textColor="@color/ink_3"
+                android:lineSpacingMultiplier="1.35"
+                android:layout_marginBottom="28dp" />
+
+            <!-- Tarjeta del código -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="@drawable/shape_code_card"
+                android:paddingTop="28dp"
+                android:paddingBottom="22dp"
+                android:paddingLeft="24dp"
+                android:paddingRight="24dp"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="SU CÓDIGO"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/brand_600"
+                    android:letterSpacing="0.12"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:id="@+id/tv_code"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="48sp"
+                    android:fontFamily="serif"
+                    android:textStyle="normal"
+                    android:textColor="@color/ink"
+                    android:letterSpacing="0.08" />
+
+                <TextView
+                    android:id="@+id/tv_timer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Válido por 30 minutos"
+                    android:textSize="13sp"
+                    android:textColor="@color/ink_4"
+                    android:layout_marginTop="6dp" />
+
+            </LinearLayout>
+
+            <!-- Botón enviar por correo -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_share_email"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Enviar por correo"
+                android:textSize="15sp"
+                android:textColor="@color/ink"
+                app:strokeColor="@color/ink_6"
+                app:strokeWidth="1.5dp"
+                app:cornerRadius="16dp"
+                app:icon="@drawable/ic_send"
+                app:iconTint="@color/ink_3"
+                app:iconGravity="textStart"
+                android:layout_marginBottom="24dp" />
+
+            <!-- Separador "O AGREGAR POR CORREO" -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"
+                    android:background="@color/ink_7" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="O AGREGAR POR CORREO"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/ink_4"
+                    android:letterSpacing="0.05"
+                    android:paddingLeft="12dp"
+                    android:paddingRight="12dp" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"
+                    android:background="@color/ink_7" />
+
+            </LinearLayout>
+
+            <!-- Input de correo del familiar -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/til_email"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="nombre@correo.com"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_marginBottom="12dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_email"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:inputType="textEmailAddress"
+                    android:textSize="16sp" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_add_by_email"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="Agregar familiar"
+                android:textSize="15sp"
+                android:backgroundTint="@color/brand_500"
+                app:cornerRadius="16dp"
+                android:layout_marginBottom="32dp" />
+
+            <!-- Sección FAMILIA VINCULADA -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="FAMILIA VINCULADA"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="@color/ink_4"
+                android:letterSpacing="0.1"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Estado vacío -->
+            <LinearLayout
+                android:id="@+id/empty_family"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="28dp"
+                android:background="@drawable/shape_dose_card"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sin familiares vinculados"
+                    android:textSize="15sp"
+                    android:textColor="@color/ink_4"
+                    android:gravity="center" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Comparta el código o agregue por correo"
+                    android:textSize="13sp"
+                    android:textColor="@color/ink_5"
+                    android:gravity="center"
+                    android:layout_marginTop="4dp" />
+
+            </LinearLayout>
+
+            <!-- Lista de familiares vinculados -->
+            <LinearLayout
+                android:id="@+id/family_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>
