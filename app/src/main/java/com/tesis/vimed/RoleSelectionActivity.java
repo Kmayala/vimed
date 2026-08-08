@@ -81,6 +81,7 @@ public class RoleSelectionActivity extends AppCompatActivity {
             UsuarioDAO usuarioDAO = new UsuarioDAO(DatabaseHelper.getInstance(this));
             usuarioDAO.actualizarRol(idUsuario, selectedRole);
         }
+        com.tesis.vimed.api.PerfilSync.actualizarRol(this, selectedRole);
 
         if ("adulto_mayor".equals(selectedRole)) {
             // Ofrecer vincular familiar antes de entrar al app
@@ -99,9 +100,8 @@ public class RoleSelectionActivity extends AppCompatActivity {
     }
 
     private void goToMain() {
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
+        // El familiar entra al panel de cuidador, no al home del paciente
+        Router.irAlHome(this);
     }
 
     private int dpToPx(int dp) {

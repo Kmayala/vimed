@@ -5,22 +5,24 @@
     android:orientation="horizontal"
     android:gravity="center_vertical"
     android:background="@drawable/shape_dose_card"
-    android:padding="14dp"
-    android:layout_marginBottom="10dp">
+    android:padding="18dp"
+    android:layout_marginBottom="12dp"
+    android:clickable="true"
+    android:focusable="true">
 
     <!-- Ícono de medicamento: círculo coloreado con inicial -->
     <FrameLayout
         android:id="@+id/med_icon_container"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginEnd="14dp">
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_marginEnd="16dp">
 
         <TextView
             android:id="@+id/tv_med_initial"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
             android:gravity="center"
-            android:textSize="20sp"
+            android:textSize="24sp"
             android:textStyle="bold"
             android:textColor="#FFFFFF" />
     </FrameLayout>
@@ -36,7 +38,7 @@
             android:id="@+id/tv_med_name_dose"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="17sp"
+            android:textSize="19sp"
             android:textStyle="bold"
             android:textColor="@color/ink"
             android:letterSpacing="-0.01" />
@@ -45,9 +47,9 @@
             android:id="@+id/tv_instructions"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="14sp"
+            android:textSize="16sp"
             android:textColor="@color/ink_4"
-            android:layout_marginTop="2dp" />
+            android:layout_marginTop="3dp" />
 
     </LinearLayout>
 
@@ -56,13 +58,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:gravity="end">
+        android:gravity="end"
+        android:layout_marginEnd="10dp">
 
         <TextView
             android:id="@+id/tv_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="24sp"
+            android:textSize="26sp"
             android:textStyle="bold"
             android:fontFamily="sans-serif"
             android:textColor="@color/ink"
@@ -73,15 +76,24 @@
             android:id="@+id/tv_status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingLeft="8dp"
-            android:paddingRight="8dp"
-            android:paddingTop="3dp"
-            android:paddingBottom="3dp"
-            android:textSize="11sp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:textSize="13sp"
             android:textStyle="bold"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="6dp"
             android:gravity="center" />
 
     </LinearLayout>
+
+    <!-- Indicador de acción: círculo que se tilda al confirmar -->
+    <ImageView
+        android:id="@+id/iv_check"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:src="@drawable/ic_check"
+        android:tint="@color/ink_6"
+        android:contentDescription="Marcar como tomada" />
 
 </LinearLayout>

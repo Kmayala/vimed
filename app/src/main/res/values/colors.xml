@@ -1,66 +1,89 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Paleta principal Vimed — turquesa (brand) -->
-    <color name="brand_50">#e8f7f5</color>
-    <color name="brand_100">#c6ebe5</color>
-    <color name="brand_200">#92d8cc</color>
-    <color name="brand_300">#56beae</color>
-    <color name="brand_400">#1ea897</color>
-    <color name="brand_500">#0d8b7d</color>   <!-- primary -->
-    <color name="brand_600">#0a6f65</color>
-    <color name="brand_700">#08584f</color>
-    <color name="brand_800">#063f38</color>
-    <color name="brand_900">#042824</color>
+    <!-- ═══════════════════════════════════════════════════════
+         PALETA VIMED
+         Primario   #958CE8  (violeta)
+         Secundario #ACD1FD  (celeste)
+         Texto      #21222D
+         Bordes     #DBDBE5
+         Fondo      #FBF9FC
+         Cards      #FFFFFF
+         ═══════════════════════════════════════════════════════ -->
 
-    <!-- Alias legacy (para compatibilidad con código existente) -->
-    <color name="turquesa">#0d8b7d</color>
-    <color name="turquesa_dark">#0a6f65</color>
-    <color name="turquesa_light">#e8f7f5</color>
-    <color name="turquesa_border">#c6ebe5</color>
+    <!-- ── Primario: violeta ──────────────────────────────── -->
+    <color name="brand_50">#f3f1fd</color>
+    <color name="brand_100">#e6e3fa</color>
+    <color name="brand_200">#cfcaf5</color>
+    <color name="brand_300">#b8b1f0</color>
+    <color name="brand_400">#a69eec</color>
+    <color name="brand_500">#958ce8</color>   <!-- primario -->
+    <color name="brand_600">#7668dc</color>   <!-- texto/acciones sobre fondo claro -->
+    <color name="brand_700">#5b4cc4</color>
+    <color name="brand_800">#453a99</color>
+    <color name="brand_900">#2f2870</color>
 
-    <!-- Neutrales cálidos (ink) -->
-    <color name="ink">#0f1513</color>
-    <color name="ink_2">#2a322f</color>
-    <color name="ink_3">#4b5551</color>
-    <color name="ink_4">#6d7874</color>
-    <color name="ink_5">#9aa39f</color>
-    <color name="ink_6">#c6cdc9</color>
-    <color name="ink_7">#e2e7e4</color>
-    <color name="ink_8">#eef2ef</color>
-    <color name="paper">#f8faf8</color>
-    <color name="paper_2">#ffffff</color>
+    <!-- ── Secundario: celeste ────────────────────────────── -->
+    <color name="accent_50">#f1f7ff</color>
+    <color name="accent_100">#ddebfe</color>
+    <color name="accent_200">#acd1fd</color>  <!-- secundario -->
+    <color name="accent_500">#6ba6f5</color>
+    <color name="accent_600">#3b7dd8</color>
+    <color name="accent_700">#2a5fa8</color>
+
+    <!-- Alias legacy (código que todavía dice "turquesa") -->
+    <color name="turquesa">#958ce8</color>
+    <color name="turquesa_dark">#7668dc</color>
+    <color name="turquesa_light">#f3f1fd</color>
+    <color name="turquesa_border">#e6e3fa</color>
+
+    <!-- ── Neutrales fríos (ink) ──────────────────────────── -->
+    <color name="ink">#21222d</color>         <!-- texto principal -->
+    <color name="ink_2">#34353f</color>
+    <color name="ink_3">#55565f</color>
+    <color name="ink_4">#7b7c86</color>
+    <color name="ink_5">#9c9da6</color>
+    <color name="ink_6">#c4c5ce</color>
+    <color name="ink_7">#dbdbe5</color>       <!-- bordes / divisores -->
+    <color name="ink_8">#ededf2</color>
+    <color name="paper">#fbf9fc</color>       <!-- fondo de pantalla -->
+    <color name="paper_2">#ffffff</color>     <!-- cards -->
 
     <!-- Alias legacy -->
-    <color name="gris_fondo">#f8faf8</color>
-    <color name="gris_borde">#e2e7e4</color>
-    <color name="gris_texto">#6d7874</color>
+    <color name="gris_fondo">#fbf9fc</color>
+    <color name="gris_borde">#dbdbe5</color>
+    <color name="gris_texto">#7b7c86</color>
 
-    <!-- Semánticos -->
-    <color name="success">#2e7d58</color>
-    <color name="success_bg">#dff2e6</color>
-    <color name="warn">#b86a00</color>
-    <color name="warn_bg">#fdecd0</color>
-    <color name="danger">#b3261e</color>
-    <color name="danger_bg">#fbe3e1</color>
-    <color name="info">#1e5ca8</color>
-    <color name="info_bg">#dbeaff</color>
+    <!-- ── Semánticos (estados) ───────────────────────────── -->
+    <color name="success">#15803d</color>
+    <color name="success_bg">#dcfce7</color>
+    <color name="warn">#b45309</color>
+    <color name="warn_bg">#fef3c7</color>
+    <color name="warn_border">#f4cf7d</color>
+    <color name="danger">#b91c1c</color>
+    <color name="danger_bg">#fee2e2</color>
+    <color name="info">#1d4ed8</color>
+    <color name="info_bg">#dbeafe</color>
 
-    <!-- Colores de pastillas -->
-    <color name="pill_rojo">#b3261e</color>
-    <color name="pill_azul">#1e5ca8</color>
-    <color name="pill_amarillo">#b86a00</color>
-    <color name="pill_verde">#2e7d58</color>
-    <color name="pill_morado">#6750A4</color>
-    <color name="pill_gris">#9aa39f</color>
+    <!-- ── Colores de pastillas (fondo de círculo, texto blanco) -->
+    <color name="pill_rojo">#c0392b</color>
+    <color name="pill_azul">#3b7dd8</color>
+    <color name="pill_amarillo">#c77700</color>
+    <color name="pill_verde">#1e8e5a</color>
+    <color name="pill_morado">#958ce8</color>
+    <color name="pill_gris">#7b7c86</color>
 
-    <!-- Texto -->
-    <color name="texto_principal">#0f1513</color>
+    <!-- ── Texto ──────────────────────────────────────────── -->
+    <color name="texto_principal">#21222d</color>
     <color name="white">#ffffff</color>
     <color name="black">#000000</color>
-    <color name="rojo_error">#b3261e</color>
+    <color name="rojo_error">#b91c1c</color>
 
-    <!-- Modo oscuro -->
-    <color name="dark_bg">#0f1513</color>
-    <color name="dark_card">#161c19</color>
-    <color name="dark_border">#262b29</color>
+    <!-- ── Superficie oscura (tarjeta destacada de próxima cita) -->
+    <color name="surface_dark">#21222d</color>
+    <color name="surface_dark_2">#2e2f3b</color>
+
+    <!-- ── Modo oscuro (la app corre siempre en claro) ────── -->
+    <color name="dark_bg">#21222d</color>
+    <color name="dark_card">#2e2f3b</color>
+    <color name="dark_border">#3d3e4a</color>
 </resources>

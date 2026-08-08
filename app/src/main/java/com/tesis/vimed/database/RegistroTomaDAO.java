@@ -35,6 +35,23 @@ public class RegistroTomaDAO {
             DatabaseHelper.COL_REG_ID + "=?", new String[]{String.valueOf(idRegistro)});
     }
 
+    /**
+     * Cambia el estado de un registro. Si pasa a "confirmada" guarda el
+     * timestamp; en cualquier otro estado lo limpia (deshacer una confirmación).
+     */
+    public int actualizarEstado(int idRegistro, String estado, String fechaConfirmacion) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(DatabaseHelper.COL_REG_ESTADO, estado);
+        if ("confirmada".equals(estado)) {
+            cv.put(DatabaseHelper.COL_REG_CONFIRMACION, fechaConfirmacion);
+        } else {
+            cv.putNull(DatabaseHelper.COL_REG_CONFIRMACION);
+        }
+        return db.update(DatabaseHelper.TABLE_REGISTRO, cv,
+            DatabaseHelper.COL_REG_ID + "=?", new String[]{String.valueOf(idRegistro)});
+    }
+
     public int posponerToma(int idRegistro) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues cv = new ContentValues();

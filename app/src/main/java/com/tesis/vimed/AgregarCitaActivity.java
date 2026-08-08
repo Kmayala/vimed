@@ -92,13 +92,19 @@ public class AgregarCitaActivity extends AppCompatActivity {
         String fechaHora = String.format(Locale.getDefault(), "%d-%02d-%02d %s",
             selYear, selMonth + 1, selDay, hora.isEmpty() ? "00:00" : hora);
 
-        CitaMedica cita = new CitaMedica(
-            sessionManager.getIdUsuario(), medico, especialidad, fechaHora, lugar, notas
-        );
+        // El id_usuario lo completa el repositorio con el de public.usuarios
+        CitaMedica cita = new CitaMedica(0, medico, especialidad, fechaHora, lugar, notas);
+        cita.setEstado(CitaMedica.ESTADO_PENDIENTE);
 
-        new CitaMedicaDAO(DatabaseHelper.getInstance(this)).insertar(cita);
-
-        Toast.makeText(this, "Cita guardada", Toast.LENGTH_SHORT).show();
-        finish();
+        com.tesis.vimed.api.VimedRepo.crearCita(this, cita,
+            new com.tesis.vimed.api.VimedRepo.Cb<CitaMedica>() {
+                @Override public void onOk(CitaMedica creada) {
+                    Toast.makeText(AgregarCitaActivity.this, "Cita guardada", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+                @Override public void onError(String msg) {
+                    Toast.makeText(AgregarCitaActivity.this, msg, Toast.LENGTH_LONG).show();
+                }
+            });
     }
 }

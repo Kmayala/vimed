@@ -1,11 +1,16 @@
 package com.tesis.vimed.api;
 
+import com.tesis.vimed.models.CatalogoMedicamento;
 import com.tesis.vimed.models.CitaMedica;
 import com.tesis.vimed.models.Horario;
+import com.tesis.vimed.models.InteraccionCatalogo;
 import com.tesis.vimed.models.Medicamento;
 import com.tesis.vimed.models.MensajeChat;
+import com.tesis.vimed.models.Notificacion;
 import com.tesis.vimed.models.RegistroToma;
 import com.tesis.vimed.models.Usuario;
+import com.tesis.vimed.models.UsuarioSupabase;
+import com.tesis.vimed.models.Vinculacion;
 
 import java.util.List;
 
@@ -56,10 +61,18 @@ public interface SupabaseService {
     @POST("medicamentos")
     Call<List<Medicamento>> crearMedicamento(@Body Medicamento nuevo);
 
+    @GET("medicamentos")
+    Call<List<Medicamento>> getMedicamentoPorId(@Query("id_medicamento") String idEq);
+
+    /**
+     * @param cambios DTO de parche con SOLO los campos a modificar
+     *                (ver VimedRepo.MedicamentoPatch). No usar Medicamento:
+     *                Gson serializa sus int en 0 y pisaría columnas.
+     */
     @PATCH("medicamentos")
     Call<List<Medicamento>> actualizarMedicamento(
         @Query("id_medicamento") String idEq,
-        @Body Medicamento cambios
+        @Body Object cambios
     );
 
     @DELETE("medicamentos")
@@ -86,10 +99,11 @@ public interface SupabaseService {
     @POST("registro_tomas")
     Call<List<RegistroToma>> crearRegistroToma(@Body RegistroToma nuevo);
 
+    /** @param cambios DTO de parche — ver nota en actualizarMedicamento. */
     @PATCH("registro_tomas")
     Call<List<RegistroToma>> actualizarRegistroToma(
         @Query("id_registro") String idEq,
-        @Body RegistroToma cambios
+        @Body Object cambios
     );
 
     // ── CITAS MÉDICAS ─────────────────────────────────────────
@@ -101,6 +115,13 @@ public interface SupabaseService {
 
     @POST("citas_medicas")
     Call<List<CitaMedica>> crearCita(@Body CitaMedica nueva);
+
+    /** @param cambios DTO de parche — ver nota en actualizarMedicamento. */
+    @PATCH("citas_medicas")
+    Call<List<CitaMedica>> actualizarCita(
+        @Query("id_cita") String idEq,
+        @Body Object cambios
+    );
 
     @DELETE("citas_medicas")
     Call<Void> eliminarCita(@Query("id_cita") String idEq);
@@ -114,4 +135,90 @@ public interface SupabaseService {
 
     @POST("chatbot_historial")
     Call<List<MensajeChat>> guardarMensajeChat(@Body MensajeChat mensaje);
+
+    // ── CATÁLOGO DE MEDICAMENTOS (referencia pública) ─────────
+    /** Trae todo el catálogo activo, ordenado por nombre. */
+    @GET("catalogo_medicamentos")
+    Call<List<CatalogoMedicamento>> getCatalogo(
+        @Query("activo") String activoEq,       // "eq.true"
+        @Query("order")  String order           // "nombre_comercial.asc"
+    );
+
+    /** Busca por nombre comercial (substring, case-insensitive). */
+    @GET("catalogo_medicamentos")
+    Call<List<CatalogoMedicamento>> buscarCatalogo(
+        @Query("nombre_comercial") String iLike, // "ilike.*losart*"
+        @Query("order")            String order
+    );
+
+    /** Filtra por categoría (cardiovascular, diabetes, gastro, etc.). */
+    @GET("catalogo_medicamentos")
+    Call<List<CatalogoMedicamento>> getCatalogoPorCategoria(
+        @Query("categoria") String categoriaEq,  // "eq.cardiovascular"
+        @Query("order")     String order
+    );
+
+    // ── INTERACCIONES DEL CATÁLOGO ────────────────────────────
+    /** Trae interacciones donde participa un med específico del catálogo. */
+    @GET("interacciones_catalogo")
+    Call<List<InteraccionCatalogo>> getInteraccionesDeMed(
+        @Query("or") String or                   // "or=(id_catalogo_a.eq.5,id_catalogo_b.eq.5)"
+    );
+
+    /** Trae interacciones entre un conjunto de meds (in.(...)). */
+    @GET("interacciones_catalogo")
+    Call<List<InteraccionCatalogo>> getInteraccionesEntre(
+        @Query("id_catalogo_a") String aIn,      // "in.(5,7,12)"
+        @Query("id_catalogo_b") String bIn       // "in.(5,7,12)"
+    );
+
+    // ── PERFIL EN public.usuarios (sync con Supabase Auth) ────
+    /** Busca el perfil por su auth_user_id (UUID de auth.users). */
+    @GET("usuarios")
+    Call<List<UsuarioSupabase>> getPerfilPorAuthId(
+        @Query("auth_user_id") String authIdEq   // "eq.<uuid>"
+    );
+
+    /** Crea el perfil en public.usuarios luego del signUp de Auth. */
+    @POST("usuarios")
+    Call<List<UsuarioSupabase>> crearPerfil(@Body UsuarioSupabase nuevo);
+
+    /** Actualiza el rol elegido en RoleSelection. */
+    @PATCH("usuarios")
+    Call<List<UsuarioSupabase>> actualizarPerfil(
+        @Query("id_usuario") String idEq,        // "eq.7"
+        @Body UsuarioSupabase cambios
+    );
+
+    // ── VINCULACIÓN FAMILIAR ──────────────────────────────────
+    /** Busca un perfil por correo (para vincular por email). */
+    @GET("usuarios")
+    Call<List<UsuarioSupabase>> getPerfilPorCorreo(@Query("correo") String correoEq);
+
+    /** Busca un perfil por su id_usuario. */
+    @GET("usuarios")
+    Call<List<UsuarioSupabase>> getPerfilPorId(@Query("id_usuario") String idEq);
+
+    @GET("vinculacion_familiar")
+    Call<List<Vinculacion>> getVinculosDeAdulto(@Query("id_adulto") String idEq);
+
+    @GET("vinculacion_familiar")
+    Call<List<Vinculacion>> getVinculosDeFamiliar(@Query("id_familiar") String idEq);
+
+    @POST("vinculacion_familiar")
+    Call<List<Vinculacion>> crearVinculo(@Body Vinculacion nuevo);
+
+    @DELETE("vinculacion_familiar")
+    Call<Void> eliminarVinculo(@Query("id_vinculo") String idEq);
+
+    // ── NOTIFICACIONES (historial en la nube) ─────────────────
+    @POST("notificaciones")
+    Call<List<Notificacion>> crearNotificacion(@Body Notificacion n);
+
+    @GET("notificaciones")
+    Call<List<Notificacion>> getNotificaciones(
+        @Query("id_destinatario") String idEq,   // "eq.7"
+        @Query("order")           String order   // "fecha_envio.desc"
+    );
 }
+

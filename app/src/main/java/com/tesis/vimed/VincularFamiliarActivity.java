@@ -16,10 +16,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.tesis.vimed.database.DatabaseHelper;
-import com.tesis.vimed.database.UsuarioDAO;
-import com.tesis.vimed.database.VinculacionDAO;
-import com.tesis.vimed.models.Usuario;
+import com.tesis.vimed.api.VimedRepo;
+import com.tesis.vimed.models.UsuarioSupabase;
+import com.tesis.vimed.models.Vinculacion;
 
 import java.util.List;
 import java.util.Locale;
@@ -39,8 +38,6 @@ public class VincularFamiliarActivity extends AppCompatActivity {
     private View emptyFamily;
 
     private SessionManager sessionManager;
-    private VinculacionDAO vinculacionDAO;
-    private UsuarioDAO usuarioDAO;
     private CountDownTimer countDownTimer;
     private String codigoActual;
 
@@ -50,9 +47,6 @@ public class VincularFamiliarActivity extends AppCompatActivity {
         setContentView(R.layout.activity_vincular_familiar);
 
         sessionManager = new SessionManager(this);
-        DatabaseHelper db = DatabaseHelper.getInstance(this);
-        vinculacionDAO = new VinculacionDAO(db);
-        usuarioDAO = new UsuarioDAO(db);
 
         tvCode = findViewById(R.id.tv_code);
         tvTimer = findViewById(R.id.tv_timer);
@@ -166,97 +160,125 @@ public class VincularFamiliarActivity extends AppCompatActivity {
             return;
         }
 
-        int idAdulto = sessionManager.getIdUsuario();
+        int idAdulto = sessionManager.getSupabaseIdUsuario();
         if (idAdulto == -1) {
             Toast.makeText(this, "Inicie sesión para vincular familiares", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        // Verificar que el correo corresponde a un usuario registrado
-        Usuario familiar = usuarioDAO.buscarPorCorreo(email);
-
-        if (familiar == null) {
-            new AlertDialog.Builder(this)
-                .setTitle("Usuario no encontrado")
-                .setMessage("No hay ninguna cuenta registrada con ese correo.\n\nComparta el código de invitación para que su familiar se registre primero.")
-                .setPositiveButton("Entendido", null)
-                .show();
-            return;
-        }
-
-        if (familiar.getId() == idAdulto) {
+        if (email.equalsIgnoreCase(sessionManager.getCorreo())) {
             tilEmail.setError("No puede vincularse con su propia cuenta");
             return;
         }
 
-        if (vinculacionDAO.existeVinculo(idAdulto, familiar.getId())) {
-            tilEmail.setError("Este familiar ya está vinculado");
-            return;
-        }
+        // El familiar tiene que tener cuenta en Supabase (no en el SQLite de este celular)
+        VimedRepo.buscarPerfilPorCorreo(email, new VimedRepo.Cb<UsuarioSupabase>() {
+            @Override
+            public void onOk(UsuarioSupabase familiar) {
+                if (familiar == null) {
+                    new AlertDialog.Builder(VincularFamiliarActivity.this)
+                        .setTitle("Usuario no encontrado")
+                        .setMessage("No hay ninguna cuenta registrada con ese correo.\n\n"
+                            + "Compartí el código de invitación para que tu familiar se registre primero.")
+                        .setPositiveButton("Entendido", null)
+                        .show();
+                    return;
+                }
 
-        vinculacionDAO.insertar(idAdulto, familiar.getId());
-        etEmail.setText("");
-        cargarFamiliares();
-        Toast.makeText(this,
-            familiar.getNombre() + " vinculado correctamente", Toast.LENGTH_SHORT).show();
+                VimedRepo.crearVinculo(VincularFamiliarActivity.this, familiar.getIdUsuario(),
+                    new VimedRepo.Cb<Void>() {
+                        @Override public void onOk(Void v) {
+                            etEmail.setText("");
+                            cargarFamiliares();
+                            Toast.makeText(VincularFamiliarActivity.this,
+                                familiar.getNombre() + " vinculado correctamente",
+                                Toast.LENGTH_SHORT).show();
+                        }
+                        @Override public void onError(String msg) {
+                            // El UNIQUE (id_adulto, id_familiar) rebota los duplicados
+                            tilEmail.setError(msg.contains("409") || msg.contains("duplicate")
+                                ? "Este familiar ya está vinculado" : msg);
+                        }
+                    });
+            }
+
+            @Override
+            public void onError(String msg) {
+                tilEmail.setError(msg);
+            }
+        });
     }
 
     // ─── Cargar lista de familiares ─────────────────────────────────────────
 
     private void cargarFamiliares() {
-        int idAdulto = sessionManager.getIdUsuario();
         familyContainer.removeAllViews();
 
-        if (idAdulto == -1) {
-            emptyFamily.setVisibility(View.VISIBLE);
-            familyContainer.setVisibility(View.GONE);
-            return;
-        }
+        VimedRepo.listarMisCuidadores(this, new VimedRepo.Cb<List<Vinculacion>>() {
+            @Override
+            public void onOk(List<Vinculacion> vinculos) {
+                if (vinculos.isEmpty()) {
+                    emptyFamily.setVisibility(View.VISIBLE);
+                    familyContainer.setVisibility(View.GONE);
+                    return;
+                }
+                emptyFamily.setVisibility(View.GONE);
+                familyContainer.setVisibility(View.VISIBLE);
 
-        List<int[]> vinculos = vinculacionDAO.listarFamiliares(idAdulto);
-
-        if (vinculos.isEmpty()) {
-            emptyFamily.setVisibility(View.VISIBLE);
-            familyContainer.setVisibility(View.GONE);
-        } else {
-            emptyFamily.setVisibility(View.GONE);
-            familyContainer.setVisibility(View.VISIBLE);
-            LayoutInflater inflater = LayoutInflater.from(this);
-            for (int[] v : vinculos) {
-                int idVinculo = v[0];
-                int idFamiliar = v[1];
-                Usuario user = usuarioDAO.buscarPorId(idFamiliar);
-                if (user == null) continue;
-
-                View item = inflater.inflate(R.layout.item_family_member, familyContainer, false);
-                bindFamilyItem(item, user, idVinculo);
-                familyContainer.addView(item);
+                LayoutInflater inflater = LayoutInflater.from(VincularFamiliarActivity.this);
+                for (Vinculacion v : vinculos) {
+                    View item = inflater.inflate(R.layout.item_family_member,
+                        familyContainer, false);
+                    familyContainer.addView(item);
+                    // El nombre del familiar llega en una segunda consulta
+                    bindFamilyItem(item, v);
+                }
             }
-        }
+
+            @Override
+            public void onError(String msg) {
+                emptyFamily.setVisibility(View.VISIBLE);
+                familyContainer.setVisibility(View.GONE);
+            }
+        });
     }
 
-    private void bindFamilyItem(View item, Usuario user, int idVinculo) {
+    private void bindFamilyItem(View item, Vinculacion vinculo) {
         TextView tvInitial = item.findViewById(R.id.tv_family_initial);
         TextView tvName = item.findViewById(R.id.tv_family_name);
         TextView tvSub = item.findViewById(R.id.tv_family_sub);
 
-        String nombre = user.getNombre() != null ? user.getNombre() : "?";
-        tvInitial.setText(nombre.length() > 0
-            ? String.valueOf(nombre.charAt(0)).toUpperCase(Locale.getDefault()) : "?");
-        tvName.setText(nombre);
-        tvSub.setText(user.getCorreo() != null ? user.getCorreo() : "Familiar vinculado");
+        tvName.setText("Cargando…");
+        tvSub.setText("");
+        tvInitial.setText("?");
 
-        item.setOnLongClickListener(v -> {
-            new AlertDialog.Builder(this)
-                .setTitle("Desvincular")
-                .setMessage("¿Desvincular a " + nombre + "?")
-                .setPositiveButton("Desvincular", (d, w) -> {
-                    vinculacionDAO.eliminar(idVinculo);
-                    cargarFamiliares();
-                })
-                .setNegativeButton("Cancelar", null)
-                .show();
-            return true;
+        VimedRepo.buscarPerfilPorId(vinculo.getIdFamiliar(), new VimedRepo.Cb<UsuarioSupabase>() {
+            @Override
+            public void onOk(UsuarioSupabase user) {
+                String nombre = user != null && user.getNombre() != null
+                    ? user.getNombre() : "Familiar";
+                tvInitial.setText(String.valueOf(nombre.charAt(0)).toUpperCase(Locale.getDefault()));
+                tvName.setText(nombre);
+                tvSub.setText(user != null && user.getCorreo() != null
+                    ? user.getCorreo() : "Familiar vinculado");
+
+                item.setOnLongClickListener(v -> {
+                    new AlertDialog.Builder(VincularFamiliarActivity.this)
+                        .setTitle("Desvincular")
+                        .setMessage("¿Desvincular a " + nombre + "?")
+                        .setPositiveButton("Desvincular", (d, w) ->
+                            VimedRepo.eliminarVinculo(vinculo.getIdVinculo(),
+                                new VimedRepo.Cb<Void>() {
+                                    @Override public void onOk(Void x) { cargarFamiliares(); }
+                                    @Override public void onError(String msg) {
+                                        Toast.makeText(VincularFamiliarActivity.this,
+                                            msg, Toast.LENGTH_LONG).show();
+                                    }
+                                }))
+                        .setNegativeButton("Cancelar", null)
+                        .show();
+                    return true;
+                });
+            }
         });
     }
 }

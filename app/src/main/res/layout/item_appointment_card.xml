@@ -10,50 +10,23 @@
     android:clickable="true"
     android:focusable="true">
 
-    <!-- Badge de fecha: mes + día + hora -->
-    <LinearLayout
-        android:layout_width="62dp"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:background="@drawable/shape_date_badge"
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp"
+    <!-- Ícono de especialidad -->
+    <FrameLayout
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:background="@drawable/shape_brand_icon_container"
         android:layout_marginEnd="14dp">
 
-        <TextView
-            android:id="@+id/tv_appt_month"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="10sp"
-            android:textStyle="bold"
-            android:textColor="@color/brand_700"
-            android:letterSpacing="0.12"
-            android:gravity="center" />
+        <ImageView
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_nav_calendar"
+            android:tint="@color/brand_600"
+            android:contentDescription="Cita" />
+    </FrameLayout>
 
-        <TextView
-            android:id="@+id/tv_appt_day"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="26sp"
-            android:textStyle="bold"
-            android:textColor="@color/brand_700"
-            android:lineSpacingMultiplier="0.9"
-            android:gravity="center" />
-
-        <TextView
-            android:id="@+id/tv_appt_time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:textColor="@color/brand_600"
-            android:layout_marginTop="2dp"
-            android:gravity="center" />
-
-    </LinearLayout>
-
-    <!-- Info de la cita -->
+    <!-- Especialidad · médico · lugar -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -61,20 +34,20 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/tv_appt_doctor"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="17sp"
-            android:textStyle="bold"
-            android:fontFamily="sans-serif"
-            android:textColor="@color/ink" />
-
-        <TextView
             android:id="@+id/tv_appt_especialidad"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="14sp"
-            android:textColor="@color/ink_4"
+            android:textSize="19sp"
+            android:textStyle="bold"
+            android:textColor="@color/ink"
+            android:letterSpacing="-0.01" />
+
+        <TextView
+            android:id="@+id/tv_appt_doctor"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textColor="@color/ink_3"
             android:layout_marginTop="2dp" />
 
         <LinearLayout
@@ -82,11 +55,11 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginTop="4dp">
+            android:layout_marginTop="5dp">
 
             <ImageView
-                android:layout_width="13dp"
-                android:layout_height="13dp"
+                android:layout_width="15dp"
+                android:layout_height="15dp"
                 android:src="@drawable/ic_map_pin"
                 android:tint="@color/ink_4"
                 android:contentDescription="Lugar" />
@@ -95,20 +68,67 @@
                 android:id="@+id/tv_appt_lugar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="13sp"
+                android:textSize="15sp"
                 android:textColor="@color/ink_4"
-                android:layout_marginStart="4dp" />
-
+                android:layout_marginStart="5dp" />
         </LinearLayout>
 
     </LinearLayout>
 
-    <ImageView
-        android:layout_width="18dp"
-        android:layout_height="18dp"
-        android:src="@drawable/ic_chevron_right"
-        android:tint="@color/ink_5"
-        android:contentDescription="Ver detalle"
-        android:layout_marginStart="8dp" />
+    <!-- Hora + estado -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="end"
+        android:layout_marginStart="8dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_nav_calendar"
+                android:tint="@color/brand_600"
+                android:layout_marginEnd="5dp"
+                android:contentDescription="Hora" />
+
+            <TextView
+                android:id="@+id/tv_appt_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:textColor="@color/brand_600" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_appt_estado"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:layout_marginTop="8dp"
+            android:gravity="center" />
+
+        <!-- Fecha corta: solo se usa en la vista Lista -->
+        <TextView
+            android:id="@+id/tv_appt_fecha"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textColor="@color/ink_4"
+            android:layout_marginTop="6dp"
+            android:visibility="gone" />
+
+    </LinearLayout>
 
 </LinearLayout>

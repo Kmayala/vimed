@@ -1,7 +1,12 @@
 package com.tesis.vimed.models;
 
+import com.google.gson.annotations.SerializedName;
+
 public class Horario {
-    private int id;
+    /** PK en Supabase: columna id_horario. Ver nota en Medicamento. */
+    @SerializedName("id_horario")
+    private Integer id;
+
     private int idMedicamento;
     private String horaInicio; // formato HH:mm
     private int intervaloHoras; // 6 | 8 | 12 | 24
@@ -17,7 +22,7 @@ public class Horario {
     }
 
     // Getters y Setters
-    public int getId() { return id; }
+    public int getId() { return id != null ? id : 0; }
     public void setId(int id) { this.id = id; }
     public int getIdMedicamento() { return idMedicamento; }
     public void setIdMedicamento(int idMedicamento) { this.idMedicamento = idMedicamento; }

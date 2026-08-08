@@ -12,17 +12,24 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
-import com.tesis.vimed.database.DatabaseHelper;
-import com.tesis.vimed.database.HorarioDAO;
-import com.tesis.vimed.database.MedicamentoDAO;
+import com.tesis.vimed.api.InteraccionChecker;
+import com.tesis.vimed.api.SupabaseClient;
+import com.tesis.vimed.api.VimedRepo;
+import com.tesis.vimed.models.CatalogoMedicamento;
 import com.tesis.vimed.models.Horario;
 import com.tesis.vimed.models.Medicamento;
 import com.tesis.vimed.utils.NotificationHelper;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
 
 public class AgregarMedicamentoActivity extends AppCompatActivity {
 
@@ -37,11 +44,15 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
     private boolean personalizado = false;
     private int stockActual = 0;
     private int stockMinimo = 5;
-    private String colorIcono = "#2196F3";
+    // Nombre de color (no hex) — así lo interpreta MainActivity.colorForMed()
+    private String colorIcono = "azul";
 
     // ── Pasos y estado ─────────────────────────────────────────
     private View[] pasos;
     private int pasoActual = 0;
+
+    /** Catálogo traído de Supabase — null hasta que responda la red. */
+    private List<CatalogoMedicamento> catalogo;
 
     private TextView tvTituloPaso, tvContadorPaso;
     private ProgressBar progressBar;
@@ -116,28 +127,162 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
         tvContadorPaso.setText((index + 1) + " / " + pasos.length);
         progressBar.setMax(pasos.length);
         progressBar.setProgress(index + 1);
+
+        // Reflejar lo que ya está elegido (puede venir precargado del catálogo)
+        if (index == 2) resaltarSeleccion(pasos[2], PRESENTACIONES, presentacion);
+        if (index == 3) resaltarSeleccion(pasos[3], INSTRUCCIONES_TAGS, instrucciones);
+
+        // El último paso muestra un resumen de todo lo elegido
+        if (index == pasos.length - 1) actualizarResumen();
+    }
+
+    /** Arma el texto del recuadro RESUMEN del último paso. */
+    private void actualizarResumen() {
+        TextView tv = pasos[6].findViewById(R.id.tv_resumen);
+        if (tv == null) return;
+
+        String dosisTxt = dosis > 0
+            ? (dosis == (int) dosis ? String.valueOf((int) dosis) : String.valueOf(dosis)) + " " + unidad
+            : "sin dosis";
+
+        String frecuencia = intervaloHoras >= 24
+            ? "1 vez por día"
+            : "cada " + intervaloHoras + " horas";
+
+        tv.setText(nombre + " · " + dosisTxt + "\n"
+            + presentacion + " · " + instruccionLegible(instrucciones) + "\n"
+            + "Desde las " + horaInicio + " · " + frecuencia);
+    }
+
+    /** Versión legible de los tags de instrucciones. */
+    private String instruccionLegible(String tag) {
+        if (tag == null) return "";
+        switch (tag) {
+            case "despues_comer":   return "Después de comer";
+            case "antes_comer":     return "Antes de comer";
+            case "ayunas":          return "En ayunas";
+            case "con_agua":        return "Con agua";
+            case "con_leche":       return "Con leche";
+            case "antes_dormir":    return "Antes de dormir";
+            case "al_despertar":    return "Al despertar";
+            case "sin_restriccion": return "Sin restricción";
+            default:                return tag;
+        }
     }
 
     // ── Paso 1: Nombre ─────────────────────────────────────────
     private void configurarPaso1() {
         AutoCompleteTextView etNombre = pasos[0].findViewById(R.id.et_nombre);
-        String[] medicamentosComunes = {
-            "Metformina", "Enalapril", "Aspirina", "Warfarina",
+
+        // Lista de respaldo: si no hay red, al menos ofrecemos algo.
+        String[] respaldo = {
+            "Metformina", "Enalapril", "Aspirineta", "Warfarina",
             "Omeprazol", "Losartán", "Atorvastatina", "Glibenclamida",
-            "Furosemida", "Amlodipina", "Lisinopril", "Carvedilol",
-            "Ibuprofeno", "Paracetamol", "Amoxicilina", "Metoprolol",
-            "Espironolactona", "Digoxina", "Prednisona", "Alprazolam"
+            "Furosemida", "Amlodipina", "Paracetamol", "Ibuprofeno",
+            "Levotiroxina", "Carvedilol", "Clopidogrel", "Alprazolam"
         };
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-            android.R.layout.simple_dropdown_item_1line, medicamentosComunes);
-        etNombre.setAdapter(adapter);
-        etNombre.setThreshold(1);
+        setAdaptadorNombres(etNombre, new ArrayList<>(Arrays.asList(respaldo)));
+
+        // La lista se abre al tocar el campo o al recibir foco — sin tener
+        // que escribir nada primero.
+        etNombre.setOnClickListener(v -> etNombre.showDropDown());
+        etNombre.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) etNombre.showDropDown();
+        });
+
+        // Al elegir del catálogo, precargamos dosis / presentación / instrucciones.
+        // En el campo dejamos solo el nombre, sin la dosis: la dosis se guarda
+        // en su propia columna y se elige en el paso 2.
+        etNombre.setOnItemClickListener((parent, view, position, id) -> {
+            String elegido = String.valueOf(parent.getItemAtPosition(position));
+            aplicarDatosDelCatalogo(elegido);
+            String limpio = limpiarNombre(elegido);
+            etNombre.setText(limpio, false);   // false = no volver a filtrar/abrir
+            etNombre.setSelection(limpio.length());
+            etNombre.dismissDropDown();
+        });
 
         pasos[0].findViewById(R.id.btn_siguiente_1).setOnClickListener(v -> {
             nombre = etNombre.getText().toString().trim();
             if (!nombre.isEmpty()) mostrarPaso(1);
             else etNombre.setError(getString(R.string.error_empty_field));
         });
+
+        cargarCatalogo(etNombre);
+    }
+
+    /** Trae el catálogo de Supabase y reemplaza la lista de respaldo. */
+    private void cargarCatalogo(AutoCompleteTextView etNombre) {
+        SupabaseClient.getService()
+            .getCatalogo("eq.true", "nombre_comercial.asc")
+            .enqueue(new retrofit2.Callback<List<CatalogoMedicamento>>() {
+                @Override
+                public void onResponse(retrofit2.Call<List<CatalogoMedicamento>> c,
+                                       retrofit2.Response<List<CatalogoMedicamento>> r) {
+                    if (!r.isSuccessful() || r.body() == null || r.body().isEmpty()) return;
+                    catalogo = r.body();
+                    List<String> nombres = new ArrayList<>();
+                    for (CatalogoMedicamento m : catalogo) {
+                        nombres.add(m.getNombreComercial());
+                    }
+                    setAdaptadorNombres(etNombre, nombres);
+                }
+
+                @Override
+                public void onFailure(retrofit2.Call<List<CatalogoMedicamento>> c, Throwable t) {
+                    // Nos quedamos con la lista de respaldo.
+                }
+            });
+    }
+
+    /**
+     * Quita la dosis del final del nombre comercial.
+     * "Metformina 850" → "Metformina" · "Tamsulosina 0.4" → "Tamsulosina"
+     * Los que no terminan en número quedan igual ("Complejo B", "Insulina NPH").
+     */
+    private String limpiarNombre(String nombreComercial) {
+        if (nombreComercial == null) return "";
+        String limpio = nombreComercial.trim().replaceAll("\\s+\\d+([.,]\\d+)?\\s*$", "");
+        return limpio.isEmpty() ? nombreComercial.trim() : limpio;
+    }
+
+    private void setAdaptadorNombres(AutoCompleteTextView etNombre, List<String> nombres) {
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+            android.R.layout.simple_dropdown_item_1line, nombres);
+        etNombre.setAdapter(adapter);
+        etNombre.setThreshold(1);
+    }
+
+    /**
+     * Cuando la persona elige un medicamento del catálogo, precargamos los
+     * campos que ya conocemos para que no tenga que completarlos a mano.
+     */
+    private void aplicarDatosDelCatalogo(String nombreComercial) {
+        if (catalogo == null) return;
+        CatalogoMedicamento encontrado = null;
+        for (CatalogoMedicamento m : catalogo) {
+            if (nombreComercial.equalsIgnoreCase(m.getNombreComercial())) {
+                encontrado = m;
+                break;
+            }
+        }
+        if (encontrado == null) return;
+
+        if (encontrado.getDosisComun() > 0) dosis = encontrado.getDosisComun();
+        if (encontrado.getUnidad() != null)        unidad = encontrado.getUnidad();
+        if (encontrado.getPresentacion() != null)  presentacion = encontrado.getPresentacion();
+        if (encontrado.getInstrucciones() != null) instrucciones = encontrado.getInstrucciones();
+
+        TextView aviso = pasos[0].findViewById(R.id.tv_precargado);
+        if (aviso != null) {
+            String dosisTxt = dosis == (int) dosis
+                ? String.valueOf((int) dosis) : String.valueOf(dosis);
+            aviso.setText("Precargamos los datos habituales: " + dosisTxt + " " + unidad
+                + ", " + presentacion.toLowerCase(Locale.ROOT)
+                + ", " + instruccionLegible(instrucciones).toLowerCase(Locale.ROOT)
+                + ". Podés cambiarlos en los próximos pasos.");
+            aviso.setVisibility(View.VISIBLE);
+        }
     }
 
     // ── Paso 2: Dosis ──────────────────────────────────────────
@@ -209,16 +354,12 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
             if (circulo != null) {
                 circulo.setOnClickListener(v -> {
                     colorIcono = color;
-                    // Borde visual en el seleccionado
-                    for (int j = 0; j < COLOR_BTN_IDS.length; j++) {
-                        View c = pasos[2].findViewById(COLOR_BTN_IDS[j]);
-                        if (c != null) {
-                            c.setAlpha(COLORES[j].equals(color) ? 1.0f : 0.5f);
-                        }
-                    }
+                    resaltarColor(color);
                 });
             }
         }
+        // Marcar el color por defecto al entrar
+        resaltarColor(colorIcono);
 
         pasos[2].findViewById(R.id.btn_siguiente_3).setOnClickListener(v -> mostrarPaso(3));
     }
@@ -289,30 +430,186 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
                 etStock.setError("Número inválido");
                 return;
             }
-            guardarMedicamento();
+            chequearInteraccionesYGuardar();
         });
     }
 
-    // ── Guardar en BD ──────────────────────────────────────────
-    private void guardarMedicamento() {
-        DatabaseHelper db   = DatabaseHelper.getInstance(this);
-        SessionManager ses  = new SessionManager(this);
-        MedicamentoDAO mDAO = new MedicamentoDAO(db);
-        HorarioDAO     hDAO = new HorarioDAO(db);
+    // ── Chequeo de interacciones antes de guardar ──────────────
+    private void chequearInteraccionesYGuardar() {
+        MaterialButton btnGuardar = pasos[6].findViewById(R.id.btn_guardar);
+        String labelOriginal = btnGuardar.getText().toString();
+        btnGuardar.setEnabled(false);
+        btnGuardar.setText("Chequeando interacciones…");
 
+        // Los medicamentos que ya tiene la persona ahora viven en Supabase
+        VimedRepo.listarMedicamentos(this, new VimedRepo.Cb<List<Medicamento>>() {
+            @Override
+            public void onOk(List<Medicamento> existentes) {
+                List<String> nombres = new ArrayList<>();
+                for (Medicamento m : existentes) {
+                    if (m.getNombre() != null) nombres.add(m.getNombre());
+                }
+                if (nombres.isEmpty()) {
+                    restaurarBotonGuardar(btnGuardar);
+                    guardarMedicamento();
+                    return;
+                }
+                correrChecker(btnGuardar, labelOriginal, nombres);
+            }
+
+            @Override
+            public void onError(String msg) {
+                // Sin red no podemos chequear: no bloqueamos a la persona.
+                restaurarBotonGuardar(btnGuardar);
+                guardarMedicamento();
+            }
+        });
+    }
+
+    private void correrChecker(MaterialButton btnGuardar, String labelOriginal,
+                               List<String> nombresExistentes) {
+        InteraccionChecker.chequear(nombre, nombresExistentes,
+            new InteraccionChecker.Callback0() {
+                @Override
+                public void onResult(List<InteraccionChecker.Hallazgo> hallazgos) {
+                    btnGuardar.setEnabled(true);
+                    btnGuardar.setText(labelOriginal);
+                    if (hallazgos.isEmpty()) {
+                        guardarMedicamento();
+                    } else {
+                        mostrarDialogoInteracciones(hallazgos);
+                    }
+                }
+
+                @Override
+                public void onError(String msg) {
+                    // Si falla el chequeo (offline, error de red), guardamos igual —
+                    // no queremos bloquear a la persona por un problema de conexión.
+                    btnGuardar.setEnabled(true);
+                    btnGuardar.setText(labelOriginal);
+                    guardarMedicamento();
+                }
+            });
+    }
+
+    private void mostrarDialogoInteracciones(List<InteraccionChecker.Hallazgo> hallazgos) {
+        // Ordenamos por severidad: alto arriba
+        int alto = 0, medio = 0, bajo = 0;
+        StringBuilder body = new StringBuilder();
+        for (InteraccionChecker.Hallazgo h : hallazgos) {
+            String icono = h.esAlto() ? "🚨" : h.esMedio() ? "⚠️" : "ℹ️";
+            body.append(icono).append(" ").append(nombre).append(" + ")
+                .append(h.medContraChoca).append("\n");
+            if (h.descripcion != null) body.append(h.descripcion).append("\n");
+            body.append("\n");
+            if (h.esAlto())  alto++;
+            else if (h.esMedio()) medio++;
+            else bajo++;
+        }
+
+        String titulo;
+        if (alto > 0)       titulo = "Interacción de alto riesgo detectada";
+        else if (medio > 0) titulo = "Precaución: posible interacción";
+        else                titulo = "Aviso de interacción";
+
+        // Espejar el aviso en la nube para que el familiar lo vea
+        if (alto > 0 || medio > 0) {
+            com.tesis.vimed.api.NotificacionSync.registrar(this,
+                com.tesis.vimed.models.Notificacion.TIPO_INTERACCION,
+                titulo + " al agregar " + nombre);
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this)
+            .setTitle(titulo)
+            .setMessage(body.toString().trim()
+                + "\n\nConsultá con tu médico antes de continuar.")
+            .setNegativeButton("Cancelar", (d, w) -> {})
+            .setPositiveButton("Guardar igual", (d, w) -> guardarMedicamento());
+
+        // Si hay riesgo alto, hacemos que el usuario tenga que confirmar dos veces
+        if (alto > 0) {
+            builder.setPositiveButton("Guardar igual", (d, w) -> {
+                new AlertDialog.Builder(this)
+                    .setTitle("¿Estás segura?")
+                    .setMessage("Esta combinación puede ser peligrosa. "
+                        + "Confirmá que ya lo hablaste con tu médico.")
+                    .setNegativeButton("Cancelar", null)
+                    .setPositiveButton("Sí, guardar", (d2, w2) -> guardarMedicamento())
+                    .show();
+            });
+        }
+        builder.show();
+    }
+
+    // ── Guardar en Supabase ────────────────────────────────────
+    private void guardarMedicamento() {
+        MaterialButton btnGuardar = pasos[6].findViewById(R.id.btn_guardar);
+        btnGuardar.setEnabled(false);
+        btnGuardar.setText("Guardando…");
+
+        // El id_usuario lo completa el repositorio con el de public.usuarios
         Medicamento med = new Medicamento(
-            ses.getIdUsuario(), nombre, presentacion,
+            0, nombre, presentacion,
             dosis, unidad, instrucciones, colorIcono, stockActual, stockMinimo
         );
-        long idMed = mDAO.insertar(med);
 
-        Horario horario = new Horario((int) idMed, horaInicio, intervaloHoras, personalizado);
-        hDAO.insertar(horario);
+        VimedRepo.crearMedicamento(this, med, new VimedRepo.Cb<Medicamento>() {
+            @Override
+            public void onOk(Medicamento creado) {
+                // Recién ahora conocemos el id que generó Postgres,
+                // así que el horario se crea encadenado.
+                Horario horario = new Horario(
+                    creado.getId(), horaInicio, intervaloHoras, personalizado);
 
-        NotificationHelper.programarAlarmas(this, (int) idMed, horaInicio, intervaloHoras);
+                VimedRepo.crearHorario(horario, new VimedRepo.Cb<Horario>() {
+                    @Override
+                    public void onOk(Horario horCreado) {
+                        NotificationHelper.programarAlarmas(
+                            AgregarMedicamentoActivity.this,
+                            creado.getId(), horCreado.getId(),
+                            horaInicio, intervaloHoras);
 
-        Toast.makeText(this, "Medicamento guardado ✓", Toast.LENGTH_SHORT).show();
-        finish();
+                        Toast.makeText(AgregarMedicamentoActivity.this,
+                            "Medicamento guardado ✓", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+
+                    @Override
+                    public void onError(String msg) {
+                        // El medicamento quedó creado pero sin horario:
+                        // avisamos para que la persona pueda reintentar.
+                        restaurarBotonGuardar(btnGuardar);
+                        Toast.makeText(AgregarMedicamentoActivity.this,
+                            "Se guardó el medicamento pero no el horario: " + msg,
+                            Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String msg) {
+                restaurarBotonGuardar(btnGuardar);
+                Toast.makeText(AgregarMedicamentoActivity.this, msg, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void restaurarBotonGuardar(MaterialButton btn) {
+        btn.setEnabled(true);
+        btn.setText(R.string.btn_guardar_med);
+    }
+
+    /** El círculo elegido queda más grande y opaco; el resto se achica y atenúa. */
+    private void resaltarColor(String colorSeleccionado) {
+        for (int j = 0; j < COLOR_BTN_IDS.length; j++) {
+            View c = pasos[2].findViewById(COLOR_BTN_IDS[j]);
+            if (c == null) continue;
+            boolean elegido = COLORES[j].equals(colorSeleccionado);
+            c.setAlpha(elegido ? 1.0f : 0.35f);
+            c.setScaleX(elegido ? 1.15f : 0.9f);
+            c.setScaleY(elegido ? 1.15f : 0.9f);
+            c.setElevation(elegido ? 8f : 0f);
+        }
     }
 
     // ── Helper: resaltar botón seleccionado dentro de un grupo ─

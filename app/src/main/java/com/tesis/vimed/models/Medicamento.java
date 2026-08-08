@@ -1,7 +1,16 @@
 package com.tesis.vimed.models;
 
+import com.google.gson.annotations.SerializedName;
+
 public class Medicamento {
-    private int id;
+    /**
+     * PK en Supabase: columna id_medicamento.
+     * Integer (no int) para que Gson lo omita al insertar y Postgres
+     * genere el valor con su secuencia.
+     */
+    @SerializedName("id_medicamento")
+    private Integer id;
+
     private int idUsuario;
     private String nombre;
     private String presentacion; // comprimido | capsula | jarabe | inyectable | gotas | parche | inhalador
@@ -33,7 +42,7 @@ public class Medicamento {
     public boolean isStockBajo() { return stockActual <= stockMinimo; }
 
     // Getters y Setters
-    public int getId() { return id; }
+    public int getId() { return id != null ? id : 0; }
     public void setId(int id) { this.id = id; }
     public int getIdUsuario() { return idUsuario; }
     public void setIdUsuario(int idUsuario) { this.idUsuario = idUsuario; }

@@ -4,17 +4,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/paper">
+    android:background="@drawable/bg_welcome_gradient">
 
-    <!-- AppBar -->
+    <!-- ══ HEADER ══════════════════════════════════════════════ -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingLeft="20dp"
-        android:paddingRight="12dp"
-        android:paddingTop="14dp"
+        android:paddingRight="20dp"
+        android:paddingTop="16dp"
         android:paddingBottom="10dp">
 
         <LinearLayout
@@ -27,47 +27,135 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Citas médicas"
-                android:textSize="30sp"
+                android:textSize="32sp"
                 android:fontFamily="serif"
-                android:textStyle="normal"
                 android:textColor="@color/ink"
                 android:letterSpacing="-0.02" />
 
             <TextView
+                android:id="@+id/tv_appt_subtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Próximas citas"
-                android:textSize="14sp"
+                android:textSize="16sp"
                 android:textColor="@color/ink_4"
-                android:layout_marginTop="2dp" />
-
+                android:layout_marginTop="4dp" />
         </LinearLayout>
 
-        <!-- Botón agregar cita -->
-        <FrameLayout
-            android:id="@+id/btn_add_appt"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:background="@drawable/shape_logo_container"
+        <!-- Botón nueva cita + etiqueta -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
+
+            <FrameLayout
+                android:id="@+id/btn_add_appt"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:background="@drawable/shape_logo_container"
+                android:elevation="4dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_nav_add"
+                    android:tint="#FFFFFF"
+                    android:contentDescription="Nueva cita" />
+            </FrameLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nueva cita"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="@color/brand_600"
+                android:layout_marginTop="6dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- ══ TOGGLE Lista / Calendario ═══════════════════════════ -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@drawable/shape_toggle_track"
+        android:padding="4dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="14dp">
+
+        <LinearLayout
+            android:id="@+id/tab_lista"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="center"
             android:clickable="true"
             android:focusable="true">
 
             <ImageView
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:layout_gravity="center"
-                android:src="@drawable/ic_nav_add"
-                android:tint="#FFFFFF"
-                android:contentDescription="Agregar cita" />
-        </FrameLayout>
+                android:id="@+id/ic_tab_lista"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_list"
+                android:tint="@color/ink_3"
+                android:contentDescription="Lista" />
+
+            <TextView
+                android:id="@+id/tv_tab_lista"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Lista"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:textColor="@color/ink_3"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/tab_calendario"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:id="@+id/ic_tab_cal"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_nav_calendar"
+                android:tint="@color/ink_3"
+                android:contentDescription="Calendario" />
+
+            <TextView
+                android:id="@+id/tv_tab_cal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Calendario"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:textColor="@color/ink_3"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
 
     </LinearLayout>
 
-    <!-- Lista de citas -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -75,59 +163,380 @@
             android:orientation="vertical"
             android:paddingLeft="20dp"
             android:paddingRight="20dp"
-            android:paddingTop="4dp"
-            android:paddingBottom="24dp">
+            android:paddingBottom="28dp">
 
-            <!-- Estado vacío — SIBLING de appointments_container -->
+            <!-- ═════════════ VISTA LISTA ═════════════ -->
             <LinearLayout
-                android:id="@+id/empty_appointments"
+                android:id="@+id/view_lista"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:padding="48dp"
-                android:background="@drawable/shape_dose_card"
-                android:layout_marginTop="8dp"
-                android:visibility="gone">
+                android:orientation="vertical">
 
-                <ImageView
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:src="@drawable/ic_nav_calendar"
-                    android:tint="@color/ink_5"
-                    android:contentDescription="Sin citas" />
-
-                <TextView
-                    android:layout_width="wrap_content"
+                <!-- Banner informativo -->
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Sin citas programadas"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/ink_3"
-                    android:layout_marginTop="16dp" />
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="@drawable/shape_info_card"
+                    android:padding="16dp"
+                    android:layout_marginBottom="16dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
+                    <FrameLayout
+                        android:layout_width="46dp"
+                        android:layout_height="46dp"
+                        android:background="@drawable/shape_brand_icon_container"
+                        android:layout_marginEnd="14dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_nav_calendar"
+                            android:tint="@color/brand_600"
+                            android:contentDescription="Citas" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Gestioná tus citas fácilmente"
+                            android:textSize="17sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/ink" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Agregá, reprogramá o cancelá tus citas desde un solo lugar."
+                            android:textSize="15sp"
+                            android:textColor="@color/ink_3"
+                            android:lineSpacingMultiplier="1.3"
+                            android:layout_marginTop="2dp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Tarjetas de citas -->
+                <LinearLayout
+                    android:id="@+id/appointments_container"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Toque el botón + para agregar una cita médica"
-                    android:textSize="15sp"
-                    android:textColor="@color/ink_4"
+                    android:orientation="vertical" />
+
+                <!-- Estado vacío -->
+                <LinearLayout
+                    android:id="@+id/empty_appointments"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
                     android:gravity="center"
-                    android:layout_marginTop="8dp" />
+                    android:background="@drawable/shape_card"
+                    android:paddingTop="36dp"
+                    android:paddingBottom="36dp"
+                    android:paddingLeft="24dp"
+                    android:paddingRight="24dp"
+                    android:visibility="gone">
+
+                    <FrameLayout
+                        android:layout_width="120dp"
+                        android:layout_height="120dp"
+                        android:background="@drawable/shape_day_selected"
+                        android:layout_marginBottom="20dp">
+
+                        <ImageView
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_nav_calendar"
+                            android:tint="@color/brand_500"
+                            android:contentDescription="Sin citas" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="No tenés citas programadas"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/ink"
+                        android:gravity="center" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Agregá tu próxima cita médica para tener todo organizado y recibir recordatorios."
+                        android:textSize="16sp"
+                        android:textColor="@color/ink_3"
+                        android:gravity="center"
+                        android:lineSpacingMultiplier="1.35"
+                        android:layout_marginTop="8dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_add_first_appt"
+                        android:layout_width="match_parent"
+                        android:layout_height="60dp"
+                        android:text="Agregar cita"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textAllCaps="false"
+                        android:textColor="#FFFFFF"
+                        app:icon="@drawable/ic_nav_add"
+                        app:iconTint="#FFFFFF"
+                        app:iconGravity="textStart"
+                        app:backgroundTint="@color/brand_500"
+                        app:cornerRadius="18dp"
+                        android:layout_marginTop="24dp" />
+
+                </LinearLayout>
+
+                <!-- Consejos -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Consejos para vos"
+                    android:textSize="22sp"
+                    android:fontFamily="serif"
+                    android:textColor="@color/ink"
+                    android:letterSpacing="-0.02"
+                    android:layout_marginTop="26dp"
+                    android:layout_marginBottom="12dp" />
+
+                <LinearLayout
+                    android:id="@+id/card_tip_recordatorios"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="@drawable/shape_info_card"
+                    android:padding="16dp"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="46dp"
+                        android:layout_height="46dp"
+                        android:background="@drawable/shape_brand_icon_container"
+                        android:layout_marginEnd="14dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_bell"
+                            android:tint="@color/brand_600"
+                            android:contentDescription="Recordatorios" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Activá los recordatorios"
+                            android:textSize="17sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/ink" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Nunca más olvides una cita médica."
+                            android:textSize="15sp"
+                            android:textColor="@color/ink_3"
+                            android:layout_marginTop="2dp" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_chevron_right"
+                        android:tint="@color/brand_600"
+                        android:contentDescription="Ver" />
+                </LinearLayout>
 
             </LinearLayout>
 
-            <!-- Contenedor de tarjetas de citas -->
+            <!-- ═════════════ VISTA CALENDARIO ═════════════ -->
             <LinearLayout
-                android:id="@+id/appointments_container"
+                android:id="@+id/view_calendario"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical" />
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <!-- Tira semanal -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="@drawable/shape_card"
+                    android:padding="10dp"
+                    android:layout_marginBottom="14dp">
+
+                    <ImageView
+                        android:id="@+id/btn_week_prev"
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:src="@drawable/ic_chevron_right"
+                        android:rotation="180"
+                        android:tint="@color/ink_4"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:contentDescription="Semana anterior" />
+
+                    <LinearLayout
+                        android:id="@+id/week_strip"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="horizontal" />
+
+                    <ImageView
+                        android:id="@+id/btn_week_next"
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:src="@drawable/ic_chevron_right"
+                        android:tint="@color/ink_4"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:contentDescription="Semana siguiente" />
+                </LinearLayout>
+
+                <!-- Calendario mensual -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:background="@drawable/shape_card"
+                    android:padding="16dp"
+                    android:layout_marginBottom="18dp">
+
+                    <!-- Navegación de mes -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="14dp">
+
+                        <ImageView
+                            android:id="@+id/btn_month_prev"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:src="@drawable/ic_chevron_right"
+                            android:rotation="180"
+                            android:tint="@color/ink_3"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:contentDescription="Mes anterior" />
+
+                        <TextView
+                            android:id="@+id/tv_month_label"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:textSize="19sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/ink" />
+
+                        <ImageView
+                            android:id="@+id/btn_month_next"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:src="@drawable/ic_chevron_right"
+                            android:tint="@color/ink_3"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:contentDescription="Mes siguiente" />
+                    </LinearLayout>
+
+                    <!-- Encabezado de días -->
+                    <LinearLayout
+                        android:id="@+id/weekday_header"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="6dp" />
+
+                    <!-- Grilla del mes (se llena desde Java) -->
+                    <LinearLayout
+                        android:id="@+id/month_grid"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical" />
+
+                </LinearLayout>
+
+                <!-- Encabezado del día elegido -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_nav_calendar"
+                        android:tint="@color/brand_600"
+                        android:layout_marginEnd="10dp"
+                        android:contentDescription="Día" />
+
+                    <TextView
+                        android:id="@+id/tv_selected_day"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/ink" />
+
+                    <TextView
+                        android:id="@+id/tv_day_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/brand_600" />
+                </LinearLayout>
+
+                <!-- Citas del día elegido -->
+                <LinearLayout
+                    android:id="@+id/day_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <TextView
+                    android:id="@+id/tv_day_empty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/shape_dose_card"
+                    android:padding="28dp"
+                    android:gravity="center"
+                    android:text="No hay citas este día"
+                    android:textSize="16sp"
+                    android:textColor="@color/ink_4"
+                    android:visibility="gone" />
+
+            </LinearLayout>
 
         </LinearLayout>
     </ScrollView>
 
-    <!-- Barra de navegación inferior -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_nav"
         android:layout_width="match_parent"

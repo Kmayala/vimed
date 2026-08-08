@@ -1,7 +1,12 @@
 package com.tesis.vimed.models;
 
+import com.google.gson.annotations.SerializedName;
+
 public class CitaMedica {
-    private int id;
+    /** PK en Supabase: columna id_cita. Ver nota en Medicamento. */
+    @SerializedName("id_cita")
+    private Integer id;
+
     private int idUsuario;
     private String medico;
     private String especialidad;
@@ -9,6 +14,13 @@ public class CitaMedica {
     private String lugar;
     private String notas;
     private boolean recordatorioEnviado;
+
+    /** pendiente | confirmada | cancelada */
+    private String estado;
+
+    public static final String ESTADO_PENDIENTE  = "pendiente";
+    public static final String ESTADO_CONFIRMADA = "confirmada";
+    public static final String ESTADO_CANCELADA  = "cancelada";
 
     public CitaMedica() {}
 
@@ -24,7 +36,7 @@ public class CitaMedica {
     }
 
     // Getters y Setters
-    public int getId() { return id; }
+    public int getId() { return id != null ? id : 0; }
     public void setId(int id) { this.id = id; }
     public int getIdUsuario() { return idUsuario; }
     public void setIdUsuario(int idUsuario) { this.idUsuario = idUsuario; }
@@ -40,4 +52,19 @@ public class CitaMedica {
     public void setNotas(String notas) { this.notas = notas; }
     public boolean isRecordatorioEnviado() { return recordatorioEnviado; }
     public void setRecordatorioEnviado(boolean r) { this.recordatorioEnviado = r; }
+    public String getEstado() { return estado != null ? estado : ESTADO_PENDIENTE; }
+    public void setEstado(String estado) { this.estado = estado; }
+    public boolean estaConfirmada() { return ESTADO_CONFIRMADA.equals(getEstado()); }
+
+    /** Fecha "yyyy-MM-dd" tolerando ambos formatos (local e ISO de Postgres). */
+    public String fechaYMD() {
+        return fechaHora != null && fechaHora.length() >= 10
+            ? fechaHora.substring(0, 10) : "";
+    }
+
+    /** Hora "HH:mm" tolerando "yyyy-MM-dd HH:mm" e ISO "…THH:mm:ss+00". */
+    public String horaHM() {
+        return fechaHora != null && fechaHora.length() >= 16
+            ? fechaHora.substring(11, 16) : "";
+    }
 }

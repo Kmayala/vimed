@@ -1,14 +1,21 @@
 package com.tesis.vimed.utils;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
+import android.provider.Settings;
 
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 
 import com.tesis.vimed.R;
 
@@ -16,10 +23,26 @@ import java.util.Calendar;
 
 public class NotificationHelper {
 
-    public static final String CHANNEL_ID = "vimed_channel";
+    public static final String CHANNEL_ID   = "vimed_channel";
     public static final String CHANNEL_NAME = "Recordatorios Vimed";
 
-    /** Crear canal de notificaciones (requerido Android 8+). */
+    // Acciones que reconoce AlarmaReceiver
+    public static final String ACTION_FIRE    = "com.tesis.vimed.FIRE";      // dispara la alarma
+    public static final String ACTION_CONFIRM = "com.tesis.vimed.CONFIRM";   // botón "Confirmar toma"
+    public static final String ACTION_SNOOZE  = "com.tesis.vimed.SNOOZE";    // botón "Posponer 15 min"
+
+    // Extras
+    public static final String EXTRA_ID_MED    = "id_medicamento";
+    public static final String EXTRA_ID_HORARIO= "id_horario";
+    public static final String EXTRA_ID_REG    = "id_registro";
+    public static final String EXTRA_HORA      = "hora";           // "HH:mm"
+    public static final String EXTRA_INDICE    = "indice_alarma";  // 0..N
+
+    public static final int SNOOZE_MINUTOS = 15;
+
+    private static final int REQ_POST_NOTIFICATIONS = 4711;
+
+    // ═══ Canal ═════════════════════════════════════════════════
     public static void crearCanal(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
@@ -30,19 +53,59 @@ public class NotificationHelper {
         }
     }
 
+    // ═══ Permisos ══════════════════════════════════════════════
+
+    /** True si tenemos permiso para mostrar notificaciones (Android 13+ lo pide en runtime). */
+    public static boolean tienePermisoNotificaciones(Context ctx) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return true;
+        return ContextCompat.checkSelfPermission(ctx, Manifest.permission.POST_NOTIFICATIONS)
+            == PackageManager.PERMISSION_GRANTED;
+    }
+
+    /** Pide POST_NOTIFICATIONS. Resultado llega a Activity.onRequestPermissionsResult. */
+    public static void pedirPermisoNotificaciones(Activity activity) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && !tienePermisoNotificaciones(activity)) {
+            ActivityCompat.requestPermissions(activity,
+                new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                REQ_POST_NOTIFICATIONS);
+        }
+    }
+
+    /** True si el sistema permite programar alarmas exactas (Android 12+ lo restringe). */
+    public static boolean puedeAlarmasExactas(Context ctx) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return true;
+        AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+        return am != null && am.canScheduleExactAlarms();
+    }
+
+    /** Manda al usuario a la pantalla de Settings para habilitar alarmas exactas. */
+    public static void pedirPermisoAlarmasExactas(Activity activity) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                && !puedeAlarmasExactas(activity)) {
+            Intent i = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                Uri.parse("package:" + activity.getPackageName()));
+            activity.startActivity(i);
+        }
+    }
+
+    // ═══ Agendar alarmas ═══════════════════════════════════════
+
     /**
-     * Programa alarmas repetitivas según hora de inicio e intervalo.
-     * @param idMedicamento ID del medicamento en la BD
-     * @param horaInicio    Hora en formato HH:mm
-     * @param intervaloHoras Cada cuántas horas se repite (6 | 8 | 12 | 24)
+     * Programa las tomas del día para un medicamento.
+     * Usa setExactAndAllowWhileIdle — cada alarma se dispara UNA vez.
+     * El receiver reagenda la misma para 24h después.
      */
     public static void programarAlarmas(Context context, int idMedicamento,
-                                         String horaInicio, int intervaloHoras) {
+                                        int idHorario, String horaInicio,
+                                        int intervaloHoras) {
         String[] partes = horaInicio.split(":");
         int hora = Integer.parseInt(partes[0]);
         int minuto = Integer.parseInt(partes[1]);
-
         int cantidad = (intervaloHoras > 0 && intervaloHoras <= 24) ? 24 / intervaloHoras : 1;
+
+        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        if (am == null) return;
 
         for (int i = 0; i < cantidad; i++) {
             Calendar cal = Calendar.getInstance();
@@ -50,44 +113,127 @@ public class NotificationHelper {
             cal.set(Calendar.MINUTE, minuto);
             cal.set(Calendar.SECOND, 0);
             cal.set(Calendar.MILLISECOND, 0);
-
             if (i > 0) cal.add(Calendar.HOUR_OF_DAY, intervaloHoras * i);
+            if (cal.before(Calendar.getInstance())) cal.add(Calendar.DAY_OF_YEAR, 1);
 
-            // Si la hora ya pasó hoy, programar para mañana
-            if (cal.before(Calendar.getInstance())) {
-                cal.add(Calendar.DAY_OF_YEAR, 1);
-            }
-
-            Intent intent = new Intent(context, AlarmaReceiver.class);
-            intent.putExtra("id_medicamento", idMedicamento);
-            intent.putExtra("numero_alarma", i);
-
-            PendingIntent pi = PendingIntent.getBroadcast(context,
-                idMedicamento * 100 + i, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-
-            AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-            if (alarmManager != null) {
-                alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
-                    cal.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pi);
-            }
+            agendarUna(context, am, idMedicamento, idHorario,
+                horaFormato(cal), i, cal.getTimeInMillis());
         }
     }
 
-    /** Cancela todas las alarmas de un medicamento. */
+    /** Reagenda una alarma específica para X ms desde ahora (usado por SNOOZE). */
+    public static void reagendarEn(Context context, int idMedicamento, int idHorario,
+                                    String horaOriginal, int indice, long triggerAtMillis) {
+        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        if (am == null) return;
+        agendarUna(context, am, idMedicamento, idHorario, horaOriginal, indice, triggerAtMillis);
+    }
+
+    private static void agendarUna(Context context, AlarmManager am,
+                                    int idMedicamento, int idHorario,
+                                    String hora, int indice, long triggerAtMillis) {
+        Intent intent = new Intent(context, com.tesis.vimed.utils.AlarmaReceiver.class);
+        intent.setAction(ACTION_FIRE);
+        intent.putExtra(EXTRA_ID_MED, idMedicamento);
+        intent.putExtra(EXTRA_ID_HORARIO, idHorario);
+        intent.putExtra(EXTRA_HORA, hora);
+        intent.putExtra(EXTRA_INDICE, indice);
+
+        PendingIntent pi = PendingIntent.getBroadcast(context,
+            requestCodeFor(idMedicamento, indice), intent,
+            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        // Si tenemos permiso de exactas, la usamos. Si no, fallback inexacto
+        // (mejor tarde que nunca).
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !am.canScheduleExactAlarms()) {
+                am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pi);
+            } else {
+                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pi);
+            }
+        } catch (SecurityException e) {
+            am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pi);
+        }
+    }
+
+    // ═══ Cancelar alarmas ══════════════════════════════════════
+
     public static void cancelarAlarmas(Context context, int idMedicamento, int intervaloHoras) {
         int cantidad = (intervaloHoras > 0 && intervaloHoras <= 24) ? 24 / intervaloHoras : 1;
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        if (am == null) return;
         for (int i = 0; i < cantidad; i++) {
-            Intent intent = new Intent(context, AlarmaReceiver.class);
+            Intent intent = new Intent(context, com.tesis.vimed.utils.AlarmaReceiver.class);
+            intent.setAction(ACTION_FIRE);
             PendingIntent pi = PendingIntent.getBroadcast(context,
-                idMedicamento * 100 + i, intent,
+                requestCodeFor(idMedicamento, i), intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-            if (alarmManager != null) alarmManager.cancel(pi);
+            am.cancel(pi);
         }
     }
 
-    /** Muestra una notificación push. */
+    // ═══ Notificación con acciones ═════════════════════════════
+
+    /**
+     * Muestra la notificación de "hora de tu medicamento" con los dos botones.
+     * @param idRegistro id de la fila que se acaba de insertar en registro_tomas.
+     *                   Se usa para saber cuál actualizar cuando la persona toca
+     *                   "Confirmar" o "Posponer".
+     */
+    public static void mostrarRecordatorioToma(Context ctx, int idMedicamento,
+                                                int idHorario, int idRegistro,
+                                                String hora, int indice,
+                                                String titulo, String mensaje) {
+        // Intent del botón "Confirmar toma"
+        Intent confirmIntent = new Intent(ctx, com.tesis.vimed.utils.AlarmaReceiver.class);
+        confirmIntent.setAction(ACTION_CONFIRM);
+        confirmIntent.putExtra(EXTRA_ID_MED, idMedicamento);
+        confirmIntent.putExtra(EXTRA_ID_HORARIO, idHorario);
+        confirmIntent.putExtra(EXTRA_ID_REG, idRegistro);
+        confirmIntent.putExtra(EXTRA_HORA, hora);
+        confirmIntent.putExtra(EXTRA_INDICE, indice);
+        PendingIntent piConfirm = PendingIntent.getBroadcast(ctx,
+            requestCodeFor(idMedicamento, indice) + 1_000_000, confirmIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        // Intent del botón "Posponer"
+        Intent snoozeIntent = new Intent(ctx, com.tesis.vimed.utils.AlarmaReceiver.class);
+        snoozeIntent.setAction(ACTION_SNOOZE);
+        snoozeIntent.putExtra(EXTRA_ID_MED, idMedicamento);
+        snoozeIntent.putExtra(EXTRA_ID_HORARIO, idHorario);
+        snoozeIntent.putExtra(EXTRA_ID_REG, idRegistro);
+        snoozeIntent.putExtra(EXTRA_HORA, hora);
+        snoozeIntent.putExtra(EXTRA_INDICE, indice);
+        PendingIntent piSnooze = PendingIntent.getBroadcast(ctx,
+            requestCodeFor(idMedicamento, indice) + 2_000_000, snoozeIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        // Tocar el cuerpo de la notificación abre la app en el dashboard,
+        // donde la persona también puede confirmar la toma.
+        Intent abrirApp = new Intent(ctx, com.tesis.vimed.MainActivity.class);
+        abrirApp.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent piAbrir = PendingIntent.getActivity(ctx,
+            requestCodeFor(idMedicamento, indice) + 3_000_000, abrirApp,
+            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        NotificationCompat.Builder b = new NotificationCompat.Builder(ctx, CHANNEL_ID)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentTitle(titulo)
+            .setContentText(mensaje)
+            .setStyle(new NotificationCompat.BigTextStyle().bigText(mensaje))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .setAutoCancel(true)
+            .setContentIntent(piAbrir)
+            .addAction(android.R.drawable.checkbox_on_background, "Confirmar toma", piConfirm)
+            .addAction(android.R.drawable.ic_menu_recent_history,
+                "Posponer " + SNOOZE_MINUTOS + " min", piSnooze);
+
+        NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (nm != null) nm.notify(idNotifPara(idMedicamento, indice), b.build());
+    }
+
+    /** Notificación simple sin acciones (para stock bajo, avisos generales). */
     public static void mostrarNotificacion(Context context, String titulo, String mensaje, int id) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
@@ -100,5 +246,26 @@ public class NotificationHelper {
         NotificationManager manager =
             (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (manager != null) manager.notify(id, builder.build());
+    }
+
+    /** Cancela una notificación específica. Se usa cuando la persona confirma la toma. */
+    public static void cancelarNotificacion(Context ctx, int idMedicamento, int indice) {
+        NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (nm != null) nm.cancel(idNotifPara(idMedicamento, indice));
+    }
+
+    // ═══ Helpers ═══════════════════════════════════════════════
+
+    private static int requestCodeFor(int idMedicamento, int indice) {
+        return idMedicamento * 100 + indice;
+    }
+
+    private static int idNotifPara(int idMedicamento, int indice) {
+        return 500_000 + idMedicamento * 100 + indice;
+    }
+
+    private static String horaFormato(Calendar cal) {
+        return String.format(java.util.Locale.getDefault(),
+            "%02d:%02d", cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE));
     }
 }

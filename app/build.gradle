@@ -2,14 +2,22 @@ plugins {
     alias(libs.plugins.android.application)
 }
 
-// Leer claves de Supabase desde local.properties (NO se commitea)
+// Claves de Supabase: local.properties en tu máquina (NO se commitea),
+// variables de entorno en CI (GitHub Actions las inyecta desde Secrets).
 def localProps = new Properties()
 def localPropsFile = rootProject.file('local.properties')
 if (localPropsFile.exists()) {
     localPropsFile.withInputStream { localProps.load(it) }
 }
-def supabaseUrl     = localProps.getProperty('SUPABASE_URL',      '')
-def supabaseAnonKey = localProps.getProperty('SUPABASE_ANON_KEY', '')
+def supabaseUrl = localProps.getProperty('SUPABASE_URL')
+    ?: System.getenv('SUPABASE_URL') ?: ''
+def supabaseAnonKey = localProps.getProperty('SUPABASE_ANON_KEY')
+    ?: System.getenv('SUPABASE_ANON_KEY') ?: ''
+
+if (supabaseUrl.isEmpty() || supabaseAnonKey.isEmpty()) {
+    logger.warn('⚠ SUPABASE_URL / SUPABASE_ANON_KEY vacías: ' +
+        'la app compilará pero no va a poder conectarse.')
+}
 
 android {
     namespace 'com.tesis.vimed'

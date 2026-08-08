@@ -12,6 +12,14 @@ public class SessionManager {
     private static final String KEY_ROL = "rol";
     private static final String KEY_LOGGED = "is_logged_in";
 
+    // Supabase Auth
+    private static final String KEY_AUTH_USER_ID    = "auth_user_id";   // UUID
+    private static final String KEY_ACCESS_TOKEN    = "access_token";   // JWT
+    private static final String KEY_REFRESH_TOKEN   = "refresh_token";
+    private static final String KEY_TOKEN_EXPIRES   = "token_expires_at"; // epoch seconds
+    /** id_usuario de public.usuarios en Supabase — NO es el mismo que KEY_ID (SQLite local). */
+    private static final String KEY_SUPABASE_ID     = "supabase_id_usuario";
+
     private final SharedPreferences prefs;
     private final SharedPreferences.Editor editor;
 
@@ -27,6 +35,22 @@ public class SessionManager {
         editor.putString(KEY_CORREO, correo);
         editor.putString(KEY_ROL, rol);
         editor.putBoolean(KEY_LOGGED, true);
+        editor.apply();
+    }
+
+    /** Guarda los tokens devueltos por Supabase Auth. */
+    public void saveAuthTokens(String authUserId, String accessToken,
+                               String refreshToken, long expiresAtEpochSec) {
+        editor.putString(KEY_AUTH_USER_ID,  authUserId);
+        editor.putString(KEY_ACCESS_TOKEN,  accessToken);
+        editor.putString(KEY_REFRESH_TOKEN, refreshToken);
+        editor.putLong  (KEY_TOKEN_EXPIRES, expiresAtEpochSec);
+        editor.apply();
+    }
+
+    /** Guarda el id_usuario de public.usuarios (Supabase). */
+    public void saveSupabaseIdUsuario(int id) {
+        editor.putInt(KEY_SUPABASE_ID, id);
         editor.apply();
     }
 
@@ -47,10 +71,22 @@ public class SessionManager {
     public boolean isLoggedIn() { return prefs.getBoolean(KEY_LOGGED, false); }
     public boolean hasRole() { return !getRol().isEmpty(); }
 
-    public int getIdUsuario() { return prefs.getInt(KEY_ID, -1); }
-    public String getNombre() { return prefs.getString(KEY_NOMBRE, ""); }
-    public String getCorreo() { return prefs.getString(KEY_CORREO, ""); }
-    public String getRol() { return prefs.getString(KEY_ROL, ""); }
+    public int    getIdUsuario()    { return prefs.getInt(KEY_ID, -1); }
+    /** id_usuario en public.usuarios de Supabase (-1 si aún no se sincronizó). */
+    public int    getSupabaseIdUsuario() { return prefs.getInt(KEY_SUPABASE_ID, -1); }
+    public String getNombre()       { return prefs.getString(KEY_NOMBRE, ""); }
+    public String getCorreo()       { return prefs.getString(KEY_CORREO, ""); }
+    public String getRol()          { return prefs.getString(KEY_ROL, ""); }
+    public String getAuthUserId()   { return prefs.getString(KEY_AUTH_USER_ID, null); }
+    public String getAccessToken()  { return prefs.getString(KEY_ACCESS_TOKEN, null); }
+    public String getRefreshToken() { return prefs.getString(KEY_REFRESH_TOKEN, null); }
+    public long   getTokenExpiresAt() { return prefs.getLong(KEY_TOKEN_EXPIRES, 0); }
+
+    /** True si tenemos un access token que aún no vence (margen de 30s). */
+    public boolean hasValidAccessToken() {
+        String t = getAccessToken();
+        return t != null && getTokenExpiresAt() > (System.currentTimeMillis() / 1000) + 30;
+    }
 
     public boolean esAdultoMayor() { return "adulto_mayor".equals(getRol()); }
 

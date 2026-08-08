@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/paper">
+    android:background="@drawable/bg_welcome_gradient">
 
     <!-- AppBar -->
     <LinearLayout
@@ -13,9 +13,9 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingLeft="20dp"
-        android:paddingRight="12dp"
-        android:paddingTop="14dp"
-        android:paddingBottom="10dp">
+        android:paddingRight="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="12dp">
 
         <LinearLayout
             android:layout_width="0dp"
@@ -27,7 +27,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Medicamentos"
-                android:textSize="30sp"
+                android:textSize="32sp"
                 android:fontFamily="serif"
                 android:textStyle="normal"
                 android:textColor="@color/ink"
@@ -37,9 +37,9 @@
                 android:id="@+id/tv_meds_subtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="14sp"
+                android:textSize="16sp"
                 android:textColor="@color/ink_4"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="4dp"
                 android:text="Activos" />
 
         </LinearLayout>
@@ -47,15 +47,16 @@
         <!-- Botón agregar -->
         <FrameLayout
             android:id="@+id/btn_add_med"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
             android:background="@drawable/shape_logo_container"
+            android:elevation="4dp"
             android:clickable="true"
             android:focusable="true">
 
             <ImageView
-                android:layout_width="22dp"
-                android:layout_height="22dp"
+                android:layout_width="26dp"
+                android:layout_height="26dp"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_nav_add"
                 android:tint="#FFFFFF"
@@ -68,7 +69,8 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -77,7 +79,7 @@
             android:paddingLeft="20dp"
             android:paddingRight="20dp"
             android:paddingTop="4dp"
-            android:paddingBottom="24dp">
+            android:paddingBottom="28dp">
 
             <!-- Estado vacío — FUERA del meds_container para que no sea eliminado -->
             <LinearLayout
@@ -86,13 +88,17 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:padding="48dp"
+                android:paddingTop="44dp"
+                android:paddingBottom="44dp"
+                android:paddingLeft="24dp"
+                android:paddingRight="24dp"
                 android:background="@drawable/shape_dose_card"
+                android:layout_marginTop="12dp"
                 android:visibility="gone">
 
                 <ImageView
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
+                    android:layout_width="72dp"
+                    android:layout_height="72dp"
                     android:src="@drawable/ic_nav_meds"
                     android:tint="@color/ink_5"
                     android:contentDescription="Sin medicamentos" />
@@ -100,20 +106,36 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Aún no tiene medicamentos"
-                    android:textSize="18sp"
+                    android:text="Aún no tenés medicamentos"
+                    android:textSize="20sp"
                     android:textStyle="bold"
-                    android:textColor="@color/ink_3"
-                    android:layout_marginTop="16dp" />
+                    android:textColor="@color/ink_2"
+                    android:layout_marginTop="18dp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Toque el botón + para agregar su primer medicamento"
-                    android:textSize="15sp"
+                    android:text="Agregá el primero y te vamos a recordar cada toma a su hora."
+                    android:textSize="16sp"
                     android:textColor="@color/ink_4"
                     android:gravity="center"
+                    android:lineSpacingMultiplier="1.35"
                     android:layout_marginTop="8dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_add_first"
+                    android:layout_width="wrap_content"
+                    android:layout_height="56dp"
+                    android:text="Agregar medicamento"
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:paddingLeft="24dp"
+                    android:paddingRight="24dp"
+                    app:backgroundTint="@color/brand_500"
+                    app:cornerRadius="18dp"
+                    android:layout_marginTop="22dp" />
 
             </LinearLayout>
 

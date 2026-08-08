@@ -12,6 +12,7 @@
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
 
     <application
+        android:name=".VimedApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -34,8 +35,26 @@
 
         <activity android:name=".LoginActivity" android:exported="false" />
         <activity android:name=".RegisterActivity" android:exported="false" />
+        <activity android:name=".ForgotPasswordActivity" android:exported="false" />
+
+        <!-- Deep link del correo de recuperación de contraseña.
+             Se ABRE con vimed://reset-password#access_token=...&type=recovery -->
+        <activity
+            android:name=".ResetPasswordActivity"
+            android:exported="true"
+            android:launchMode="singleTask">
+            <intent-filter android:autoVerify="false">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="vimed" android:host="reset-password" />
+            </intent-filter>
+        </activity>
         <activity android:name=".RoleSelectionActivity" android:exported="false" />
         <activity android:name=".MainActivity" android:exported="false" />
+
+        <!-- Home del rol familiar/cuidador -->
+        <activity android:name=".CuidadorActivity" android:exported="false" />
 
         <activity
             android:name=".AgregarMedicamentoActivity"
@@ -54,9 +73,14 @@
         <!-- Receptor de alarmas para recordatorios de medicación -->
         <receiver
             android:name=".utils.AlarmaReceiver"
-            android:exported="true">
+            android:exported="true"
+            android:directBootAware="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+                <action android:name="com.tesis.vimed.FIRE" />
+                <action android:name="com.tesis.vimed.CONFIRM" />
+                <action android:name="com.tesis.vimed.SNOOZE" />
             </intent-filter>
         </receiver>
 

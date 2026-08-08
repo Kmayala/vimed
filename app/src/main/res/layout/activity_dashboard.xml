@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/paper">
+    android:background="@drawable/bg_welcome_gradient">
 
     <!-- AppBar -->
     <LinearLayout
@@ -13,9 +13,9 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingLeft="20dp"
-        android:paddingRight="12dp"
-        android:paddingTop="14dp"
-        android:paddingBottom="10dp">
+        android:paddingRight="20dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="12dp">
 
         <LinearLayout
             android:layout_width="0dp"
@@ -27,7 +27,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Progreso"
-                android:textSize="30sp"
+                android:textSize="32sp"
                 android:fontFamily="serif"
                 android:textStyle="normal"
                 android:textColor="@color/ink"
@@ -37,9 +37,9 @@
                 android:id="@+id/tv_month"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="14sp"
+                android:textSize="16sp"
                 android:textColor="@color/ink_4"
-                android:layout_marginTop="2dp" />
+                android:layout_marginTop="4dp" />
 
         </LinearLayout>
 
@@ -48,7 +48,8 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -56,100 +57,201 @@
             android:orientation="vertical"
             android:paddingLeft="20dp"
             android:paddingRight="20dp"
-            android:paddingBottom="24dp">
+            android:paddingBottom="28dp">
 
-            <!-- KPI Card: Adherencia mensual -->
+            <!-- ─── Tu progreso: objetivo semanal ─── -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
+                android:background="@drawable/shape_card"
                 android:padding="22dp"
-                android:background="@drawable/shape_brand_gradient"
-                android:layout_marginBottom="20dp">
+                android:layout_marginTop="6dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="ADHERENCIA MENSUAL"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:textColor="#CCFFFFFF"
-                    android:letterSpacing="0.1" />
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="18dp">
 
-                <TextView
-                    android:id="@+id/tv_adherence_pct"
-                    android:layout_width="wrap_content"
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Tu progreso"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/ink" />
+
+                    <TextView
+                        android:id="@+id/tv_semana_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Esta semana"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/brand_600" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="–%"
-                    android:textSize="64sp"
-                    android:fontFamily="serif"
-                    android:textStyle="normal"
-                    android:textColor="#FFFFFF"
-                    android:letterSpacing="-0.03"
-                    android:layout_marginTop="4dp" />
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Agregue medicamentos para ver su progreso"
-                    android:textSize="14sp"
-                    android:textColor="#E0FFFFFF"
-                    android:layout_marginTop="-4dp" />
+                    <!-- Anillo -->
+                    <FrameLayout
+                        android:layout_width="132dp"
+                        android:layout_height="132dp"
+                        android:layout_marginEnd="20dp">
 
+                        <com.google.android.material.progressindicator.CircularProgressIndicator
+                            android:id="@+id/progress_semana"
+                            android:layout_width="132dp"
+                            android:layout_height="132dp"
+                            android:layout_gravity="center"
+                            app:indicatorColor="@color/brand_500"
+                            app:trackColor="@color/brand_50"
+                            app:trackThickness="13dp"
+                            app:indicatorSize="118dp"
+                            app:trackCornerRadius="8dp"
+                            android:progress="0"
+                            android:max="100" />
+
+                        <TextView
+                            android:id="@+id/tv_adherence_pct"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:textSize="30sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/ink"
+                            android:letterSpacing="-0.02"
+                            android:text="0%" />
+                    </FrameLayout>
+
+                    <!-- Texto -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Objetivo semanal"
+                            android:textSize="19sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/ink" />
+
+                        <TextView
+                            android:id="@+id/tv_animo"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="16sp"
+                            android:textColor="@color/ink_3"
+                            android:layout_marginTop="3dp" />
+
+                        <TextView
+                            android:id="@+id/tv_resumen_semana"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textSize="16sp"
+                            android:textColor="@color/ink_3"
+                            android:lineSpacingMultiplier="1.35"
+                            android:layout_marginTop="8dp" />
+
+                        <!-- 7 dots, uno por día -->
+                        <LinearLayout
+                            android:id="@+id/dots_dias"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginTop="14dp" />
+
+                    </LinearLayout>
+                </LinearLayout>
             </LinearLayout>
 
-            <!-- Información: por medicamento -->
+            <!-- ─── Estadísticas del mes ─── -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Por medicamento"
-                android:textSize="20sp"
-                android:textStyle="bold"
+                android:text="Este mes"
+                android:textSize="26sp"
+                android:fontFamily="serif"
                 android:textColor="@color/ink"
-                android:letterSpacing="-0.015"
+                android:letterSpacing="-0.02"
+                android:layout_marginTop="26dp"
                 android:layout_marginBottom="12dp" />
 
             <LinearLayout
-                android:id="@+id/meds_progress_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="horizontal">
 
-                <!-- Estado vacío -->
+                <!-- Confirmadas -->
                 <LinearLayout
-                    android:id="@+id/empty_progress"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="32dp"
-                    android:background="@drawable/shape_dose_card">
+                    android:background="@drawable/shape_card"
+                    android:padding="18dp"
+                    android:layout_marginEnd="7dp">
+
+                    <TextView
+                        android:id="@+id/tv_stat_confirmadas"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="30sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/success"
+                        android:text="0" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Sin datos disponibles"
-                        android:textSize="16sp"
-                        android:textColor="@color/ink_4"
-                        android:gravity="center" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Los datos de adherencia aparecerán aquí cuando confirme tomas"
-                        android:textSize="14sp"
-                        android:textColor="@color/ink_5"
-                        android:gravity="center"
-                        android:layout_marginTop="6dp" />
-
+                        android:text="Tomas confirmadas"
+                        android:textSize="15sp"
+                        android:textColor="@color/ink_3"
+                        android:layout_marginTop="4dp" />
                 </LinearLayout>
 
+                <!-- Omitidas -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:background="@drawable/shape_card"
+                    android:padding="18dp"
+                    android:layout_marginStart="7dp">
+
+                    <TextView
+                        android:id="@+id/tv_stat_omitidas"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="30sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/warn"
+                        android:text="0" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Tomas omitidas"
+                        android:textSize="15sp"
+                        android:textColor="@color/ink_3"
+                        android:layout_marginTop="4dp" />
+                </LinearLayout>
             </LinearLayout>
 
         </LinearLayout>
     </ScrollView>
 
-    <!-- Barra de navegación inferior -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_nav"
         android:layout_width="match_parent"

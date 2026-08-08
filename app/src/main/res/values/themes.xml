@@ -1,5 +1,9 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Base.Theme.Vimed" parent="Theme.Material3.DayNight.NoActionBar">
+    <!-- Light fijo (no DayNight): toda la paleta de Vimed (paper, ink…)
+         está definida solo en tono claro. Con DayNight, un celular en
+         modo oscuro renderiza diálogos y campos oscuros sobre nuestros
+         fondos claros y queda ilegible. -->
+    <style name="Base.Theme.Vimed" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">@color/brand_500</item>
         <item name="colorOnPrimary">@color/white</item>
         <item name="colorPrimaryContainer">@color/brand_100</item>
@@ -13,6 +17,18 @@
         <item name="colorOnSurfaceVariant">@color/ink_3</item>
         <item name="colorOutline">@color/ink_6</item>
         <item name="colorError">@color/danger</item>
+
+        <!-- ── Barras del sistema ──────────────────────────────
+             Desde Android 15 (targetSdk 35+) el sistema fuerza
+             edge-to-edge: la app dibuja debajo de la barra de
+             estado. fitsSystemWindows agrega el padding necesario
+             para que el contenido no quede tapado.              -->
+        <item name="android:fitsSystemWindows">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <!-- Fondos claros → íconos de la barra en oscuro -->
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
     </style>
 
     <style name="Theme.Vimed" parent="Base.Theme.Vimed" />

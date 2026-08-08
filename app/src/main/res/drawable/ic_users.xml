@@ -8,7 +8,7 @@
     <!-- Usuario principal — cabeza (9, 7) r=4 -->
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#4b5551"
+        android:strokeColor="#55565f"
         android:strokeWidth="2"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"
@@ -17,7 +17,7 @@
     <!-- Usuario principal — cuerpo -->
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#4b5551"
+        android:strokeColor="#55565f"
         android:strokeWidth="2"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"
@@ -26,7 +26,7 @@
     <!-- Segundo usuario — arco de cabeza visible detrás -->
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#4b5551"
+        android:strokeColor="#55565f"
         android:strokeWidth="2"
         android:strokeLineCap="round"
         android:pathData="M16,3.13 C17.83,3.57 19,5.18 19,7 C19,8.82 17.83,10.43 16,10.87" />
@@ -34,7 +34,7 @@
     <!-- Segundo usuario — cuerpo parcial -->
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#4b5551"
+        android:strokeColor="#55565f"
         android:strokeWidth="2"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"

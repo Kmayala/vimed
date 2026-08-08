@@ -7,59 +7,59 @@
 
     <!-- Shelf line -->
     <path
-        android:fillColor="#c6cdc9"
+        android:fillColor="#c4c5ce"
         android:pathData="M20,120 L260,120 L260,122 L20,122 Z" />
 
     <!-- Box pill: rect x=44 y=62 w=60 h=60 rx=12 (brand-50 fill, brand-500 stroke) -->
     <path
-        android:fillColor="#e8f7f5"
-        android:strokeColor="#0d8b7d"
+        android:fillColor="#f3f1fd"
+        android:strokeColor="#958ce8"
         android:strokeWidth="2.5"
         android:pathData="M56,62 L92,62 Q104,62 104,74 L104,110 Q104,122 92,122 L56,122 Q44,122 44,110 L44,74 Q44,62 56,62 Z" />
     <!-- horizontal divider line -->
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#0d8b7d"
+        android:strokeColor="#958ce8"
         android:strokeWidth="2.5"
         android:pathData="M44,92 L104,92" />
 
     <!-- Tall bottle: rect x=116 y=40 w=52 h=82 rx=10 (white fill, brand-600 stroke) -->
     <path
         android:fillColor="#ffffff"
-        android:strokeColor="#0a6f65"
+        android:strokeColor="#7668dc"
         android:strokeWidth="2.5"
         android:pathData="M126,40 L158,40 Q168,40 168,50 L168,112 Q168,122 158,122 L126,122 Q116,122 116,112 L116,50 Q116,40 126,40 Z" />
     <!-- horizontal divider -->
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#0a6f65"
+        android:strokeColor="#7668dc"
         android:strokeWidth="2.5"
         android:pathData="M116,70 L168,70" />
     <!-- cross on cap (vertical) -->
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#0a6f65"
+        android:strokeColor="#7668dc"
         android:strokeWidth="2.5"
         android:strokeLineCap="round"
         android:pathData="M142,48 L142,62" />
     <!-- cross on cap (horizontal) -->
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#0a6f65"
+        android:strokeColor="#7668dc"
         android:strokeWidth="2.5"
         android:strokeLineCap="round"
         android:pathData="M136,55 L148,55" />
 
     <!-- Oval capsule: rect x=182 y=74 w=58 h=48 rx=24 (brand-100 fill, brand-500 stroke) -->
     <path
-        android:fillColor="#c6ebe5"
-        android:strokeColor="#0d8b7d"
+        android:fillColor="#e6e3fa"
+        android:strokeColor="#958ce8"
         android:strokeWidth="2.5"
         android:pathData="M206,74 Q240,74 240,98 Q240,122 206,122 L216,122 Q182,122 182,98 Q182,74 216,74 Z" />
     <!-- vertical divider line through center -->
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#0d8b7d"
+        android:strokeColor="#958ce8"
         android:strokeWidth="2.5"
         android:pathData="M211,74 L211,122" />
 

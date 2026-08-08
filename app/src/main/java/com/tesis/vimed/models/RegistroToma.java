@@ -1,7 +1,12 @@
 package com.tesis.vimed.models;
 
+import com.google.gson.annotations.SerializedName;
+
 public class RegistroToma {
-    private int id;
+    /** PK en Supabase: columna id_registro. Ver nota en Medicamento. */
+    @SerializedName("id_registro")
+    private Integer id;
+
     private int idHorario;
     private int idUsuario;
     private String fechaHoraProgramada;
@@ -18,7 +23,7 @@ public class RegistroToma {
     }
 
     // Getters y Setters
-    public int getId() { return id; }
+    public int getId() { return id != null ? id : 0; }
     public void setId(int id) { this.id = id; }
     public int getIdHorario() { return idHorario; }
     public void setIdHorario(int idHorario) { this.idHorario = idHorario; }

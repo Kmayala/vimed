@@ -9,18 +9,20 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
-import com.tesis.vimed.database.DatabaseHelper;
-import com.tesis.vimed.database.HorarioDAO;
-import com.tesis.vimed.database.MedicamentoDAO;
+import com.tesis.vimed.api.VimedRepo;
+import com.tesis.vimed.models.CitaMedica;
 import com.tesis.vimed.models.Horario;
 import com.tesis.vimed.models.Medicamento;
+import com.tesis.vimed.models.RegistroToma;
 import com.tesis.vimed.utils.NotificationHelper;
+import com.tesis.vimed.utils.TomaManager;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -44,21 +46,52 @@ public class MainActivity extends AppCompatActivity {
         NotificationHelper.crearCanal(this);
         sessionManager = new SessionManager(this);
 
+        pedirPermisosNotificacion();
+
         setupGreeting();
         setupBottomNav();
 
         dosesContainer = findViewById(R.id.doses_container);
         emptyDoses = findViewById(R.id.empty_doses);
 
-        loadTodayDoses();
-        setupAppointmentPlaceholder();
+        View btnAddFirst = findViewById(R.id.btn_add_first_med);
+        if (btnAddFirst != null) {
+            btnAddFirst.setOnClickListener(v ->
+                startActivity(new Intent(this, AgregarMedicamentoActivity.class)));
+        }
+
+        // Accesos rápidos
+        findViewById(R.id.quick_meds).setOnClickListener(v ->
+            startActivity(new Intent(this, MedsListActivity.class)));
+        findViewById(R.id.quick_reminders).setOnClickListener(v ->
+            startActivity(new Intent(this, MedsListActivity.class)));
+
+        // La carga la dispara onResume (que corre siempre después de onCreate),
+        // así evitamos pedir los mismos datos dos veces al abrir la pantalla.
+    }
+
+    private void pedirPermisosNotificacion() {
+        // Android 13+ requiere POST_NOTIFICATIONS explícito
+        if (!NotificationHelper.tienePermisoNotificaciones(this)) {
+            NotificationHelper.pedirPermisoNotificaciones(this);
+        }
+        // Android 12+ requiere ir a Settings para alarmas exactas
+        if (!NotificationHelper.puedeAlarmasExactas(this)) {
+            new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Recordatorios exactos")
+                .setMessage("Para que los recordatorios de medicación te suenen a la hora "
+                    + "exacta necesitamos que actives \"Alarmas y recordatorios\" en los ajustes.")
+                .setNegativeButton("Ahora no", null)
+                .setPositiveButton("Ir a ajustes", (d, w) ->
+                    NotificationHelper.pedirPermisoAlarmasExactas(this))
+                .show();
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        dosesContainer.removeAllViews();
-        loadTodayDoses();
+        loadTodayDoses();          // pintarTomas limpia el contenedor al recibir la respuesta
         setupAppointmentPlaceholder();
     }
 
@@ -110,61 +143,114 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Carga las tomas de hoy desde Supabase. Son tres consultas encadenadas:
+     * medicamentos → horarios de cada uno → registros del día.
+     */
     private void loadTodayDoses() {
-        int idUsuario = sessionManager.getIdUsuario();
-        if (idUsuario == -1) return;
+        String hoy = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
 
-        DatabaseHelper dbHelper = DatabaseHelper.getInstance(this);
-        MedicamentoDAO medDAO = new MedicamentoDAO(dbHelper);
-        HorarioDAO horDAO = new HorarioDAO(dbHelper);
+        VimedRepo.listarMedicamentos(this, new VimedRepo.Cb<List<Medicamento>>() {
+            @Override
+            public void onOk(List<Medicamento> meds) {
+                mostrarAlertaStock(meds);
+                actualizarAccesosRapidos(meds);
+                if (meds.isEmpty()) { pintarTomas(new ArrayList<>()); return; }
 
-        List<Medicamento> meds = medDAO.listarPorUsuario(idUsuario);
+                VimedRepo.listarTomasDelDia(MainActivity.this, hoy,
+                    new VimedRepo.Cb<List<RegistroToma>>() {
+                        @Override
+                        public void onOk(List<RegistroToma> registrosHoy) {
+                            cargarHorariosYPintar(meds, registrosHoy);
+                        }
+                        @Override
+                        public void onError(String msg) {
+                            // Sin registros igual mostramos las tomas como pendientes
+                            cargarHorariosYPintar(meds, new ArrayList<>());
+                        }
+                    });
+            }
 
-        // Generar lista de tomas del día
-        List<DoseItem> doses = new ArrayList<>();
-        Calendar now = Calendar.getInstance();
-        int nowMins = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE);
+            @Override
+            public void onError(String msg) {
+                Toast.makeText(MainActivity.this, msg, Toast.LENGTH_LONG).show();
+                pintarTomas(new ArrayList<>());
+            }
+        });
+    }
+
+    /** Pide los horarios de cada medicamento y arma la grilla del día. */
+    private void cargarHorariosYPintar(List<Medicamento> meds, List<RegistroToma> registrosHoy) {
+        final List<DoseItem> doses = new ArrayList<>();
+        final int[] pendientes = { meds.size() };
 
         for (Medicamento med : meds) {
-            List<Horario> horarios = horDAO.listarPorMedicamento(med.getId());
-            for (Horario hor : horarios) {
-                // Parsear hora inicio "HH:MM"
-                String[] parts = hor.getHoraInicio().split(":");
-                if (parts.length < 2) continue;
-                int startMins = Integer.parseInt(parts[0]) * 60 + Integer.parseInt(parts[1]);
-                int interval = hor.getIntervaloHoras() * 60;
-                if (interval <= 0) interval = 24 * 60;
-
-                // Generar tomas del día
-                int t = startMins;
-                while (t < 24 * 60) {
-                    int hh = t / 60;
-                    int mm = t % 60;
-                    String hora = String.format(Locale.getDefault(), "%02d:%02d", hh, mm);
-                    boolean passed = t < nowMins;
-                    doses.add(new DoseItem(med, hora, passed ? "tomado" : "pendiente", t));
-                    t += interval;
+            VimedRepo.listarHorarios(med.getId(), new VimedRepo.Cb<List<Horario>>() {
+                @Override
+                public void onOk(List<Horario> horarios) {
+                    for (Horario hor : horarios) {
+                        agregarTomasDelHorario(doses, med, hor, registrosHoy);
+                    }
+                    if (--pendientes[0] == 0) pintarTomas(doses);
                 }
-            }
+                @Override
+                public void onError(String msg) {
+                    if (--pendientes[0] == 0) pintarTomas(doses);
+                }
+            });
         }
+    }
+
+    /** Expande un horario (hora inicio + intervalo) en todas las tomas del día. */
+    private void agregarTomasDelHorario(List<DoseItem> doses, Medicamento med,
+                                        Horario hor, List<RegistroToma> registrosHoy) {
+        if (hor.getHoraInicio() == null) return;
+        String[] parts = hor.getHoraInicio().split(":");
+        if (parts.length < 2) return;
+
+        int startMins = Integer.parseInt(parts[0]) * 60 + Integer.parseInt(parts[1]);
+        int interval = hor.getIntervaloHoras() * 60;
+        if (interval <= 0) interval = 24 * 60;
+
+        int t = startMins;
+        while (t < 24 * 60) {
+            String hora = String.format(Locale.getDefault(), "%02d:%02d", t / 60, t % 60);
+            RegistroToma reg = registroDeToma(hor.getId(), hora, registrosHoy);
+            String estado = reg != null
+                ? (reg.getEstado() != null ? reg.getEstado() : "omitida")
+                : "pendiente";
+            int idReg = reg != null ? reg.getId() : -1;
+            doses.add(new DoseItem(med, hora, estado, t, hor.getId(), idReg));
+            t += interval;
+        }
+    }
+
+    /** Dibuja la lista y actualiza los contadores. */
+    private void pintarTomas(List<DoseItem> doses) {
+        dosesContainer.removeAllViews();
 
         // Ordenar por hora
         Collections.sort(doses, (a, b) -> a.minutos - b.minutos);
 
         int total = doses.size();
         int taken = 0;
-        for (DoseItem d : doses) { if ("tomado".equals(d.estado)) taken++; }
+        for (DoseItem d : doses) {
+            if ("confirmada".equals(d.estado) || "tomado".equals(d.estado)) taken++;
+        }
 
         // Actualizar progreso
         updateProgress(taken, total);
 
         // Mostrar tomas
+        View hintTap = findViewById(R.id.tv_hint_tap);
         if (doses.isEmpty()) {
             emptyDoses.setVisibility(View.VISIBLE);
             dosesContainer.setVisibility(View.GONE);
+            if (hintTap != null) hintTap.setVisibility(View.GONE);
         } else {
             emptyDoses.setVisibility(View.GONE);
             dosesContainer.setVisibility(View.VISIBLE);
+            if (hintTap != null) hintTap.setVisibility(View.VISIBLE);
             LayoutInflater inflater = LayoutInflater.from(this);
             for (DoseItem dose : doses) {
                 View item = inflater.inflate(R.layout.item_dose, dosesContainer, false);
@@ -177,16 +263,142 @@ public class MainActivity extends AppCompatActivity {
         TextView tvChip = findViewById(R.id.tv_total_chip);
         tvChip.setText(total + (total == 1 ? " toma" : " tomas"));
 
-        // Próxima toma pendiente
+        // Próxima toma pendiente (o aviso de omitidas)
         TextView tvNext = findViewById(R.id.tv_next_dose);
         DoseItem proxima = null;
+        int omitidas = 0;
         for (DoseItem d : doses) {
-            if ("pendiente".equals(d.estado)) { proxima = d; break; }
+            if ("pendiente".equals(d.estado) || "pospuesta".equals(d.estado)) {
+                if (proxima == null) proxima = d;
+            } else if ("omitida".equals(d.estado)) {
+                omitidas++;
+            }
         }
-        tvNext.setText(proxima != null ? "Siguiente a las " + proxima.hora : "Todo al día ✓");
+        if (proxima != null) {
+            tvNext.setText("Siguiente a las " + proxima.hora);
+        } else if (omitidas > 0) {
+            tvNext.setText(omitidas == 1
+                ? "1 toma sin confirmar"
+                : omitidas + " tomas sin confirmar");
+        } else {
+            tvNext.setText("Todo al día ✓");
+        }
+    }
+
+    /**
+     * Busca la fila de registro_tomas que corresponde a esta toma del día,
+     * o null si la alarma todavía no disparó.
+     *
+     * Match por id_horario + prefijo de fecha_hora_programada (HH:MM del día actual).
+     */
+    private RegistroToma registroDeToma(int idHorario, String horaHHMM,
+                                        List<RegistroToma> registros) {
+        for (RegistroToma r : registros) {
+            if (r.getIdHorario() != idHorario) continue;
+            String prog = r.getFechaHoraProgramada();
+            if (prog == null) continue;
+            // formato "yyyy-MM-dd HH:mm:ss" — comparamos posiciones 11..15
+            if (prog.length() >= 16 && prog.substring(11, 16).equals(horaHHMM)) {
+                return r;
+            }
+        }
+        return null;
+    }
+
+    /** Diálogo al tocar una toma: confirmar, o deshacer si ya estaba confirmada. */
+    private void onDoseClick(DoseItem dose) {
+        String nombreMed = dose.med.getNombre();
+
+        if (dose.estaConfirmada()) {
+            new AlertDialog.Builder(this)
+                .setTitle(nombreMed + " · " + dose.hora)
+                .setMessage("Ya marcaste esta toma como tomada. ¿Querés deshacerlo?")
+                .setNegativeButton("Cancelar", null)
+                .setPositiveButton("Deshacer", (d, w) ->
+                    TomaManager.deshacer(this, dose.med, dose.idRegistro,
+                        new VimedRepo.Cb<Void>() {
+                            @Override public void onOk(Void v) { refrescarTomas(); }
+                            @Override public void onError(String msg) {
+                                Toast.makeText(MainActivity.this, msg, Toast.LENGTH_LONG).show();
+                            }
+                        }))
+                .show();
+            return;
+        }
+
+        new AlertDialog.Builder(this)
+            .setTitle(nombreMed + " · " + dose.hora)
+            .setMessage("¿Confirmás que tomaste este medicamento?")
+            .setNegativeButton("Todavía no", null)
+            .setPositiveButton("Sí, ya lo tomé", (d, w) ->
+                TomaManager.confirmar(this, dose.med, dose.idRegistro,
+                    dose.idHorario, dose.hora, new VimedRepo.Cb<Void>() {
+                        @Override public void onOk(Void v) {
+                            Toast.makeText(MainActivity.this,
+                                "Toma confirmada ✓", Toast.LENGTH_SHORT).show();
+                            refrescarTomas();
+                        }
+                        @Override public void onError(String msg) {
+                            Toast.makeText(MainActivity.this, msg, Toast.LENGTH_LONG).show();
+                        }
+                    }))
+            .show();
+    }
+
+    private void refrescarTomas() {
+        loadTodayDoses();   // pintarTomas ya limpia el contenedor
+    }
+
+    /** Subtítulos de las tarjetas de acceso rápido. */
+    private void actualizarAccesosRapidos(List<Medicamento> meds) {
+        TextView tvMeds = findViewById(R.id.tv_quick_meds_sub);
+        TextView tvRem  = findViewById(R.id.tv_quick_reminders_sub);
+        if (tvMeds == null || tvRem == null) return;
+
+        int total = meds.size();
+        int pendientesStock = 0;
+        for (Medicamento m : meds) {
+            if (m.isStockBajo()) pendientesStock++;
+        }
+
+        tvMeds.setText(pendientesStock > 0
+            ? pendientesStock + (pendientesStock == 1 ? " pendiente" : " pendientes")
+            : total + (total == 1 ? " activo" : " activos"));
+
+        // Cada medicamento activo tiene su recordatorio programado
+        tvRem.setText(total + (total == 1 ? " activo" : " activos"));
+    }
+
+    /** Banner con los medicamentos que llegaron al stock mínimo. */
+    private void mostrarAlertaStock(List<Medicamento> meds) {
+        View alerta = findViewById(R.id.alert_stock);
+        TextView tvStock = findViewById(R.id.tv_stock_text);
+        if (alerta == null || tvStock == null) return;
+
+        List<String> bajos = new ArrayList<>();
+        for (Medicamento m : meds) {
+            if (m.isStockBajo()) {
+                bajos.add(m.getNombre() + " (" + m.getStockActual() + ")");
+            }
+        }
+
+        if (bajos.isEmpty()) {
+            alerta.setVisibility(View.GONE);
+            return;
+        }
+
+        String texto = bajos.size() == 1
+            ? "Se está por acabar " + bajos.get(0) + ". Acordate de reponerlo."
+            : "Se están por acabar " + bajos.size() + " medicamentos: "
+              + android.text.TextUtils.join(", ", bajos) + ".";
+        tvStock.setText(texto);
+        alerta.setVisibility(View.VISIBLE);
+        alerta.setOnClickListener(v -> startActivity(new Intent(this, MedsListActivity.class)));
     }
 
     private void bindDoseItem(View item, DoseItem dose) {
+        item.setOnClickListener(v -> onDoseClick(dose));
+
         TextView tvNameDose = item.findViewById(R.id.tv_med_name_dose);
         TextView tvInst = item.findViewById(R.id.tv_instructions);
         TextView tvTime = item.findViewById(R.id.tv_time);
@@ -210,17 +422,41 @@ public class MainActivity extends AppCompatActivity {
         circle.setColor(bgColor);
         iconContainer.setBackground(circle);
 
+        // Tilde de la derecha: verde lleno si está confirmada, gris si no
+        android.widget.ImageView ivCheck = item.findViewById(R.id.iv_check);
+        if (ivCheck != null) {
+            ivCheck.setColorFilter(dose.estaConfirmada()
+                ? getColor(R.color.success)
+                : getColor(R.color.ink_6));
+        }
+
         // Estado
-        if ("tomado".equals(dose.estado)) {
-            tvTime.setTextColor(getColor(R.color.ink_4));
-            tvStatus.setText("Tomado");
-            tvStatus.setBackgroundResource(R.drawable.shape_chip_success);
-            tvStatus.setTextColor(getColor(R.color.success));
-        } else {
-            tvTime.setTextColor(getColor(R.color.ink));
-            tvStatus.setText("Pendiente");
-            tvStatus.setBackgroundResource(R.drawable.shape_chip_ink);
-            tvStatus.setTextColor(getColor(R.color.ink_3));
+        switch (dose.estado) {
+            case "confirmada":
+            case "tomado":
+                tvTime.setTextColor(getColor(R.color.ink_4));
+                tvStatus.setText("Tomado");
+                tvStatus.setBackgroundResource(R.drawable.shape_chip_success);
+                tvStatus.setTextColor(getColor(R.color.success));
+                break;
+            case "pospuesta":
+                tvTime.setTextColor(getColor(R.color.ink));
+                tvStatus.setText("Pospuesta");
+                tvStatus.setBackgroundResource(R.drawable.shape_chip_ink);
+                tvStatus.setTextColor(getColor(R.color.ink_3));
+                break;
+            case "omitida":
+                tvTime.setTextColor(getColor(R.color.ink_4));
+                tvStatus.setText("Omitida");
+                tvStatus.setBackgroundResource(R.drawable.shape_chip_ink);
+                tvStatus.setTextColor(getColor(R.color.ink_3));
+                break;
+            default: // pendiente
+                tvTime.setTextColor(getColor(R.color.ink));
+                tvStatus.setText("Pendiente");
+                tvStatus.setBackgroundResource(R.drawable.shape_chip_ink);
+                tvStatus.setTextColor(getColor(R.color.ink_3));
+                break;
         }
     }
 
@@ -236,33 +472,49 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupAppointmentPlaceholder() {
-        int idUsuario = sessionManager.getIdUsuario();
-        if (idUsuario == -1) {
+        VimedRepo.listarCitas(this, new VimedRepo.Cb<List<CitaMedica>>() {
+            @Override
+            public void onOk(List<CitaMedica> citas) {
+                // El endpoint trae todas ordenadas por fecha; nos quedamos
+                // con la primera que todavía no pasó.
+                String ahora = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                    .format(new Date());
+                CitaMedica proxima = null;
+                for (CitaMedica c : citas) {
+                    if (c.getFechaHora() != null && c.getFechaHora().compareTo(ahora) >= 0) {
+                        proxima = c;
+                        break;
+                    }
+                }
+                pintarCita(proxima);
+            }
+
+            @Override
+            public void onError(String msg) {
+                pintarCita(null);
+            }
+        });
+    }
+
+    private void pintarCita(CitaMedica proxima) {
+        if (proxima == null) {
             findViewById(R.id.appointment_card).setVisibility(View.GONE);
             findViewById(R.id.empty_appointments).setVisibility(View.VISIBLE);
             return;
         }
-        com.tesis.vimed.database.CitaMedicaDAO citaDAO =
-            new com.tesis.vimed.database.CitaMedicaDAO(DatabaseHelper.getInstance(this));
-        java.util.List<com.tesis.vimed.models.CitaMedica> citas = citaDAO.listarProximas(idUsuario);
-        if (citas.isEmpty()) {
-            findViewById(R.id.appointment_card).setVisibility(View.GONE);
-            findViewById(R.id.empty_appointments).setVisibility(View.VISIBLE);
-        } else {
-            com.tesis.vimed.models.CitaMedica proxima = citas.get(0);
-            findViewById(R.id.appointment_card).setVisibility(View.VISIBLE);
-            findViewById(R.id.empty_appointments).setVisibility(View.GONE);
-            try {
-                String[] partes = proxima.getFechaHora().split(" ");
-                String[] fecha = partes[0].split("-");
-                String[] meses = {"ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"};
-                ((TextView) findViewById(R.id.tv_appt_day)).setText(String.valueOf(Integer.parseInt(fecha[2])));
-                ((TextView) findViewById(R.id.tv_appt_month)).setText(meses[Integer.parseInt(fecha[1]) - 1]);
-            } catch (Exception ignored) {}
-            ((TextView) findViewById(R.id.tv_appt_doctor)).setText(proxima.getMedico() != null ? proxima.getMedico() : "");
-            ((TextView) findViewById(R.id.tv_appt_specialty)).setText(proxima.getEspecialidad() != null ? proxima.getEspecialidad() : "");
-            ((TextView) findViewById(R.id.tv_appt_place)).setText(proxima.getLugar() != null ? proxima.getLugar() : "");
-        }
+        findViewById(R.id.appointment_card).setVisibility(View.VISIBLE);
+        findViewById(R.id.empty_appointments).setVisibility(View.GONE);
+        try {
+            // Puede venir "yyyy-MM-dd HH:mm:ss" o ISO "yyyy-MM-ddTHH:mm:ss+00:00"
+            String soloFecha = proxima.getFechaHora().substring(0, 10);
+            String[] fecha = soloFecha.split("-");
+            String[] meses = {"ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"};
+            ((TextView) findViewById(R.id.tv_appt_day)).setText(String.valueOf(Integer.parseInt(fecha[2])));
+            ((TextView) findViewById(R.id.tv_appt_month)).setText(meses[Integer.parseInt(fecha[1]) - 1]);
+        } catch (Exception ignored) {}
+        ((TextView) findViewById(R.id.tv_appt_doctor)).setText(proxima.getMedico() != null ? proxima.getMedico() : "");
+        ((TextView) findViewById(R.id.tv_appt_specialty)).setText(proxima.getEspecialidad() != null ? proxima.getEspecialidad() : "");
+        ((TextView) findViewById(R.id.tv_appt_place)).setText(proxima.getLugar() != null ? proxima.getLugar() : "");
     }
 
     private void setupBottomNav() {
@@ -328,12 +580,21 @@ public class MainActivity extends AppCompatActivity {
         String hora;
         String estado;
         int minutos;
+        int idHorario;
+        int idRegistro;   // -1 si la alarma todavía no disparó
 
-        DoseItem(Medicamento med, String hora, String estado, int minutos) {
+        DoseItem(Medicamento med, String hora, String estado, int minutos,
+                 int idHorario, int idRegistro) {
             this.med = med;
             this.hora = hora;
             this.estado = estado;
             this.minutos = minutos;
+            this.idHorario = idHorario;
+            this.idRegistro = idRegistro;
+        }
+
+        boolean estaConfirmada() {
+            return "confirmada".equals(estado) || "tomado".equals(estado);
         }
     }
 }

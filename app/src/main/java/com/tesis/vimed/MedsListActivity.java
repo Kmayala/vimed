@@ -4,21 +4,25 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.tesis.vimed.database.DatabaseHelper;
-import com.tesis.vimed.database.HorarioDAO;
-import com.tesis.vimed.database.MedicamentoDAO;
+import com.tesis.vimed.api.VimedRepo;
 import com.tesis.vimed.models.Horario;
 import com.tesis.vimed.models.Medicamento;
+import com.tesis.vimed.utils.NotificationHelper;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MedsListActivity extends AppCompatActivity {
@@ -42,6 +46,12 @@ public class MedsListActivity extends AppCompatActivity {
         findViewById(R.id.btn_add_med).setOnClickListener(v ->
             startActivity(new Intent(this, AgregarMedicamentoActivity.class)));
 
+        View btnAddFirst = findViewById(R.id.btn_add_first);
+        if (btnAddFirst != null) {
+            btnAddFirst.setOnClickListener(v ->
+                startActivity(new Intent(this, AgregarMedicamentoActivity.class)));
+        }
+
         setupBottomNav();
         loadMeds();
     }
@@ -49,42 +59,51 @@ public class MedsListActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        medsContainer.removeAllViews();
-        loadMeds();
+        loadMeds();   // loadMeds ya limpia el contenedor al recibir la respuesta
     }
 
     private void loadMeds() {
-        int idUsuario = sessionManager.getIdUsuario();
-        if (idUsuario == -1) return;
+        tvSubtitle.setText("Cargando…");
 
-        MedicamentoDAO medDAO = new MedicamentoDAO(DatabaseHelper.getInstance(this));
-        HorarioDAO horDAO = new HorarioDAO(DatabaseHelper.getInstance(this));
-        List<Medicamento> meds = medDAO.listarPorUsuario(idUsuario);
+        VimedRepo.listarMedicamentos(this, new VimedRepo.Cb<List<Medicamento>>() {
+            @Override
+            public void onOk(List<Medicamento> meds) {
+                medsContainer.removeAllViews();
 
-        if (meds.isEmpty()) {
-            emptyMeds.setVisibility(View.VISIBLE);
-            medsContainer.setVisibility(View.GONE);
-            tvSubtitle.setText("0 activos");
-        } else {
-            emptyMeds.setVisibility(View.GONE);
-            medsContainer.setVisibility(View.VISIBLE);
-            tvSubtitle.setText(meds.size() + (meds.size() == 1 ? " activo" : " activos"));
+                if (meds.isEmpty()) {
+                    emptyMeds.setVisibility(View.VISIBLE);
+                    medsContainer.setVisibility(View.GONE);
+                    tvSubtitle.setText("0 activos");
+                    return;
+                }
 
-            LayoutInflater inflater = LayoutInflater.from(this);
-            for (Medicamento med : meds) {
-                View item = inflater.inflate(R.layout.item_med_card, medsContainer, false);
-                bindMedCard(item, med, horDAO);
-                medsContainer.addView(item);
+                emptyMeds.setVisibility(View.GONE);
+                medsContainer.setVisibility(View.VISIBLE);
+                tvSubtitle.setText(meds.size() + (meds.size() == 1 ? " activo" : " activos"));
+
+                LayoutInflater inflater = LayoutInflater.from(MedsListActivity.this);
+                for (Medicamento med : meds) {
+                    View item = inflater.inflate(R.layout.item_med_card, medsContainer, false);
+                    bindMedCard(item, med);
+                    medsContainer.addView(item);
+                }
             }
-        }
+
+            @Override
+            public void onError(String msg) {
+                tvSubtitle.setText("Sin conexión");
+                Toast.makeText(MedsListActivity.this, msg, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
-    private void bindMedCard(View item, Medicamento med, HorarioDAO horDAO) {
+    private void bindMedCard(View item, Medicamento med) {
         TextView tvName = item.findViewById(R.id.tv_med_name);
         TextView tvDosis = item.findViewById(R.id.tv_med_dosis);
         TextView tvInst = item.findViewById(R.id.tv_med_inst);
         TextView tvHorario = item.findViewById(R.id.tv_med_horario);
         TextView tvInitial = item.findViewById(R.id.tv_med_initial);
+        TextView tvStock = item.findViewById(R.id.tv_med_stock);
         FrameLayout iconContainer = item.findViewById(R.id.med_icon_container);
 
         tvName.setText(med.getNombre());
@@ -95,13 +114,42 @@ public class MedsListActivity extends AppCompatActivity {
         tvDosis.setText(dosisText);
         tvInst.setText(instruccionLegible(med.getInstrucciones()));
 
-        List<Horario> horarios = horDAO.listarPorMedicamento(med.getId());
-        if (!horarios.isEmpty()) {
-            Horario h = horarios.get(0);
-            String intervalo = h.getIntervaloHoras() == 24 ? "Una vez al día" : "Cada " + h.getIntervaloHoras() + "h";
-            tvHorario.setText(h.getHoraInicio() + " · " + intervalo);
-        } else {
-            tvHorario.setText("Sin horario configurado");
+        // Los horarios se piden aparte; mientras tanto mostramos un placeholder.
+        // La lista queda guardada para poder cancelar las alarmas al eliminar.
+        final List<Horario> horariosDelMed = new ArrayList<>();
+        tvHorario.setText("Cargando horario…");
+        VimedRepo.listarHorarios(med.getId(), new VimedRepo.Cb<List<Horario>>() {
+            @Override
+            public void onOk(List<Horario> horarios) {
+                horariosDelMed.clear();
+                horariosDelMed.addAll(horarios);
+                if (!horarios.isEmpty()) {
+                    Horario h = horarios.get(0);
+                    String intervalo = h.getIntervaloHoras() == 24
+                        ? "Una vez al día" : "Cada " + h.getIntervaloHoras() + "h";
+                    tvHorario.setText(h.getHoraInicio() + " · " + intervalo);
+                } else {
+                    tvHorario.setText("Sin horario configurado");
+                }
+            }
+
+            @Override
+            public void onError(String msg) {
+                tvHorario.setText("Sin horario configurado");
+            }
+        });
+
+        // Chip de stock — cambia de color si está por acabarse
+        if (tvStock != null) {
+            tvStock.setText("Quedan " + med.getStockActual()
+                + (med.getStockActual() == 1 ? " unidad" : " unidades"));
+            if (med.isStockBajo()) {
+                tvStock.setBackgroundResource(R.drawable.shape_chip_warn);
+                tvStock.setTextColor(getColor(R.color.warn));
+            } else {
+                tvStock.setBackgroundResource(R.drawable.shape_chip_success);
+                tvStock.setTextColor(getColor(R.color.success));
+            }
         }
 
         String nombre = med.getNombre();
@@ -112,6 +160,88 @@ public class MedsListActivity extends AppCompatActivity {
         circle.setShape(GradientDrawable.OVAL);
         circle.setColor(bgColor);
         iconContainer.setBackground(circle);
+
+        // La tarjeta ahora responde al toque (antes la flecha no hacía nada)
+        item.setOnClickListener(v -> mostrarOpciones(med, horariosDelMed));
+    }
+
+    /** Menú de acciones sobre un medicamento. */
+    private void mostrarOpciones(Medicamento med, List<Horario> horarios) {
+        String[] opciones = {"Reponer stock", "Eliminar medicamento"};
+
+        new AlertDialog.Builder(this)
+            .setTitle(med.getNombre())
+            .setItems(opciones, (d, which) -> {
+                if (which == 0) pedirReposicion(med);
+                else            confirmarEliminar(med, horarios);
+            })
+            .setNegativeButton("Cancelar", null)
+            .show();
+    }
+
+    /** Diálogo para sumar unidades al stock. */
+    private void pedirReposicion(Medicamento med) {
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        input.setHint("Cantidad a agregar");
+        input.setTextSize(19);
+        int pad = (int) (20 * getResources().getDisplayMetrics().density);
+        input.setPadding(pad, pad, pad, pad);
+
+        new AlertDialog.Builder(this)
+            .setTitle("Reponer " + med.getNombre())
+            .setMessage("Tenés " + med.getStockActual() + " unidades. ¿Cuántas agregás?")
+            .setView(input)
+            .setNegativeButton("Cancelar", null)
+            .setPositiveButton("Agregar", (d, w) -> {
+                String txt = input.getText().toString().trim();
+                if (txt.isEmpty()) return;
+                try {
+                    int suma = Integer.parseInt(txt);
+                    if (suma <= 0) return;
+                    VimedRepo.actualizarStock(med.getId(), med.getStockActual() + suma,
+                        new VimedRepo.Cb<Void>() {
+                            @Override public void onOk(Void v) {
+                                recargar();
+                                Toast.makeText(MedsListActivity.this,
+                                    "Stock actualizado ✓", Toast.LENGTH_SHORT).show();
+                            }
+                            @Override public void onError(String msg) {
+                                Toast.makeText(MedsListActivity.this, msg, Toast.LENGTH_LONG).show();
+                            }
+                        });
+                } catch (NumberFormatException ignored) {}
+            })
+            .show();
+    }
+
+    private void confirmarEliminar(Medicamento med, List<Horario> horarios) {
+        new AlertDialog.Builder(this)
+            .setTitle("¿Eliminar " + med.getNombre() + "?")
+            .setMessage("Se van a cancelar sus recordatorios. El historial de tomas anteriores se conserva.")
+            .setNegativeButton("Cancelar", null)
+            .setPositiveButton("Eliminar", (d, w) -> {
+                // Cancelar las alarmas antes de dar de baja el medicamento,
+                // si no seguirían sonando para algo que ya no existe.
+                for (Horario h : horarios) {
+                    NotificationHelper.cancelarAlarmas(this, med.getId(), h.getIntervaloHoras());
+                }
+                VimedRepo.eliminarMedicamento(med.getId(), new VimedRepo.Cb<Void>() {
+                    @Override public void onOk(Void v) {
+                        recargar();
+                        Toast.makeText(MedsListActivity.this,
+                            med.getNombre() + " eliminado", Toast.LENGTH_SHORT).show();
+                    }
+                    @Override public void onError(String msg) {
+                        Toast.makeText(MedsListActivity.this, msg, Toast.LENGTH_LONG).show();
+                    }
+                });
+            })
+            .show();
+    }
+
+    private void recargar() {
+        loadMeds();
     }
 
     private int colorForMed(String colorKey) {

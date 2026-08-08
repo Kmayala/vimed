@@ -8,7 +8,7 @@
     <!-- Cabeza: círculo (12, 7) r=4 con bezier cúbico -->
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#0a6f65"
+        android:strokeColor="#7668dc"
         android:strokeWidth="2"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"
@@ -17,7 +17,7 @@
     <!-- Cuerpo: rectángulo redondeado inferior -->
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#0a6f65"
+        android:strokeColor="#7668dc"
         android:strokeWidth="2"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"
