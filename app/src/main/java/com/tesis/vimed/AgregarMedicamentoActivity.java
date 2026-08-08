@@ -287,17 +287,17 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
 
     // ── Paso 2: Dosis ──────────────────────────────────────────
     private void configurarPaso2() {
-        // Campo manual y spinner (ocultos al inicio)
+        // Campo manual y desplegable de unidad (ocultos al inicio)
         View tilDosis  = pasos[1].findViewById(R.id.til_dosis_manual);
         TextInputEditText etDosis = pasos[1].findViewById(R.id.et_dosis_manual);
-        Spinner spUnidad = pasos[1].findViewById(R.id.sp_unidad);
+        AutoCompleteTextView spUnidad = pasos[1].findViewById(R.id.sp_unidad);
+        View tilUnidad = pasos[1].findViewById(R.id.til_unidad);
         View btnSiguiente2 = pasos[1].findViewById(R.id.btn_siguiente_2);
 
-        ArrayAdapter<String> unidadAdapter = new ArrayAdapter<>(this,
-            android.R.layout.simple_spinner_item,
-            new String[]{"mg", "ml", "mcg", "g", "UI"});
-        unidadAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spUnidad.setAdapter(unidadAdapter);
+        String[] unidades = {"mg", "ml", "mcg", "g", "UI"};
+        spUnidad.setAdapter(new ArrayAdapter<>(this,
+            android.R.layout.simple_list_item_1, unidades));
+        spUnidad.setText(unidades[0], false);   // false = no filtrar la lista
 
         // Presets rápidos — navegan directo al paso 3
         pasos[1].findViewById(R.id.btn_500).setOnClickListener(v -> {
@@ -313,7 +313,7 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
         // Mostrar campo manual
         pasos[1].findViewById(R.id.btn_otra_dosis).setOnClickListener(v -> {
             tilDosis.setVisibility(View.VISIBLE);
-            spUnidad.setVisibility(View.VISIBLE);
+            tilUnidad.setVisibility(View.VISIBLE);
             btnSiguiente2.setVisibility(View.VISIBLE);
         });
 
@@ -326,8 +326,9 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
                 return;
             }
             try {
-                dosis  = Float.parseFloat(dosisStr);
-                unidad = spUnidad.getSelectedItem().toString();
+                dosis = Float.parseFloat(dosisStr);
+                String u = spUnidad.getText().toString().trim();
+                if (!u.isEmpty()) unidad = u;
                 mostrarPaso(2);
             } catch (NumberFormatException e) {
                 etDosis.setError("Número inválido");
@@ -599,39 +600,45 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
         btn.setText(R.string.btn_guardar_med);
     }
 
-    /** El círculo elegido queda más grande y opaco; el resto se achica y atenúa. */
+    /**
+     * Marca el color elegido con un aro alrededor.
+     * Antes se agrandaba el círculo con setScale, pero eso lo recortaba
+     * contra el borde de la celda y se veía deformado.
+     */
     private void resaltarColor(String colorSeleccionado) {
         for (int j = 0; j < COLOR_BTN_IDS.length; j++) {
-            View c = pasos[2].findViewById(COLOR_BTN_IDS[j]);
-            if (c == null) continue;
+            View celda = pasos[2].findViewById(COLOR_BTN_IDS[j]);
+            if (celda == null) continue;
             boolean elegido = COLORES[j].equals(colorSeleccionado);
-            c.setAlpha(elegido ? 1.0f : 0.35f);
-            c.setScaleX(elegido ? 1.15f : 0.9f);
-            c.setScaleY(elegido ? 1.15f : 0.9f);
-            c.setElevation(elegido ? 8f : 0f);
+            celda.setBackgroundResource(elegido ? R.drawable.shape_color_ring : 0);
+            celda.setAlpha(elegido ? 1.0f : 0.55f);
         }
     }
 
     // ── Helper: resaltar botón seleccionado dentro de un grupo ─
     private void resaltarSeleccion(View container, String[] tags, String tagSeleccionado) {
-        int colorSel    = ContextCompat.getColor(this, R.color.turquesa);
-        int colorNormal = ContextCompat.getColor(this, R.color.texto_principal);
-        int colorBorde  = ContextCompat.getColor(this, R.color.gris_borde);
+        int brand     = ContextCompat.getColor(this, R.color.brand_500);
+        int brandSoft = ContextCompat.getColor(this, R.color.brand_50);
+        int textoOff  = ContextCompat.getColor(this, R.color.ink_2);
+        int bordeOff  = ContextCompat.getColor(this, R.color.ink_7);
 
         for (String tag : tags) {
             View view = container.findViewWithTag(tag);
-            if (view instanceof MaterialButton) {
-                MaterialButton mb = (MaterialButton) view;
-                if (tag.equals(tagSeleccionado)) {
-                    mb.setBackgroundTintList(ColorStateList.valueOf(colorSel));
-                    mb.setTextColor(Color.WHITE);
-                    mb.setStrokeColor(ColorStateList.valueOf(colorSel));
-                } else {
-                    mb.setBackgroundTintList(ColorStateList.valueOf(Color.WHITE));
-                    mb.setTextColor(colorNormal);
-                    mb.setStrokeColor(ColorStateList.valueOf(colorBorde));
-                }
-            }
+            if (!(view instanceof MaterialButton)) continue;
+
+            MaterialButton mb = (MaterialButton) view;
+            boolean elegido = tag.equals(tagSeleccionado);
+
+            // Elegido: violeta lleno y con sombra. Sin elegir: tinte muy
+            // suave en vez de blanco puro, para que no floten sobre el fondo.
+            mb.setBackgroundTintList(ColorStateList.valueOf(elegido ? brand : brandSoft));
+            mb.setTextColor(elegido ? Color.WHITE : textoOff);
+            mb.setStrokeColor(ColorStateList.valueOf(elegido ? brand : bordeOff));
+            mb.setElevation(elegido ? dpF(3) : 0f);
         }
+    }
+
+    private float dpF(int v) {
+        return v * getResources().getDisplayMetrics().density;
     }
 }

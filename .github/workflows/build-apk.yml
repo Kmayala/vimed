@@ -1,4 +1,4 @@
-name: Compilar APK
+name: Compilar y distribuir APK
 
 # Corre en cada push a main y también a mano desde la pestaña Actions
 on:
@@ -33,9 +33,25 @@ jobs:
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: ./gradlew assembleDebug --no-daemon
 
-      - name: Publicar el APK
+      # Siempre queda descargable desde la pestaña Actions
+      - name: Publicar el APK como artefacto
         uses: actions/upload-artifact@v4
         with:
           name: vimed-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
+
+      # Avisa al celular para actualizar de un toque.
+      # Se saltea solo si todavía no cargaste los secrets de Firebase.
+      - name: Enviar a Firebase App Distribution
+        if: ${{ env.FIREBASE_APP_ID != '' && github.event_name != 'pull_request' }}
+        env:
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ secrets.FIREBASE_APP_ID }}
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          groups: testers
+          releaseNotes: |
+            ${{ github.event.head_commit.message }}
+          file: app/build/outputs/apk/debug/app-debug.apk

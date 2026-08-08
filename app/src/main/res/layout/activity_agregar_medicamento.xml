@@ -214,11 +214,14 @@
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_500"
                         style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:maxLines="1"
+                        android:insetLeft="0dp"
+                        android:insetRight="0dp"
                         android:layout_width="0dp"
                         android:layout_height="64dp"
                         android:layout_weight="1"
                         android:text="500 mg"
-                        android:textSize="17sp"
+                        android:textSize="16sp"
                         android:textStyle="bold"
                         android:textAllCaps="false"
                         android:textColor="@color/ink_2"
@@ -231,11 +234,14 @@
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_850"
                         style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:maxLines="1"
+                        android:insetLeft="0dp"
+                        android:insetRight="0dp"
                         android:layout_width="0dp"
                         android:layout_height="64dp"
                         android:layout_weight="1"
                         android:text="850 mg"
-                        android:textSize="17sp"
+                        android:textSize="16sp"
                         android:textStyle="bold"
                         android:textAllCaps="false"
                         android:textColor="@color/ink_2"
@@ -249,11 +255,14 @@
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_1000"
                         style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:maxLines="1"
+                        android:insetLeft="0dp"
+                        android:insetRight="0dp"
                         android:layout_width="0dp"
                         android:layout_height="64dp"
                         android:layout_weight="1"
                         android:text="1000 mg"
-                        android:textSize="17sp"
+                        android:textSize="16sp"
                         android:textStyle="bold"
                         android:textAllCaps="false"
                         android:textColor="@color/ink_2"
@@ -308,12 +317,37 @@
 
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <Spinner
-                    android:id="@+id/sp_unidad"
+                <!-- Desplegable de Material: el Spinner nativo abría un
+                     diálogo con estilo viejo que no pegaba con el resto. -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_unidad"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                     android:layout_width="match_parent"
-                    android:layout_height="64dp"
+                    android:layout_height="wrap_content"
+                    android:hint="Unidad"
+                    app:endIconTint="@color/ink_3"
+                    app:boxCornerRadiusTopStart="16dp"
+                    app:boxCornerRadiusTopEnd="16dp"
+                    app:boxCornerRadiusBottomStart="16dp"
+                    app:boxCornerRadiusBottomEnd="16dp"
+                    app:boxStrokeColor="@color/brand_500"
+                    app:hintTextColor="@color/ink_3"
+                    android:textColorHint="@color/ink_4"
                     android:visibility="gone"
-                    android:layout_marginBottom="24dp" />
+                    android:layout_marginBottom="24dp">
+
+                    <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                        android:id="@+id/sp_unidad"
+                        android:layout_width="match_parent"
+                        android:layout_height="64dp"
+                        android:inputType="none"
+                        android:focusable="false"
+                        android:textSize="19sp"
+                        android:textColor="@color/ink"
+                        android:paddingTop="18dp"
+                        android:paddingBottom="18dp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_siguiente_2"
@@ -363,14 +397,14 @@
                         android:layout_width="0dp" android:layout_height="60dp" android:layout_weight="1"
                         android:text="@string/pres_comprimido" android:textSize="16sp"
                         android:textStyle="bold" android:textAllCaps="false" android:textColor="@color/ink_2"
-                        app:strokeColor="@color/ink_6" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
+                        app:strokeColor="@color/ink_7" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
                         app:rippleColor="@color/brand_50" android:layout_marginRight="7dp" />
                     <com.google.android.material.button.MaterialButton android:tag="Cápsula"
                         style="@style/Widget.Material3.Button.OutlinedButton"
                         android:layout_width="0dp" android:layout_height="60dp" android:layout_weight="1"
                         android:text="@string/pres_capsula" android:textSize="16sp"
                         android:textStyle="bold" android:textAllCaps="false" android:textColor="@color/ink_2"
-                        app:strokeColor="@color/ink_6" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
+                        app:strokeColor="@color/ink_7" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
                         app:rippleColor="@color/brand_50" android:layout_marginLeft="7dp" />
                 </LinearLayout>
                 <!-- Fila 2 -->
@@ -381,14 +415,14 @@
                         android:layout_width="0dp" android:layout_height="60dp" android:layout_weight="1"
                         android:text="@string/pres_jarabe" android:textSize="16sp"
                         android:textStyle="bold" android:textAllCaps="false" android:textColor="@color/ink_2"
-                        app:strokeColor="@color/ink_6" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
+                        app:strokeColor="@color/ink_7" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
                         app:rippleColor="@color/brand_50" android:layout_marginRight="7dp" />
                     <com.google.android.material.button.MaterialButton android:tag="Inyectable"
                         style="@style/Widget.Material3.Button.OutlinedButton"
                         android:layout_width="0dp" android:layout_height="60dp" android:layout_weight="1"
                         android:text="@string/pres_inyectable" android:textSize="16sp"
                         android:textStyle="bold" android:textAllCaps="false" android:textColor="@color/ink_2"
-                        app:strokeColor="@color/ink_6" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
+                        app:strokeColor="@color/ink_7" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
                         app:rippleColor="@color/brand_50" android:layout_marginLeft="7dp" />
                 </LinearLayout>
                 <!-- Fila 3 -->
@@ -399,14 +433,14 @@
                         android:layout_width="0dp" android:layout_height="60dp" android:layout_weight="1"
                         android:text="@string/pres_gotas" android:textSize="16sp"
                         android:textStyle="bold" android:textAllCaps="false" android:textColor="@color/ink_2"
-                        app:strokeColor="@color/ink_6" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
+                        app:strokeColor="@color/ink_7" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
                         app:rippleColor="@color/brand_50" android:layout_marginRight="7dp" />
                     <com.google.android.material.button.MaterialButton android:tag="Parche"
                         style="@style/Widget.Material3.Button.OutlinedButton"
                         android:layout_width="0dp" android:layout_height="60dp" android:layout_weight="1"
                         android:text="@string/pres_parche" android:textSize="16sp"
                         android:textStyle="bold" android:textAllCaps="false" android:textColor="@color/ink_2"
-                        app:strokeColor="@color/ink_6" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
+                        app:strokeColor="@color/ink_7" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
                         app:rippleColor="@color/brand_50" android:layout_marginLeft="7dp" />
                 </LinearLayout>
                 <!-- Fila 4 -->
@@ -417,14 +451,14 @@
                         android:layout_width="0dp" android:layout_height="60dp" android:layout_weight="1"
                         android:text="@string/pres_inhalador" android:textSize="16sp"
                         android:textStyle="bold" android:textAllCaps="false" android:textColor="@color/ink_2"
-                        app:strokeColor="@color/ink_6" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
+                        app:strokeColor="@color/ink_7" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
                         app:rippleColor="@color/brand_50" android:layout_marginRight="7dp" />
                     <com.google.android.material.button.MaterialButton android:tag="Otro"
                         style="@style/Widget.Material3.Button.OutlinedButton"
                         android:layout_width="0dp" android:layout_height="60dp" android:layout_weight="1"
                         android:text="@string/pres_otro" android:textSize="16sp"
                         android:textStyle="bold" android:textAllCaps="false" android:textColor="@color/ink_2"
-                        app:strokeColor="@color/ink_6" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
+                        app:strokeColor="@color/ink_7" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
                         app:rippleColor="@color/brand_50" android:layout_marginLeft="7dp" />
                 </LinearLayout>
 
@@ -446,55 +480,87 @@
                     android:textColor="@color/ink_4"
                     android:layout_marginBottom="16dp" />
 
+                <!-- Cada color ocupa una celda con peso: así los 6 entran
+                     siempre en el ancho de pantalla, sin deformarse.
+                     La selección se marca con un aro, no agrandando el
+                     círculo (eso lo recortaba contra el borde). -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:gravity="center"
                     android:layout_marginBottom="32dp">
 
-                    <View android:id="@+id/color_rojo"
-                        android:layout_width="50dp" android:layout_height="50dp"
-                        android:layout_marginLeft="6dp" android:layout_marginRight="6dp"
-                        android:background="@drawable/shape_circle"
-                        android:backgroundTint="@color/pill_rojo"
+                    <FrameLayout android:id="@+id/color_rojo"
+                        android:layout_width="0dp" android:layout_height="56dp"
+                        android:layout_weight="1" android:padding="4dp"
                         android:contentDescription="Rojo"
-                        android:clickable="true" android:focusable="true" />
-                    <View android:id="@+id/color_azul"
-                        android:layout_width="50dp" android:layout_height="50dp"
-                        android:layout_marginLeft="6dp" android:layout_marginRight="6dp"
-                        android:background="@drawable/shape_circle"
-                        android:backgroundTint="@color/pill_azul"
+                        android:clickable="true" android:focusable="true">
+                        <View
+                            android:layout_width="38dp" android:layout_height="38dp"
+                            android:layout_gravity="center"
+                            android:background="@drawable/shape_circle"
+                            android:backgroundTint="@color/pill_rojo" />
+                    </FrameLayout>
+
+                    <FrameLayout android:id="@+id/color_azul"
+                        android:layout_width="0dp" android:layout_height="56dp"
+                        android:layout_weight="1" android:padding="4dp"
                         android:contentDescription="Azul"
-                        android:clickable="true" android:focusable="true" />
-                    <View android:id="@+id/color_amarillo"
-                        android:layout_width="50dp" android:layout_height="50dp"
-                        android:layout_marginLeft="6dp" android:layout_marginRight="6dp"
-                        android:background="@drawable/shape_circle"
-                        android:backgroundTint="@color/pill_amarillo"
+                        android:clickable="true" android:focusable="true">
+                        <View
+                            android:layout_width="38dp" android:layout_height="38dp"
+                            android:layout_gravity="center"
+                            android:background="@drawable/shape_circle"
+                            android:backgroundTint="@color/pill_azul" />
+                    </FrameLayout>
+
+                    <FrameLayout android:id="@+id/color_amarillo"
+                        android:layout_width="0dp" android:layout_height="56dp"
+                        android:layout_weight="1" android:padding="4dp"
                         android:contentDescription="Amarillo"
-                        android:clickable="true" android:focusable="true" />
-                    <View android:id="@+id/color_verde"
-                        android:layout_width="50dp" android:layout_height="50dp"
-                        android:layout_marginLeft="6dp" android:layout_marginRight="6dp"
-                        android:background="@drawable/shape_circle"
-                        android:backgroundTint="@color/pill_verde"
+                        android:clickable="true" android:focusable="true">
+                        <View
+                            android:layout_width="38dp" android:layout_height="38dp"
+                            android:layout_gravity="center"
+                            android:background="@drawable/shape_circle"
+                            android:backgroundTint="@color/pill_amarillo" />
+                    </FrameLayout>
+
+                    <FrameLayout android:id="@+id/color_verde"
+                        android:layout_width="0dp" android:layout_height="56dp"
+                        android:layout_weight="1" android:padding="4dp"
                         android:contentDescription="Verde"
-                        android:clickable="true" android:focusable="true" />
-                    <View android:id="@+id/color_morado"
-                        android:layout_width="50dp" android:layout_height="50dp"
-                        android:layout_marginLeft="6dp" android:layout_marginRight="6dp"
-                        android:background="@drawable/shape_circle"
-                        android:backgroundTint="@color/pill_morado"
+                        android:clickable="true" android:focusable="true">
+                        <View
+                            android:layout_width="38dp" android:layout_height="38dp"
+                            android:layout_gravity="center"
+                            android:background="@drawable/shape_circle"
+                            android:backgroundTint="@color/pill_verde" />
+                    </FrameLayout>
+
+                    <FrameLayout android:id="@+id/color_morado"
+                        android:layout_width="0dp" android:layout_height="56dp"
+                        android:layout_weight="1" android:padding="4dp"
                         android:contentDescription="Morado"
-                        android:clickable="true" android:focusable="true" />
-                    <View android:id="@+id/color_gris"
-                        android:layout_width="50dp" android:layout_height="50dp"
-                        android:layout_marginLeft="6dp" android:layout_marginRight="6dp"
-                        android:background="@drawable/shape_circle"
-                        android:backgroundTint="@color/pill_gris"
+                        android:clickable="true" android:focusable="true">
+                        <View
+                            android:layout_width="38dp" android:layout_height="38dp"
+                            android:layout_gravity="center"
+                            android:background="@drawable/shape_circle"
+                            android:backgroundTint="@color/pill_morado" />
+                    </FrameLayout>
+
+                    <FrameLayout android:id="@+id/color_gris"
+                        android:layout_width="0dp" android:layout_height="56dp"
+                        android:layout_weight="1" android:padding="4dp"
                         android:contentDescription="Gris"
-                        android:clickable="true" android:focusable="true" />
+                        android:clickable="true" android:focusable="true">
+                        <View
+                            android:layout_width="38dp" android:layout_height="38dp"
+                            android:layout_gravity="center"
+                            android:background="@drawable/shape_circle"
+                            android:backgroundTint="@color/pill_gris" />
+                    </FrameLayout>
 
                 </LinearLayout>
 
@@ -554,14 +620,14 @@
                         android:layout_width="0dp" android:layout_height="60dp" android:layout_weight="1"
                         android:text="@string/inst_despues_comer" android:textSize="15sp"
                         android:textStyle="bold" android:textAllCaps="false" android:textColor="@color/ink_2"
-                        app:strokeColor="@color/ink_6" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
+                        app:strokeColor="@color/ink_7" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
                         app:rippleColor="@color/brand_50" android:layout_marginRight="7dp" />
                     <com.google.android.material.button.MaterialButton android:tag="antes_comer"
                         style="@style/Widget.Material3.Button.OutlinedButton"
                         android:layout_width="0dp" android:layout_height="60dp" android:layout_weight="1"
                         android:text="@string/inst_antes_comer" android:textSize="15sp"
                         android:textStyle="bold" android:textAllCaps="false" android:textColor="@color/ink_2"
-                        app:strokeColor="@color/ink_6" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
+                        app:strokeColor="@color/ink_7" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
                         app:rippleColor="@color/brand_50" android:layout_marginLeft="7dp" />
                 </LinearLayout>
                 <!-- Fila 2 -->
@@ -572,14 +638,14 @@
                         android:layout_width="0dp" android:layout_height="60dp" android:layout_weight="1"
                         android:text="@string/inst_ayunas" android:textSize="15sp"
                         android:textStyle="bold" android:textAllCaps="false" android:textColor="@color/ink_2"
-                        app:strokeColor="@color/ink_6" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
+                        app:strokeColor="@color/ink_7" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
                         app:rippleColor="@color/brand_50" android:layout_marginRight="7dp" />
                     <com.google.android.material.button.MaterialButton android:tag="con_agua"
                         style="@style/Widget.Material3.Button.OutlinedButton"
                         android:layout_width="0dp" android:layout_height="60dp" android:layout_weight="1"
                         android:text="@string/inst_con_agua" android:textSize="15sp"
                         android:textStyle="bold" android:textAllCaps="false" android:textColor="@color/ink_2"
-                        app:strokeColor="@color/ink_6" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
+                        app:strokeColor="@color/ink_7" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
                         app:rippleColor="@color/brand_50" android:layout_marginLeft="7dp" />
                 </LinearLayout>
                 <!-- Fila 3 -->
@@ -590,14 +656,14 @@
                         android:layout_width="0dp" android:layout_height="60dp" android:layout_weight="1"
                         android:text="@string/inst_con_leche" android:textSize="15sp"
                         android:textStyle="bold" android:textAllCaps="false" android:textColor="@color/ink_2"
-                        app:strokeColor="@color/ink_6" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
+                        app:strokeColor="@color/ink_7" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
                         app:rippleColor="@color/brand_50" android:layout_marginRight="7dp" />
                     <com.google.android.material.button.MaterialButton android:tag="antes_dormir"
                         style="@style/Widget.Material3.Button.OutlinedButton"
                         android:layout_width="0dp" android:layout_height="60dp" android:layout_weight="1"
                         android:text="@string/inst_antes_dormir" android:textSize="15sp"
                         android:textStyle="bold" android:textAllCaps="false" android:textColor="@color/ink_2"
-                        app:strokeColor="@color/ink_6" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
+                        app:strokeColor="@color/ink_7" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
                         app:rippleColor="@color/brand_50" android:layout_marginLeft="7dp" />
                 </LinearLayout>
                 <!-- Fila 4 -->
@@ -608,14 +674,14 @@
                         android:layout_width="0dp" android:layout_height="60dp" android:layout_weight="1"
                         android:text="@string/inst_al_despertar" android:textSize="15sp"
                         android:textStyle="bold" android:textAllCaps="false" android:textColor="@color/ink_2"
-                        app:strokeColor="@color/ink_6" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
+                        app:strokeColor="@color/ink_7" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
                         app:rippleColor="@color/brand_50" android:layout_marginRight="7dp" />
                     <com.google.android.material.button.MaterialButton android:tag="sin_restriccion"
                         style="@style/Widget.Material3.Button.OutlinedButton"
                         android:layout_width="0dp" android:layout_height="60dp" android:layout_weight="1"
                         android:text="@string/inst_sin_restriccion" android:textSize="15sp"
                         android:textStyle="bold" android:textAllCaps="false" android:textColor="@color/ink_2"
-                        app:strokeColor="@color/ink_6" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
+                        app:strokeColor="@color/ink_7" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
                         app:rippleColor="@color/brand_50" android:layout_marginLeft="7dp" />
                 </LinearLayout>
 
@@ -740,14 +806,14 @@
                         android:layout_width="0dp" android:layout_height="72dp" android:layout_weight="1"
                         android:text="@string/btn_cada_6h" android:textSize="17sp"
                         android:textStyle="bold" android:textAllCaps="false" android:textColor="@color/ink_2"
-                        app:strokeColor="@color/ink_6" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
+                        app:strokeColor="@color/ink_7" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
                         app:rippleColor="@color/brand_50" android:layout_marginRight="7dp" />
                     <com.google.android.material.button.MaterialButton android:id="@+id/btn_8h"
                         style="@style/Widget.Material3.Button.OutlinedButton"
                         android:layout_width="0dp" android:layout_height="72dp" android:layout_weight="1"
                         android:text="@string/btn_cada_8h" android:textSize="17sp"
                         android:textStyle="bold" android:textAllCaps="false" android:textColor="@color/ink_2"
-                        app:strokeColor="@color/ink_6" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
+                        app:strokeColor="@color/ink_7" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
                         app:rippleColor="@color/brand_50" android:layout_marginLeft="7dp" />
                 </LinearLayout>
                 <!-- Fila 2 -->
@@ -758,14 +824,14 @@
                         android:layout_width="0dp" android:layout_height="72dp" android:layout_weight="1"
                         android:text="@string/btn_cada_12h" android:textSize="17sp"
                         android:textStyle="bold" android:textAllCaps="false" android:textColor="@color/ink_2"
-                        app:strokeColor="@color/ink_6" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
+                        app:strokeColor="@color/ink_7" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
                         app:rippleColor="@color/brand_50" android:layout_marginRight="7dp" />
                     <com.google.android.material.button.MaterialButton android:id="@+id/btn_24h"
                         style="@style/Widget.Material3.Button.OutlinedButton"
                         android:layout_width="0dp" android:layout_height="72dp" android:layout_weight="1"
                         android:text="@string/btn_cada_24h" android:textSize="17sp"
                         android:textStyle="bold" android:textAllCaps="false" android:textColor="@color/ink_2"
-                        app:strokeColor="@color/ink_6" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
+                        app:strokeColor="@color/ink_7" app:strokeWidth="1.5dp" app:cornerRadius="16dp"
                         app:rippleColor="@color/brand_50" android:layout_marginLeft="7dp" />
                 </LinearLayout>
 

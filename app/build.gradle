@@ -44,10 +44,30 @@ android {
         buildConfig = true
     }
 
+    // Clave de firma COMPARTIDA entre tu máquina y GitHub Actions.
+    // Sin esto cada entorno firma con su propia clave de debug y los APK
+    // no se pueden instalar uno encima del otro (Android los ve como apps
+    // distintas y obliga a desinstalar, perdiendo los datos).
+    //
+    // OJO: esta clave es solo para pruebas. Para publicar en Play Store
+    // hay que generar una clave de release aparte y NO commitearla.
+    signingConfigs {
+        testing {
+            storeFile     rootProject.file('vimed-testing.jks')
+            storePassword 'vimedtesting'
+            keyAlias      'vimed'
+            keyPassword   'vimedtesting'
+        }
+    }
+
     buildTypes {
+        debug {
+            signingConfig signingConfigs.testing
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.testing
         }
     }
     compileOptions {
