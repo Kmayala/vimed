@@ -105,6 +105,9 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         loadTodayDoses();          // pintarTomas limpia el contenedor al recibir la respuesta
         setupAppointmentPlaceholder();
+        // Toma las alarmas de los medicamentos que haya cargado el cuidador
+        // desde su propio teléfono (AlarmManager es local a cada aparato).
+        com.tesis.vimed.utils.AlarmaSync.sincronizar(this);
     }
 
     private void setupGreeting() {

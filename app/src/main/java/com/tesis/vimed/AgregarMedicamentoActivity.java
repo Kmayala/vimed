@@ -33,6 +33,19 @@ import java.util.Locale;
 
 public class AgregarMedicamentoActivity extends AppCompatActivity {
 
+    /**
+     * Extras opcionales: cuando el CUIDADOR abre esta pantalla, el
+     * medicamento se guarda a nombre del adulto mayor, no del que lo carga.
+     * Sin estos extras la pantalla funciona como siempre (el adulto se
+     * carga su propia medicación).
+     */
+    public static final String EXTRA_PARA_ID_USUARIO = "para_id_usuario";
+    public static final String EXTRA_PARA_NOMBRE     = "para_nombre";
+
+    /** -1 = me lo cargo a mí mismo. */
+    private int idUsuarioDestino = -1;
+    private String nombreDestino = null;
+
     // ── Datos recolectados en los 7 pasos ──────────────────────
     private String nombre = "";
     private float dosis = 0;
@@ -87,6 +100,16 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_agregar_medicamento);
+
+        idUsuarioDestino = getIntent().getIntExtra(EXTRA_PARA_ID_USUARIO, -1);
+        nombreDestino    = getIntent().getStringExtra(EXTRA_PARA_NOMBRE);
+
+        if (idUsuarioDestino > 0) {
+            TextView avisoDestino = findViewById(R.id.tv_para_quien);
+            avisoDestino.setText("Estás cargando este medicamento para "
+                + nombreSeguroDestino() + ". Le va a aparecer en su app con la alarma.");
+            avisoDestino.setVisibility(View.VISIBLE);
+        }
 
         tvTituloPaso  = findViewById(R.id.tv_titulo_paso);
         tvContadorPaso = findViewById(R.id.tv_contador_paso);
@@ -442,8 +465,9 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
         btnGuardar.setEnabled(false);
         btnGuardar.setText("Chequeando interacciones…");
 
-        // Los medicamentos que ya tiene la persona ahora viven en Supabase
-        VimedRepo.listarMedicamentos(this, new VimedRepo.Cb<List<Medicamento>>() {
+        // Los medicamentos que ya tiene la persona ahora viven en Supabase.
+        // Si carga el cuidador, hay que chequear contra los del ADULTO.
+        VimedRepo.Cb<List<Medicamento>> cbExistentes = new VimedRepo.Cb<List<Medicamento>>() {
             @Override
             public void onOk(List<Medicamento> existentes) {
                 List<String> nombres = new ArrayList<>();
@@ -464,7 +488,13 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
                 restaurarBotonGuardar(btnGuardar);
                 guardarMedicamento();
             }
-        });
+        };
+
+        if (idUsuarioDestino > 0) {
+            VimedRepo.listarMedicamentosDe(idUsuarioDestino, cbExistentes);
+        } else {
+            VimedRepo.listarMedicamentos(this, cbExistentes);
+        }
     }
 
     private void correrChecker(MaterialButton btnGuardar, String labelOriginal,
@@ -554,7 +584,7 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
             dosis, unidad, instrucciones, colorIcono, stockActual, stockMinimo
         );
 
-        VimedRepo.crearMedicamento(this, med, new VimedRepo.Cb<Medicamento>() {
+        VimedRepo.Cb<Medicamento> alGuardar = new VimedRepo.Cb<Medicamento>() {
             @Override
             public void onOk(Medicamento creado) {
                 // Recién ahora conocemos el id que generó Postgres,
@@ -565,13 +595,21 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
                 VimedRepo.crearHorario(horario, new VimedRepo.Cb<Horario>() {
                     @Override
                     public void onOk(Horario horCreado) {
-                        NotificationHelper.programarAlarmas(
-                            AgregarMedicamentoActivity.this,
-                            creado.getId(), horCreado.getId(),
-                            horaInicio, intervaloHoras);
+                        // La alarma se programa solo si el medicamento es para
+                        // MÍ. Si lo carga el cuidador, la agenda el celular del
+                        // adulto vía AlarmaSync la próxima vez que abra la app.
+                        if (idUsuarioDestino <= 0) {
+                            NotificationHelper.programarAlarmas(
+                                AgregarMedicamentoActivity.this,
+                                creado.getId(), horCreado.getId(),
+                                horaInicio, intervaloHoras);
+                        }
 
                         Toast.makeText(AgregarMedicamentoActivity.this,
-                            "Medicamento guardado ✓", Toast.LENGTH_SHORT).show();
+                            idUsuarioDestino > 0
+                                ? "Medicamento agregado a " + nombreSeguroDestino() + " ✓"
+                                : "Medicamento guardado ✓",
+                            Toast.LENGTH_SHORT).show();
                         finish();
                     }
 
@@ -592,7 +630,17 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
                 restaurarBotonGuardar(btnGuardar);
                 Toast.makeText(AgregarMedicamentoActivity.this, msg, Toast.LENGTH_LONG).show();
             }
-        });
+        };
+
+        if (idUsuarioDestino > 0) {
+            VimedRepo.crearMedicamentoPara(idUsuarioDestino, med, alGuardar);
+        } else {
+            VimedRepo.crearMedicamento(this, med, alGuardar);
+        }
+    }
+
+    private String nombreSeguroDestino() {
+        return nombreDestino != null && !nombreDestino.isEmpty() ? nombreDestino : "tu familiar";
     }
 
     private void restaurarBotonGuardar(MaterialButton btn) {

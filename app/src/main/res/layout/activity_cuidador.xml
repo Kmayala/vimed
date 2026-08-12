@@ -256,6 +256,40 @@
                         android:lineSpacingMultiplier="1.35" />
                 </LinearLayout>
 
+                <!-- Acciones: cargar cosas PARA el adulto mayor -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="14dp">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_agregar_med_cuidador"
+                        android:layout_width="0dp"
+                        android:layout_height="56dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:text="+ Medicamento"
+                        android:textSize="15sp"
+                        android:textAllCaps="false"
+                        app:cornerRadius="16dp"
+                        app:backgroundTint="@color/brand_500" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_agregar_cita_cuidador"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="56dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:text="+ Cita"
+                        android:textSize="15sp"
+                        android:textAllCaps="false"
+                        android:textColor="@color/brand_700"
+                        app:cornerRadius="16dp"
+                        app:strokeColor="@color/brand_200" />
+                </LinearLayout>
+
                 <!-- Tomas de hoy del paciente -->
                 <TextView
                     android:layout_width="match_parent"
@@ -282,6 +316,75 @@
                     android:padding="24dp"
                     android:gravity="center"
                     android:text="Sin tomas registradas hoy"
+                    android:textSize="16sp"
+                    android:textColor="@color/ink_4"
+                    android:visibility="gone" />
+
+                <!-- Medicamentos cargados del adulto mayor -->
+                <TextView
+                    android:id="@+id/tv_titulo_meds"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Sus medicamentos"
+                    android:textSize="26sp"
+                    android:fontFamily="serif"
+                    android:textColor="@color/ink"
+                    android:letterSpacing="-0.02"
+                    android:layout_marginTop="26dp"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Tocá uno para cambiar el stock o darlo de baja"
+                    android:textSize="14sp"
+                    android:textColor="@color/ink_4"
+                    android:layout_marginBottom="12dp" />
+
+                <LinearLayout
+                    android:id="@+id/meds_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <TextView
+                    android:id="@+id/tv_meds_empty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/shape_dose_card"
+                    android:padding="24dp"
+                    android:gravity="center"
+                    android:text="Todavía no tiene medicamentos cargados"
+                    android:textSize="16sp"
+                    android:textColor="@color/ink_4"
+                    android:visibility="gone" />
+
+                <!-- Próximas citas médicas -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Próximas citas"
+                    android:textSize="26sp"
+                    android:fontFamily="serif"
+                    android:textColor="@color/ink"
+                    android:letterSpacing="-0.02"
+                    android:layout_marginTop="26dp"
+                    android:layout_marginBottom="12dp" />
+
+                <LinearLayout
+                    android:id="@+id/citas_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <TextView
+                    android:id="@+id/tv_citas_empty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/shape_dose_card"
+                    android:padding="24dp"
+                    android:gravity="center"
+                    android:text="Sin citas agendadas"
                     android:textSize="16sp"
                     android:textColor="@color/ink_4"
                     android:visibility="gone" />

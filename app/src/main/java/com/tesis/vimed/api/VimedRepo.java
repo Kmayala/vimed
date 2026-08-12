@@ -390,6 +390,75 @@ public final class VimedRepo {
             .enqueue(lista(cb));
     }
 
+    public static void listarCitasDe(int idUsuario, Cb<List<CitaMedica>> cb) {
+        SupabaseClient.getService()
+            .getCitas("eq." + idUsuario, "fecha_hora.asc")
+            .enqueue(lista(cb));
+    }
+
+    /**
+     * Horarios de VARIOS medicamentos en una sola consulta (PostgREST "in.(...)").
+     * El cuidador lo usa para saber a qué medicamento pertenece cada toma:
+     * registro_tomas guarda id_horario, no id_medicamento.
+     */
+    public static void listarHorariosDe(List<Integer> idsMedicamentos, Cb<List<Horario>> cb) {
+        if (idsMedicamentos == null || idsMedicamentos.isEmpty()) {
+            cb.onOk(new ArrayList<>());
+            return;
+        }
+        StringBuilder in = new StringBuilder("in.(");
+        for (int i = 0; i < idsMedicamentos.size(); i++) {
+            if (i > 0) in.append(',');
+            in.append(idsMedicamentos.get(i));
+        }
+        in.append(')');
+        SupabaseClient.getService().getHorarios(in.toString()).enqueue(lista(cb));
+    }
+
+    // ── Escritura EN NOMBRE del adulto (lo que carga el cuidador) ──
+    // Mismos endpoints, pero el id_usuario lo decide el llamador en vez
+    // de tomarlo de la sesión. Quien manda es RLS: si el vínculo no
+    // existe, Supabase rechaza con 403.
+
+    public static void crearMedicamentoPara(int idUsuarioDestino, Medicamento med,
+                                            Cb<Medicamento> cb) {
+        med.setIdUsuario(idUsuarioDestino);
+        SupabaseClient.getService().crearMedicamento(med)
+            .enqueue(new Callback<List<Medicamento>>() {
+                @Override
+                public void onResponse(Call<List<Medicamento>> c, Response<List<Medicamento>> r) {
+                    if (r.isSuccessful() && r.body() != null && !r.body().isEmpty()) {
+                        cb.onOk(r.body().get(0));
+                    } else {
+                        cb.onError(mensajeDeError(r));
+                    }
+                }
+                @Override
+                public void onFailure(Call<List<Medicamento>> c, Throwable t) {
+                    cb.onError("Sin conexión: " + t.getMessage());
+                }
+            });
+    }
+
+    public static void crearCitaPara(int idUsuarioDestino, CitaMedica cita, Cb<CitaMedica> cb) {
+        cita.setIdUsuario(idUsuarioDestino);
+        SupabaseClient.getService().crearCita(cita)
+            .enqueue(new Callback<List<CitaMedica>>() {
+                @Override
+                public void onResponse(Call<List<CitaMedica>> c, Response<List<CitaMedica>> r) {
+                    if (r.isSuccessful() && r.body() != null && !r.body().isEmpty()) {
+                        cb.onOk(r.body().get(0));
+                    } else {
+                        cb.onError(mensajeDeError(r));
+                    }
+                }
+                @Override
+                public void onFailure(Call<List<CitaMedica>> c, Throwable t) {
+                    cb.onError("Sin conexión: " + t.getMessage());
+                }
+            });
+    }
+
     // ═══════════════════════════════════════════════════════════
     //  Helpers internos
     // ═══════════════════════════════════════════════════════════

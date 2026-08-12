@@ -17,10 +17,18 @@ import java.util.Locale;
 
 public class AgregarCitaActivity extends AppCompatActivity {
 
+    /** Extras opcionales: el cuidador agenda la cita a nombre del adulto mayor. */
+    public static final String EXTRA_PARA_ID_USUARIO = "para_id_usuario";
+    public static final String EXTRA_PARA_NOMBRE     = "para_nombre";
+
     private TextInputEditText etMedico, etEspecialidad, etFecha, etHora, etLugar, etNotas;
     private SessionManager sessionManager;
     private int selYear, selMonth, selDay, selHour, selMinute;
     private boolean fechaSeleccionada = false;
+
+    /** -1 = la cita es para mí. */
+    private int idUsuarioDestino = -1;
+    private String nombreDestino = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +36,9 @@ public class AgregarCitaActivity extends AppCompatActivity {
         setContentView(R.layout.activity_agregar_cita);
 
         sessionManager = new SessionManager(this);
+
+        idUsuarioDestino = getIntent().getIntExtra(EXTRA_PARA_ID_USUARIO, -1);
+        nombreDestino    = getIntent().getStringExtra(EXTRA_PARA_NOMBRE);
 
         etMedico = findViewById(R.id.et_medico);
         etEspecialidad = findViewById(R.id.et_especialidad);
@@ -96,15 +107,25 @@ public class AgregarCitaActivity extends AppCompatActivity {
         CitaMedica cita = new CitaMedica(0, medico, especialidad, fechaHora, lugar, notas);
         cita.setEstado(CitaMedica.ESTADO_PENDIENTE);
 
-        com.tesis.vimed.api.VimedRepo.crearCita(this, cita,
+        com.tesis.vimed.api.VimedRepo.Cb<CitaMedica> alGuardar =
             new com.tesis.vimed.api.VimedRepo.Cb<CitaMedica>() {
                 @Override public void onOk(CitaMedica creada) {
-                    Toast.makeText(AgregarCitaActivity.this, "Cita guardada", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AgregarCitaActivity.this,
+                        idUsuarioDestino > 0
+                            ? "Cita agendada para " + nombreDestino
+                            : "Cita guardada",
+                        Toast.LENGTH_SHORT).show();
                     finish();
                 }
                 @Override public void onError(String msg) {
                     Toast.makeText(AgregarCitaActivity.this, msg, Toast.LENGTH_LONG).show();
                 }
-            });
+            };
+
+        if (idUsuarioDestino > 0) {
+            com.tesis.vimed.api.VimedRepo.crearCitaPara(idUsuarioDestino, cita, alGuardar);
+        } else {
+            com.tesis.vimed.api.VimedRepo.crearCita(this, cita, alGuardar);
+        }
     }
 }
