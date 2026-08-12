@@ -26,6 +26,12 @@ public class NotificationHelper {
     public static final String CHANNEL_ID   = "vimed_channel";
     public static final String CHANNEL_NAME = "Recordatorios Vimed";
 
+    // Canal aparte para la alarma a pantalla completa. Es SILENCIOSO a nivel
+    // de canal porque el sonido en loop lo pone AlarmaActivity; así no suena
+    // dos veces. Importancia HIGH para que el full-screen intent funcione.
+    public static final String ALARM_CHANNEL_ID   = "vimed_alarma_channel";
+    public static final String ALARM_CHANNEL_NAME = "Alarma de medicación";
+
     // Acciones que reconoce AlarmaReceiver
     public static final String ACTION_FIRE    = "com.tesis.vimed.FIRE";      // dispara la alarma
     public static final String ACTION_CONFIRM = "com.tesis.vimed.CONFIRM";   // botón "Confirmar toma"
@@ -37,6 +43,7 @@ public class NotificationHelper {
     public static final String EXTRA_ID_REG    = "id_registro";
     public static final String EXTRA_HORA      = "hora";           // "HH:mm"
     public static final String EXTRA_INDICE    = "indice_alarma";  // 0..N
+    public static final String EXTRA_MENSAJE   = "mensaje";        // texto del medicamento
 
     public static final int SNOOZE_MINUTOS = 15;
 
@@ -45,11 +52,24 @@ public class NotificationHelper {
     // ═══ Canal ═════════════════════════════════════════════════
     public static void crearCanal(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationManager manager = context.getSystemService(NotificationManager.class);
+            if (manager == null) return;
+
+            // Canal general (avisos, stock bajo, etc.)
             NotificationChannel channel = new NotificationChannel(
                 CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
             channel.setDescription("Recordatorios de medicación Vimed");
-            NotificationManager manager = context.getSystemService(NotificationManager.class);
-            if (manager != null) manager.createNotificationChannel(channel);
+            manager.createNotificationChannel(channel);
+
+            // Canal de la alarma a pantalla completa: SIN sonido a nivel de canal
+            // (lo pone AlarmaActivity en loop). Igual vibra y salta al frente.
+            NotificationChannel alarma = new NotificationChannel(
+                ALARM_CHANNEL_ID, ALARM_CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
+            alarma.setDescription("Alarma a pantalla completa para tomar la medicación");
+            alarma.setSound(null, null);
+            alarma.enableVibration(true);
+            alarma.setBypassDnd(true);   // suena aunque esté en "No molestar"
+            manager.createNotificationChannel(alarma);
         }
     }
 
@@ -84,6 +104,23 @@ public class NotificationHelper {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
                 && !puedeAlarmasExactas(activity)) {
             Intent i = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                Uri.parse("package:" + activity.getPackageName()));
+            activity.startActivity(i);
+        }
+    }
+
+    /** True si el sistema permite abrir la alarma a pantalla completa (Android 14+ lo restringe). */
+    public static boolean puedeFullScreenIntent(Context ctx) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) return true;
+        NotificationManager nm = ctx.getSystemService(NotificationManager.class);
+        return nm != null && nm.canUseFullScreenIntent();
+    }
+
+    /** Manda al usuario a Settings para habilitar la alarma a pantalla completa. */
+    public static void pedirPermisoFullScreenIntent(Activity activity) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+                && !puedeFullScreenIntent(activity)) {
+            Intent i = new Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT,
                 Uri.parse("package:" + activity.getPackageName()));
             activity.startActivity(i);
         }
@@ -208,23 +245,32 @@ public class NotificationHelper {
             requestCodeFor(idMedicamento, indice) + 2_000_000, snoozeIntent,
             PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        // Tocar el cuerpo de la notificación abre la app en el dashboard,
-        // donde la persona también puede confirmar la toma.
-        Intent abrirApp = new Intent(ctx, com.tesis.vimed.MainActivity.class);
-        abrirApp.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent piAbrir = PendingIntent.getActivity(ctx,
-            requestCodeFor(idMedicamento, indice) + 3_000_000, abrirApp,
+        // El "full-screen intent" abre AlarmaActivity a pantalla completa
+        // (como un despertador), incluso con el celular bloqueado. Ahí suena
+        // en loop y vibra hasta que la persona responde.
+        Intent alarmaIntent = new Intent(ctx, com.tesis.vimed.AlarmaActivity.class);
+        alarmaIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        alarmaIntent.putExtra(EXTRA_ID_MED, idMedicamento);
+        alarmaIntent.putExtra(EXTRA_ID_HORARIO, idHorario);
+        alarmaIntent.putExtra(EXTRA_ID_REG, idRegistro);
+        alarmaIntent.putExtra(EXTRA_HORA, hora);
+        alarmaIntent.putExtra(EXTRA_INDICE, indice);
+        alarmaIntent.putExtra(EXTRA_MENSAJE, mensaje);
+        PendingIntent piAlarma = PendingIntent.getActivity(ctx,
+            requestCodeFor(idMedicamento, indice) + 3_000_000, alarmaIntent,
             PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        NotificationCompat.Builder b = new NotificationCompat.Builder(ctx, CHANNEL_ID)
+        NotificationCompat.Builder b = new NotificationCompat.Builder(ctx, ALARM_CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle(titulo)
             .setContentText(mensaje)
             .setStyle(new NotificationCompat.BigTextStyle().bigText(mensaje))
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .setPriority(NotificationCompat.PRIORITY_MAX)
+            .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setAutoCancel(true)
-            .setContentIntent(piAbrir)
+            .setOngoing(true)                      // no se puede deslizar para descartar
+            .setContentIntent(piAlarma)
+            .setFullScreenIntent(piAlarma, true)   // ← abre la pantalla completa
             .addAction(android.R.drawable.checkbox_on_background, "Confirmar toma", piConfirm)
             .addAction(android.R.drawable.ic_menu_recent_history,
                 "Posponer " + SNOOZE_MINUTOS + " min", piSnooze);

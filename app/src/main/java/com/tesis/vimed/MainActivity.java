@@ -86,6 +86,18 @@ public class MainActivity extends AppCompatActivity {
                     NotificationHelper.pedirPermisoAlarmasExactas(this))
                 .show();
         }
+        // Android 14+ requiere permiso aparte para la alarma a pantalla completa
+        if (!NotificationHelper.puedeFullScreenIntent(this)) {
+            new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Alarma a pantalla completa")
+                .setMessage("Para que el aviso de medicación te aparezca en toda la pantalla "
+                    + "como una alarma (aunque el celular esté bloqueado), activá el permiso "
+                    + "de \"Notificaciones a pantalla completa\" en los ajustes.")
+                .setNegativeButton("Ahora no", null)
+                .setPositiveButton("Ir a ajustes", (d, w) ->
+                    NotificationHelper.pedirPermisoFullScreenIntent(this))
+                .show();
+        }
     }
 
     @Override

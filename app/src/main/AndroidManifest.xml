@@ -11,6 +11,10 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
 
+    <!-- Alarma a pantalla completa (como despertador) + vibración -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+
     <application
         android:name=".VimedApp"
         android:allowBackup="true"
@@ -69,6 +73,20 @@
             android:name=".ChatbotActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+
+        <!-- Alarma a pantalla completa del recordatorio de medicación.
+             showWhenLocked + turnScreenOn: se abre y prende la pantalla aunque
+             el celular esté bloqueado. singleInstance + excludeFromRecents:
+             no se apila ni queda en "recientes". -->
+        <activity
+            android:name=".AlarmaActivity"
+            android:exported="false"
+            android:launchMode="singleInstance"
+            android:excludeFromRecents="true"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
+            android:taskAffinity=""
+            android:theme="@style/Theme.Vimed" />
 
         <!-- Receptor de alarmas para recordatorios de medicación -->
         <receiver

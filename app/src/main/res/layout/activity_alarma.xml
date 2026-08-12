@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pantalla de alarma a pantalla completa (full-screen intent).
+     Pensada para adulto mayor: textos grandes, botones enormes,
+     alto contraste. Se abre incluso con el celular bloqueado. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/brand_600"
+    android:gravity="center"
+    android:padding="24dp">
+
+    <!-- Círculo con la campana -->
+    <FrameLayout
+        android:layout_width="140dp"
+        android:layout_height="140dp"
+        android:layout_marginBottom="28dp"
+        android:background="@drawable/bg_alarma_icono">
+
+        <ImageView
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_bell"
+            app:tint="@color/white"
+            android:contentDescription="@null" />
+    </FrameLayout>
+
+    <!-- Hora actual grande -->
+    <TextView
+        android:id="@+id/alarma_hora"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="00:00"
+        android:textColor="@color/white"
+        android:textSize="64sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.02" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="Hora de tu medicamento"
+        android:textColor="@color/brand_100"
+        android:textSize="22sp" />
+
+    <!-- Nombre y dosis del medicamento -->
+    <TextView
+        android:id="@+id/alarma_medicamento"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:gravity="center"
+        android:text="Medicamento"
+        android:textColor="@color/white"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        android:lineSpacingMultiplier="1.1" />
+
+    <!-- Espaciador flexible -->
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- Botón principal: Ya tomé mi medicación -->
+    <Button
+        android:id="@+id/btn_ya_tome"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_marginBottom="16dp"
+        android:text="✓  Ya tomé mi medicación"
+        android:textColor="@color/brand_700"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:background="@drawable/bg_alarma_btn_principal"
+        android:stateListAnimator="@null" />
+
+    <!-- Botón secundario: Posponer -->
+    <Button
+        android:id="@+id/btn_posponer"
+        android:layout_width="match_parent"
+        android:layout_height="68dp"
+        android:text="Posponer 15 minutos"
+        android:textColor="@color/white"
+        android:textSize="19sp"
+        android:background="@drawable/bg_alarma_btn_secundario"
+        android:stateListAnimator="@null" />
+
+</LinearLayout>
