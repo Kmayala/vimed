@@ -12,6 +12,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    # Pasamos el secret a una variable de entorno del job.
+    # Asi lo podemos leer en el "if" del paso de Firebase
+    # (GitHub no permite usar secrets.* directamente en un if).
+    env:
+      FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+
     steps:
       - name: Traer el código
         uses: actions/checkout@v5
@@ -44,7 +50,7 @@ jobs:
       # Avisa al celular para actualizar de un toque.
       # Se saltea solo si todavía no cargaste los secrets de Firebase.
       - name: Enviar a Firebase App Distribution
-        if: ${{ secrets.FIREBASE_APP_ID != '' && github.event_name != 'pull_request' }}
+        if: ${{ env.FIREBASE_APP_ID != '' && github.event_name != 'pull_request' }}
         uses: wzieba/Firebase-Distribution-Github-Action@v1
         with:
           appId: ${{ secrets.FIREBASE_APP_ID }}
