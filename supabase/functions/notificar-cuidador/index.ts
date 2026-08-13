@@ -13,15 +13,15 @@
 // Deploy:
 //   supabase functions deploy notificar-cuidador
 //
-// Secrets que necesita (supabase secrets set ...):
-//   SERVICE_ROLE_KEY          → Settings ▸ API ▸ service_role
-//   FIREBASE_SERVICE_ACCOUNT  → el JSON de la cuenta de servicio de Firebase
+// Único secret que hay que cargar a mano:
+//   FIREBASE_SERVICE_ACCOUNT → el JSON de la cuenta de servicio de Firebase
+// (SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY los inyecta Supabase solo).
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { JWT } from "https://esm.sh/google-auth-library@9";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SERVICE_ROLE_KEY = Deno.env.get("SERVICE_ROLE_KEY")!;
+const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const FIREBASE_SERVICE_ACCOUNT = Deno.env.get("FIREBASE_SERVICE_ACCOUNT")!;
 
 Deno.serve(async (req) => {
