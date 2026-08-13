@@ -16,5 +16,11 @@ public class VimedApp extends Application {
         // El cliente Supabase necesita un context para leer el access_token
         // del SessionManager en cada request.
         SupabaseClient.init(this);
+
+        // Refresca el token de push. Firebase lo rota cada tanto, así que
+        // no alcanza con guardarlo una sola vez al registrarse.
+        if (new SessionManager(this).isLoggedIn()) {
+            com.tesis.vimed.api.PushManager.registrarToken(this);
+        }
     }
 }

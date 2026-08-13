@@ -28,7 +28,18 @@ public final class NotificacionSync {
      * @param tipo uno de Notificacion.TIPO_TOMA / TIPO_STOCK / TIPO_INTERACCION / TIPO_CITA
      */
     public static void registrar(Context ctx, String tipo, String mensaje) {
-        registrar(ctx, tipo, mensaje, null);
+        registrar(ctx, tipo, mensaje, null, true);
+    }
+
+    /**
+     * @param pushAlCuidador false para eventos que solo interesan como
+     *        historial. Sin este filtro el cuidador recibiría dos push por
+     *        cada dosis ("sonó la alarma" + "la tomó"), y a las pocas horas
+     *        silenciaría la app.
+     */
+    public static void registrar(Context ctx, String tipo, String mensaje,
+                                 boolean pushAlCuidador) {
+        registrar(ctx, tipo, mensaje, null, pushAlCuidador);
     }
 
     /**
@@ -38,6 +49,11 @@ public final class NotificacionSync {
      */
     public static void registrar(Context ctx, String tipo, String mensaje,
                                  Integer idRegistroToma) {
+        registrar(ctx, tipo, mensaje, idRegistroToma, true);
+    }
+
+    public static void registrar(Context ctx, String tipo, String mensaje,
+                                 Integer idRegistroToma, boolean pushAlCuidador) {
         SessionManager ses = new SessionManager(ctx);
         int idDestinatario = ses.getSupabaseIdUsuario();
 
@@ -53,5 +69,24 @@ public final class NotificacionSync {
                                                  Response<List<Notificacion>> r) {}
                 @Override public void onFailure(Call<List<Notificacion>> c, Throwable t) {}
             });
+
+        // Además del historial, push instantáneo a los familiares vinculados.
+        // Solo tiene sentido si quien genera el evento es el adulto mayor:
+        // el cuidador no se avisa a sí mismo.
+        if (pushAlCuidador && ses.esAdultoMayor()) {
+            PushManager.avisarACuidadores(ctx, tituloPara(tipo, ses.getNombre()), mensaje);
+        }
+    }
+
+    /** Encabezado del push, para que el cuidador entienda de quién y de qué es. */
+    private static String tituloPara(String tipo, String nombreAdulto) {
+        String quien = nombreAdulto != null && !nombreAdulto.isEmpty()
+            ? nombreAdulto : "Tu familiar";
+        switch (tipo != null ? tipo : "") {
+            case Notificacion.TIPO_STOCK:       return quien + " — medicamento por acabarse";
+            case Notificacion.TIPO_INTERACCION: return quien + " — aviso de interacción";
+            case Notificacion.TIPO_CITA:        return quien + " — cita médica";
+            default:                            return quien + " — medicación";
+        }
     }
 }

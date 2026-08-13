@@ -27,6 +27,11 @@ public final class Router {
 
     /** Abre el home del rol limpiando el back stack. */
     public static void irAlHome(Context ctx) {
+        // Todo login/registro termina acá, y recién en este punto ya existe
+        // el id de Supabase: es el momento correcto para atar este celular
+        // a la persona para los push.
+        com.tesis.vimed.api.PushManager.registrarToken(ctx);
+
         Intent i = new Intent(ctx, homeSegunRol(ctx));
         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         ctx.startActivity(i);

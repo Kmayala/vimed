@@ -88,6 +88,15 @@
             android:taskAffinity=""
             android:theme="@style/Theme.Vimed" />
 
+        <!-- Recibe los push de Firebase (avisos al cuidador) -->
+        <service
+            android:name=".utils.VimedFcmService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
         <!-- Receptor de alarmas para recordatorios de medicación -->
         <receiver
             android:name=".utils.AlarmaReceiver"

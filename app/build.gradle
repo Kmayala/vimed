@@ -2,6 +2,17 @@ plugins {
     alias(libs.plugins.android.application)
 }
 
+// El plugin de Google solo se aplica si ya bajaste google-services.json
+// desde la consola de Firebase. Sin el archivo, el plugin ABORTA el build;
+// haciéndolo condicional la app sigue compilando (solo que sin push).
+def hayFirebase = file('google-services.json').exists()
+if (hayFirebase) {
+    apply plugin: 'com.google.gms.google-services'
+} else {
+    logger.warn('google-services.json ausente: la app compila pero el push ' +
+        'al cuidador va a quedar deshabilitado.')
+}
+
 // Claves de Supabase: local.properties en tu máquina (NO se commitea),
 // variables de entorno en CI (GitHub Actions las inyecta desde Secrets).
 def localProps = new Properties()
@@ -89,6 +100,12 @@ dependencies {
     implementation libs.retrofit
     implementation libs.retrofit.gson
     implementation libs.okhttp.logging
+
+    // Push al cuidador (FCM). La dependencia va siempre para que el código
+    // compile; lo condicional es el plugin de arriba. Sin google-services.json
+    // Firebase no llega a inicializarse en runtime y PushManager lo ignora.
+    implementation platform(libs.firebase.bom)
+    implementation libs.firebase.messaging
 
     // Google Sign-In (requiere google-services.json en app/)
     // implementation 'com.google.android.gms:play-services-auth:21.0.0'

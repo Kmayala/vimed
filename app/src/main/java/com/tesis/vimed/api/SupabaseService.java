@@ -2,6 +2,7 @@ package com.tesis.vimed.api;
 
 import com.tesis.vimed.models.CatalogoMedicamento;
 import com.tesis.vimed.models.CitaMedica;
+import com.tesis.vimed.models.Dispositivo;
 import com.tesis.vimed.models.Horario;
 import com.tesis.vimed.models.InteraccionCatalogo;
 import com.tesis.vimed.models.Medicamento;
@@ -18,6 +19,7 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
+import retrofit2.http.Header;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
@@ -210,6 +212,25 @@ public interface SupabaseService {
 
     @DELETE("vinculacion_familiar")
     Call<Void> eliminarVinculo(@Query("id_vinculo") String idEq);
+
+    // ── DISPOSITIVOS (tokens de push FCM) ─────────────────────
+
+    /**
+     * Alta o actualización del token de este celular.
+     *
+     * Usa UPSERT sobre la constraint única de la columna token: si el mismo
+     * aparato vuelve a registrarse (o cambia de dueño al iniciar sesión otra
+     * persona), se pisa la fila en vez de duplicarla.
+     * El header Prefer lo pone el llamador.
+     */
+    @POST("dispositivos")
+    Call<List<Dispositivo>> registrarDispositivo(
+        @Header("Prefer") String prefer,          // "resolution=merge-duplicates"
+        @Body Dispositivo nuevo
+    );
+
+    @DELETE("dispositivos")
+    Call<Void> eliminarDispositivo(@Query("token") String tokenEq);
 
     // ── NOTIFICACIONES (historial en la nube) ─────────────────
     @POST("notificaciones")

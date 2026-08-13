@@ -103,8 +103,10 @@ public class AlarmaReceiver extends BroadcastReceiver {
             idMedicamento, idHorario, idRegistro, hora, indice,
             "Hora de tu medicamento", mensaje);
 
+        // Queda en el historial, pero sin push: al cuidador no le sirve
+        // enterarse de cada vez que suena una alarma.
         NotificacionSync.registrar(ctx, Notificacion.TIPO_TOMA,
-            "Recordatorio enviado: " + mensaje + " (" + hora + ")");
+            "Recordatorio enviado: " + mensaje + " (" + hora + ")", false);
 
         // 3) Reagendar para dentro de 24 h (setExactAndAllowWhileIdle dispara una vez)
         long enUnDia = System.currentTimeMillis() + 24L * 60 * 60 * 1000;
@@ -133,6 +135,16 @@ public class AlarmaReceiver extends BroadcastReceiver {
         NotificationHelper.reagendarEn(ctx, idMedicamento, idHorario, hora, indice, enSnoozeMs);
 
         NotificationHelper.cancelarNotificacion(ctx, idMedicamento, indice);
+
+        // Esto SÍ le importa al cuidador: la dosis quedó sin tomar.
+        // Llega acá tanto si la persona tocó "Posponer" como si no respondió
+        // la alarma y AlarmaActivity la pospuso sola.
+        Medicamento med = VimedRepo.buscarMedicamentoSync(idMedicamento);
+        String nombreMed = med != null && med.getNombre() != null
+            ? med.getNombre() : "su medicamento";
+        NotificacionSync.registrar(ctx, Notificacion.TIPO_TOMA,
+            "No confirmó la toma de " + nombreMed
+                + (hora != null ? " de las " + hora : "") + ".", true);
     }
 
     // ═══ Reboot — re-agendar todo ══════════════════════════════
