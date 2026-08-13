@@ -89,8 +89,16 @@ public class RoleSelectionActivity extends AppCompatActivity {
                 .setTitle("¿Desea vincular un familiar?")
                 .setMessage("Puede invitar a un cuidador para que reciba avisos sobre sus medicamentos.")
                 .setPositiveButton("Vincular ahora", (d, w) -> {
-                    startActivity(new Intent(this, VincularFamiliarActivity.class));
-                    goToMain();
+                    // Solo abrimos la pantalla de vincular: NO llamamos a
+                    // goToMain() acá. Router.irAlHome usa CLEAR_TASK, así que
+                    // hacerlo a continuación borraba la tarea entera y se
+                    // llevaba puesta la pantalla recién abierta — se veía como
+                    // si el botón no hiciera nada. Al salir de vincular, esa
+                    // pantalla se encarga de entrar al home.
+                    Intent i = new Intent(this, VincularFamiliarActivity.class);
+                    i.putExtra(VincularFamiliarActivity.EXTRA_IR_AL_HOME, true);
+                    startActivity(i);
+                    finish();
                 })
                 .setNegativeButton("Omitir", (d, w) -> goToMain())
                 .show();

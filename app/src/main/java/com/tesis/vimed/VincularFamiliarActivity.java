@@ -26,6 +26,13 @@ import java.util.Random;
 
 public class VincularFamiliarActivity extends AppCompatActivity {
 
+    /**
+     * True cuando se llega acá desde el alta de cuenta (RoleSelectionActivity).
+     * En ese caso no hay ninguna pantalla detrás a la cual volver, así que al
+     * salir entramos al home en vez de simplemente cerrar.
+     */
+    public static final String EXTRA_IR_AL_HOME = "ir_al_home_al_salir";
+
     private static final String PREF_CODIGO = "VinculoCodigo";
     private static final String KEY_CODIGO = "codigo";
     private static final String KEY_EXPIRY = "expiry_ms";
@@ -40,6 +47,7 @@ public class VincularFamiliarActivity extends AppCompatActivity {
     private SessionManager sessionManager;
     private CountDownTimer countDownTimer;
     private String codigoActual;
+    private boolean irAlHomeAlSalir;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +55,7 @@ public class VincularFamiliarActivity extends AppCompatActivity {
         setContentView(R.layout.activity_vincular_familiar);
 
         sessionManager = new SessionManager(this);
+        irAlHomeAlSalir = getIntent().getBooleanExtra(EXTRA_IR_AL_HOME, false);
 
         tvCode = findViewById(R.id.tv_code);
         tvTimer = findViewById(R.id.tv_timer);
@@ -55,7 +64,7 @@ public class VincularFamiliarActivity extends AppCompatActivity {
         familyContainer = findViewById(R.id.family_container);
         emptyFamily = findViewById(R.id.empty_family);
 
-        findViewById(R.id.btn_back).setOnClickListener(v -> finish());
+        findViewById(R.id.btn_back).setOnClickListener(v -> salir());
         findViewById(R.id.btn_share_email).setOnClickListener(v -> compartirPorCorreo());
         findViewById(R.id.btn_add_by_email).setOnClickListener(v -> agregarPorCorreo());
 
@@ -73,6 +82,21 @@ public class VincularFamiliarActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         if (countDownTimer != null) countDownTimer.cancel();
+    }
+
+    /** El botón físico "atrás" tiene que hacer lo mismo que la flecha. */
+    @Override
+    public void onBackPressed() {
+        salir();
+    }
+
+    /**
+     * Si venimos del alta de cuenta no hay nada detrás: cerrar sin más dejaría
+     * a la persona fuera de la app. En ese caso entramos al home.
+     */
+    private void salir() {
+        if (irAlHomeAlSalir) Router.irAlHome(this);
+        else finish();
     }
 
     // ─── Código de invitación ───────────────────────────────────────────────
