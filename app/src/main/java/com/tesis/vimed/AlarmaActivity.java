@@ -1,5 +1,9 @@
 package com.tesis.vimed;
 
+import android.animation.Keyframe;
+import android.animation.ObjectAnimator;
+import android.animation.PropertyValuesHolder;
+import android.animation.ValueAnimator;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
@@ -14,8 +18,14 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.provider.Settings;
+import android.util.TypedValue;
+import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.LinearInterpolator;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -54,6 +64,12 @@ public class AlarmaActivity extends AppCompatActivity {
 
     private boolean yaCerrada = false;
 
+    // Vistas y animadores de la campana
+    private ImageView vCampana;
+    private View vCirculo;
+    private ObjectAnimator animCampana;
+    private ObjectAnimator animCirculo;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,6 +85,9 @@ public class AlarmaActivity extends AppCompatActivity {
 
         leerExtras(getIntent());
         pintarDatos();
+
+        vCampana = findViewById(R.id.alarma_campana);
+        vCirculo = findViewById(R.id.alarma_circulo);
 
         Button btnConfirmar = findViewById(R.id.btn_ya_tome);
         Button btnPosponer  = findViewById(R.id.btn_posponer);
@@ -141,9 +160,13 @@ public class AlarmaActivity extends AppCompatActivity {
                 vibrator.vibrate(patron, 0);
             }
         }
+
+        // Movimiento visual: la campana se balancea mientras suena.
+        empezarAnimacionCampana();
     }
 
     private void pararAlarma() {
+        pararAnimacionCampana();
         autoHandler.removeCallbacksAndMessages(null);
         if (player != null) {
             try { if (player.isPlaying()) player.stop(); } catch (Exception ignored) {}
@@ -154,6 +177,136 @@ public class AlarmaActivity extends AppCompatActivity {
             vibrator.cancel();
             vibrator = null;
         }
+    }
+
+    // ═══ Animación de la campana ═══════════════════════════════
+
+    /**
+     * Un ciclo completo de repique. Mismo PERÍODO que el patrón de vibración
+     * ({0,800,600} = 1400 ms). Ojo: mismo período no es misma fase — arrancan
+     * en momentos distintos y con relojes distintos, así que no van a quedar
+     * clavadas una con la otra. 1400 ms se elige porque es buen ritmo, no
+     * porque sincronice.
+     */
+    private static final long CICLO_CAMPANA_MS = 1400L;
+
+    /** Ángulo máximo del balanceo. 10-12° suave, 14° recomendado, 18°+ marea. */
+    private static final float ANGULO_MAX = 14f;
+
+    /** Si el círculo de fondo también late suavemente. */
+    private static final boolean PULSAR_CIRCULO = true;
+
+    /** Alto/ancho del ImageView en el layout. Solo red de seguridad del pivote. */
+    private static final float CAMPANA_DP = 72f;
+
+    /**
+     * Fracción de la altura donde está la corona de la campana: ic_bell tiene
+     * viewport 24x24 y el domo arranca en y=2 → 2/24 ≈ 0.08. Rotar ahí es lo
+     * que la hace parecer colgada, en vez de girar sobre su propio centro.
+     */
+    private static final float PIVOTE_Y_FRAC = 0.08f;
+
+    private final Runnable arrancarBalanceo = () -> {
+        if (yaCerrada || isFinishing() || isDestroyed()) return;
+        if (vCampana == null) return;
+
+        int w = vCampana.getWidth();
+        int h = vCampana.getHeight();
+        if (w == 0 || h == 0) {
+            // Red de seguridad: el ImageView mide 72dp fijos, no hace falta
+            // esperar al layout para saber dónde va el pivote.
+            int px = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                CAMPANA_DP, getResources().getDisplayMetrics()));
+            w = px;
+            h = px;
+        }
+        vCampana.setPivotX(w / 2f);
+        vCampana.setPivotY(h * PIVOTE_Y_FRAC);
+
+        animCampana = ObjectAnimator.ofPropertyValuesHolder(vCampana, balanceoPendular());
+        animCampana.setDuration(CICLO_CAMPANA_MS);
+        animCampana.setRepeatCount(ValueAnimator.INFINITE);
+        animCampana.setRepeatMode(ValueAnimator.RESTART);
+        // Lineal a nivel global: el suavizado vive dentro de cada keyframe.
+        animCampana.setInterpolator(new LinearInterpolator());
+        animCampana.start();
+
+        if (PULSAR_CIRCULO && vCirculo != null) {
+            animCirculo = ObjectAnimator.ofPropertyValuesHolder(vCirculo,
+                PropertyValuesHolder.ofFloat(View.SCALE_X, 1f, 1.07f, 1f),
+                PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f, 1.07f, 1f));
+            animCirculo.setDuration(CICLO_CAMPANA_MS);
+            animCirculo.setRepeatCount(ValueAnimator.INFINITE);
+            animCirculo.setInterpolator(new AccelerateDecelerateInterpolator());
+            animCirculo.start();   // mismo frame que la campana → sí quedan en fase
+        }
+    };
+
+    /** Empieza el movimiento de la campana. Idempotente. */
+    private void empezarAnimacionCampana() {
+        if (vCampana == null) return;
+        pararAnimacionCampana();   // nunca dejar un animador infinito huérfano
+
+        // Si la persona desactivó las animaciones del sistema (accesibilidad, o
+        // el ahorro de batería de Xiaomi/Samsung, que es lo más común), dejamos
+        // la campana quieta: el sonido y la vibración ya comunican la urgencia.
+        if (!animacionesHabilitadas()) {
+            vCampana.setRotation(0f);
+            return;
+        }
+        // Diferido: el pivote sale mejor con la vista ya medida.
+        vCampana.post(arrancarBalanceo);
+    }
+
+    /** Detiene y libera la animación. Idempotente. */
+    private void pararAnimacionCampana() {
+        if (vCampana != null) {
+            // Por si se respondió antes de que el post() llegara a correr.
+            vCampana.removeCallbacks(arrancarBalanceo);
+        }
+        if (animCampana != null) { animCampana.cancel(); animCampana = null; }
+        if (animCirculo != null) { animCirculo.cancel(); animCirculo = null; }
+        // Que no quede la campana torcida ni el círculo agrandado.
+        if (vCampana != null) vCampana.setRotation(0f);
+        if (vCirculo != null) { vCirculo.setScaleX(1f); vCirculo.setScaleY(1f); }
+    }
+
+    /**
+     * Oscilación amortiguada + pausa final: 14° → 10° → 6° → 0 y descansa.
+     * Esa pausa (último 18% del ciclo) es lo que hace que se lea como campana
+     * repicando y no como un péndulo hipnótico.
+     */
+    private static PropertyValuesHolder balanceoPendular() {
+        return PropertyValuesHolder.ofKeyframe(View.ROTATION,
+            Keyframe.ofFloat(0.00f, 0f),   // el interpolador del kf 0 no se usa
+            kf(0.09f, -ANGULO_MAX),
+            kf(0.24f,  ANGULO_MAX),
+            kf(0.39f, -ANGULO_MAX * 0.70f),
+            kf(0.52f,  ANGULO_MAX * 0.70f),
+            kf(0.64f, -ANGULO_MAX * 0.40f),
+            kf(0.74f,  ANGULO_MAX * 0.40f),
+            kf(0.82f,  0f),
+            kf(1.00f,  0f));               // pausa antes del próximo repique
+    }
+
+    /** Keyframe con suavizado propio: el interpolador rige el tramo QUE LLEGA a él. */
+    private static Keyframe kf(float fraccion, float grados) {
+        Keyframe k = Keyframe.ofFloat(fraccion, grados);
+        k.setInterpolator(new AccelerateDecelerateInterpolator());
+        return k;
+    }
+
+    /**
+     * ¿El sistema tiene las animaciones activadas? Con la escala en 0 el
+     * animador salta directo al último valor pero igual pide un frame cada
+     * 16 ms para nada, así que ni lo arrancamos.
+     */
+    private boolean animacionesHabilitadas() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            return ValueAnimator.areAnimatorsEnabled();
+        }
+        return Settings.Global.getFloat(getContentResolver(),
+            Settings.Global.ANIMATOR_DURATION_SCALE, 1f) != 0f;
     }
 
     // ═══ Responder (confirmar / posponer) ══════════════════════
@@ -181,6 +334,24 @@ public class AlarmaActivity extends AppCompatActivity {
     }
 
     // ═══ Ciclo de vida ═════════════════════════════════════════
+
+    // La alarma sigue sonando si la persona toca HOME (a propósito), pero la
+    // pantalla queda invisible: sin esto el animador seguiría pidiendo un frame
+    // cada 16 ms para dibujar algo que nadie ve, justo cuando el teléfono ya
+    // está gastando batería con el audio y el vibrador.
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (animCampana != null && animCampana.isPaused()) animCampana.resume();
+        if (animCirculo != null && animCirculo.isPaused()) animCirculo.resume();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (animCampana != null && animCampana.isStarted()) animCampana.pause();
+        if (animCirculo != null && animCirculo.isStarted()) animCirculo.pause();
+    }
 
     @Override
     protected void onDestroy() {
