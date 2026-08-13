@@ -86,16 +86,25 @@ public final class AuthPayloads {
         @SerializedName("created_at") public String createdAt;
     }
 
-    /** Error de Supabase Auth — tres formatos según endpoint. */
+    /** Error de Supabase Auth — varios formatos según endpoint y versión. */
     public static class AuthError {
         public String error;
         @SerializedName("error_description") public String errorDescription;
         public String msg;
+        /** Formato nuevo del gateway (por ejemplo "Invalid API key"). */
+        public String message;
+        public String hint;
         public Integer code;
 
         public String mensajeUsuario() {
             if (errorDescription != null) return errorDescription;
             if (msg   != null) return msg;
+            // Antes faltaba "message" y cualquier error del gateway caía al
+            // texto genérico de abajo: un anon key mal cargado se veía como
+            // "Error de autenticación" y parecía un problema de contraseña.
+            if (message != null) {
+                return hint != null ? message + " — " + hint : message;
+            }
             if (error != null) return error;
             return "Error de autenticación";
         }

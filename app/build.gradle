@@ -35,6 +35,15 @@ def supabaseAnonKey = limpiar(localProps.getProperty('SUPABASE_ANON_KEY')
 if (supabaseUrl.isEmpty() || supabaseAnonKey.isEmpty()) {
     logger.warn('⚠ SUPABASE_URL / SUPABASE_ANON_KEY vacías: ' +
         'la app compilará pero no va a poder conectarse.')
+} else if (!supabaseAnonKey.startsWith('eyJ') || supabaseAnonKey.count('.') != 2) {
+    // El anon key es un JWT: empieza con "eyJ" y tiene exactamente 2 puntos.
+    // Si no cumple, llegó cortado o se pegó otra cosa. Cortamos acá: un APK
+    // con la clave mal solo falla al iniciar sesión, con un error que no
+    // dice nada y parece un problema de contraseña.
+    throw new GradleException(
+        "SUPABASE_ANON_KEY no parece un JWT válido (largo=${supabaseAnonKey.length()}). " +
+        'Revisá el secret en GitHub: tiene que ser el anon key completo, ' +
+        'de una sola pieza y sin cortes.')
 }
 
 android {
