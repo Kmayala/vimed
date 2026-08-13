@@ -9,6 +9,9 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
@@ -29,8 +32,15 @@ public class NotificationHelper {
     // Canal aparte para la alarma a pantalla completa. Es SILENCIOSO a nivel
     // de canal porque el sonido en loop lo pone AlarmaActivity; así no suena
     // dos veces. Importancia HIGH para que el full-screen intent funcione.
-    public static final String ALARM_CHANNEL_ID   = "vimed_alarma_channel";
+    // OJO con el sufijo _v2: un canal es INMUTABLE después de crearse. El
+    // canal viejo quedó registrado sin sonido en los celulares que ya tienen
+    // la app, y ningún cambio de código lo despierta. Para que el sonido
+    // nuevo tenga efecto hay que estrenar un id.
+    public static final String ALARM_CHANNEL_ID   = "vimed_alarma_channel_v2";
     public static final String ALARM_CHANNEL_NAME = "Alarma de medicación";
+
+    /** Id del canal mudo original, solo para poder borrarlo. */
+    private static final String ALARM_CHANNEL_ID_VIEJO = "vimed_alarma_channel";
 
     // Acciones que reconoce AlarmaReceiver
     public static final String ACTION_FIRE    = "com.tesis.vimed.FIRE";      // dispara la alarma
@@ -65,16 +75,44 @@ public class NotificationHelper {
             channel.setDescription("Recordatorios de medicación Vimed");
             manager.createNotificationChannel(channel);
 
-            // Canal de la alarma a pantalla completa: SIN sonido a nivel de canal
-            // (lo pone AlarmaActivity en loop). Igual vibra y salta al frente.
+            // Canal de la alarma. El sonido lo pone EL CANAL, no la Activity:
+            // con el celular bloqueado el sistema puede no dejar abrir la
+            // pantalla completa (pasa seguido en Xiaomi/Samsung, o si el
+            // permiso está denegado). Cuando el canal era mudo, en esos casos
+            // no sonaba nada. Ahora suena igual aunque la pantalla no abra.
             NotificationChannel alarma = new NotificationChannel(
                 ALARM_CHANNEL_ID, ALARM_CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
             alarma.setDescription("Alarma a pantalla completa para tomar la medicación");
-            alarma.setSound(null, null);
+            alarma.setSound(sonidoDeAlarma(), atributosDeAlarma());
             alarma.enableVibration(true);
+            alarma.setVibrationPattern(new long[]{0, 800, 600});
             alarma.setBypassDnd(true);   // suena aunque esté en "No molestar"
+            alarma.setLockscreenVisibility(android.app.Notification.VISIBILITY_PUBLIC);
             manager.createNotificationChannel(alarma);
+
+            // Sacamos de los ajustes el canal mudo viejo, para que la persona
+            // no vea dos "Alarma de medicación" y silencie el que sí anda.
+            manager.deleteNotificationChannel(ALARM_CHANNEL_ID_VIEJO);
         }
+    }
+
+    /** Tono de alarma del sistema; si el celular no tiene, el de notificación. */
+    public static Uri sonidoDeAlarma() {
+        Uri uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+        if (uri == null) uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        return uri;
+    }
+
+    /**
+     * USAGE_ALARM: suena por el volumen de ALARMA, no por el de notificaciones.
+     * Es lo que hace que se escuche aunque el celular esté en silencio, que es
+     * justo el escenario de la noche.
+     */
+    public static AudioAttributes atributosDeAlarma() {
+        return new AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_ALARM)
+            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+            .build();
     }
 
     // ═══ Permisos ══════════════════════════════════════════════
@@ -226,6 +264,22 @@ public class NotificationHelper {
                                                 String hora, int indice,
                                                 String titulo, String mensaje,
                                                 String nombreMed, String dosisTxt) {
+        mostrarRecordatorioToma(ctx, idMedicamento, idHorario, idRegistro, hora,
+            indice, titulo, mensaje, nombreMed, dosisTxt, false);
+    }
+
+    /**
+     * @param esActualizacion true cuando solo estamos repintando una alarma que
+     *        YA está sonando (por ejemplo para agregarle el id de la fila que
+     *        recién creó la red). Marca la notificación como "no vuelvas a
+     *        alertar": sin esto el tono se reiniciaría desde cero cada vez.
+     */
+    public static void mostrarRecordatorioToma(Context ctx, int idMedicamento,
+                                                int idHorario, int idRegistro,
+                                                String hora, int indice,
+                                                String titulo, String mensaje,
+                                                String nombreMed, String dosisTxt,
+                                                boolean esActualizacion) {
         // Intent del botón "Confirmar toma"
         Intent confirmIntent = new Intent(ctx, com.tesis.vimed.utils.AlarmaReceiver.class);
         confirmIntent.setAction(ACTION_CONFIRM);
@@ -282,8 +336,25 @@ public class NotificationHelper {
             .addAction(android.R.drawable.ic_menu_recent_history,
                 "Posponer " + SNOOZE_MINUTOS + " min", piSnooze);
 
+        // En Android 7 y anteriores no hay canales: el sonido y la prioridad
+        // se declaran en la notificación misma.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O && !esActualizacion) {
+            b.setSound(sonidoDeAlarma(), AudioManager.STREAM_ALARM);
+            b.setVibrate(new long[]{0, 800, 600});
+        }
+        if (esActualizacion) b.setOnlyAlertOnce(true);
+
+        android.app.Notification n = b.build();
+
+        // FLAG_INSISTENT: el sonido se REPITE hasta que se responde, en vez de
+        // sonar una vez y callarse. Es lo que hace un despertador, y es lo que
+        // salva el caso de que la pantalla completa no llegue a abrirse.
+        // En una actualización no va: el tono ya está sonando y volver a
+        // pedirlo lo reiniciaría.
+        if (!esActualizacion) n.flags |= android.app.Notification.FLAG_INSISTENT;
+
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
-        if (nm != null) nm.notify(idNotifPara(idMedicamento, indice), b.build());
+        if (nm != null) nm.notify(idNotifPara(idMedicamento, indice), n);
     }
 
     /** Notificación simple sin acciones (para stock bajo, avisos generales). */

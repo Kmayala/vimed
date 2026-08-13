@@ -587,6 +587,11 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
         VimedRepo.Cb<Medicamento> alGuardar = new VimedRepo.Cb<Medicamento>() {
             @Override
             public void onOk(Medicamento creado) {
+                // Guardamos nombre y dosis en el celular: la alarma los lee de
+                // ahí para poder sonar aunque a esa hora no haya internet.
+                com.tesis.vimed.utils.MedCache.guardar(
+                    AgregarMedicamentoActivity.this, creado);
+
                 // Recién ahora conocemos el id que generó Postgres,
                 // así que el horario se crea encadenado.
                 Horario horario = new Horario(

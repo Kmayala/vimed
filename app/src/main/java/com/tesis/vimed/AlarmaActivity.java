@@ -7,17 +7,10 @@ import android.animation.ValueAnimator;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.media.AudioAttributes;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.VibrationEffect;
-import android.os.Vibrator;
 import android.provider.Settings;
 import android.util.TypedValue;
 import android.view.View;
@@ -56,8 +49,6 @@ public class AlarmaActivity extends AppCompatActivity {
     /** Tiempo que suena antes de posponerse sola si nadie responde (60 s). */
     private static final long AUTO_POSPONER_MS = 60_000L;
 
-    private MediaPlayer player;
-    private Vibrator vibrator;
     private final Handler autoHandler = new Handler(Looper.getMainLooper());
 
     // Datos de la toma (llegan por extras)
@@ -157,55 +148,30 @@ public class AlarmaActivity extends AppCompatActivity {
         }
     }
 
-    // ═══ Sonido + vibración ════════════════════════════════════
+    // ═══ Arranque de la alarma ═════════════════════════════════
 
+    /**
+     * El SONIDO Y LA VIBRACIÓN NO SE MANEJAN ACÁ: los pone la notificación
+     * (canal de alarma + FLAG_INSISTENT, ver NotificationHelper).
+     *
+     * Antes los ponía esta pantalla, y ese era el motivo de que con el celular
+     * bloqueado no sonara nada: si el sistema no dejaba abrir la pantalla
+     * completa —cosa habitual estando bloqueado, o si el permiso está
+     * denegado—, no había quién reprodujera el tono. Ahora la notificación
+     * suena sola y esta pantalla es solo la cara visible; si además abre,
+     * no se duplica el audio porque hay un único emisor.
+     *
+     * Al responder, {@link #responder} cancela la notificación y con eso se
+     * corta el sonido.
+     */
     private void empezarAlarma() {
-        // Sonido de alarma en loop, con volumen tipo alarma (no depende del
-        // volumen de multimedia, usa el canal de alarma del sistema).
-        try {
-            Uri uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
-            if (uri == null) uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-
-            player = new MediaPlayer();
-            player.setDataSource(this, uri);
-            player.setAudioAttributes(new AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_ALARM)
-                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                .build());
-            player.setLooping(true);
-            player.prepare();
-            player.start();
-        } catch (Exception ignored) {
-            // Si falla el audio, al menos queda la vibración y la pantalla.
-        }
-
-        // Vibración en patrón que se repite hasta cerrar.
-        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-        if (vibrator != null && vibrator.hasVibrator()) {
-            long[] patron = {0, 800, 600};   // espera, vibra, pausa…
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                vibrator.vibrate(VibrationEffect.createWaveform(patron, 0));
-            } else {
-                vibrator.vibrate(patron, 0);
-            }
-        }
-
-        // Movimiento visual: la campana se balancea mientras suena.
+        // La campana se balancea mientras la notificación suena.
         empezarAnimacionCampana();
     }
 
     private void pararAlarma() {
         pararAnimacionCampana();
         autoHandler.removeCallbacksAndMessages(null);
-        if (player != null) {
-            try { if (player.isPlaying()) player.stop(); } catch (Exception ignored) {}
-            player.release();
-            player = null;
-        }
-        if (vibrator != null) {
-            vibrator.cancel();
-            vibrator = null;
-        }
     }
 
     // ═══ Animación de la campana ═══════════════════════════════

@@ -168,6 +168,12 @@ public class MainActivity extends AppCompatActivity {
         VimedRepo.listarMedicamentos(this, new VimedRepo.Cb<List<Medicamento>>() {
             @Override
             public void onOk(List<Medicamento> meds) {
+                // Refrescamos la copia local que usan las alarmas para poder
+                // sonar sin conexión. Cubre los medicamentos que ya existían
+                // antes de que hubiera caché.
+                for (Medicamento m : meds) {
+                    com.tesis.vimed.utils.MedCache.guardar(MainActivity.this, m);
+                }
                 mostrarAlertaStock(meds);
                 actualizarAccesosRapidos(meds);
                 if (meds.isEmpty()) { pintarTomas(new ArrayList<>()); return; }
