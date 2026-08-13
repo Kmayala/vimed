@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bloque violeta superior de la alarma, con el borde inferior curvado.
+     Es un vector (no un shape) porque un shape solo permite esquinas
+     redondeadas, no una curva que baja en el centro. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="400dp"
+    android:height="300dp"
+    android:viewportWidth="400"
+    android:viewportHeight="300">
+    <path
+        android:fillColor="@color/brand_500"
+        android:pathData="M0,0 L400,0 L400,232 Q200,300 0,232 Z" />
+</vector>

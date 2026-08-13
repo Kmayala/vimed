@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ondas de sonido a los costados de la campana.
+     Van en su propio drawable, quietas, mientras la campana se balancea
+     encima. El viewport es 44x32 y la campana ocupa el centro (x 10..34,
+     y 4..28), así que las ondas quedan justo por fuera de ella. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="44dp"
+    android:height="32dp"
+    android:viewportWidth="44"
+    android:viewportHeight="32">
+
+    <!-- Izquierda: sweep 0 → el arco se abomba hacia afuera -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="@color/brand_600"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round"
+        android:pathData="M7.5,11 A6,6 0 0,0 7.5,21" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="@color/brand_600"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round"
+        android:pathData="M3.5,7.5 A11,11 0 0,0 3.5,24.5" />
+
+    <!-- Derecha: sweep 1 -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="@color/brand_600"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round"
+        android:pathData="M36.5,11 A6,6 0 0,1 36.5,21" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="@color/brand_600"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round"
+        android:pathData="M40.5,7.5 A11,11 0 0,1 40.5,24.5" />
+</vector>

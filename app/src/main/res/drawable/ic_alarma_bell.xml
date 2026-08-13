@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Campana rellena de la pantalla de alarma.
+     Va sola (sin las ondas) porque es la única parte que se balancea:
+     las ondas de sonido quedan fijas en ic_alarma_ondas. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Cuerpo + badajo -->
+    <path
+        android:fillColor="@color/brand_600"
+        android:pathData="M12,22.5c1.2,0 2.2,-1 2.2,-2.2h-4.4c0,1.2 1,2.2 2.2,2.2z" />
+    <path
+        android:fillColor="@color/brand_600"
+        android:pathData="M19,16.2v-5.4c0,-3.3 -1.8,-6.1 -4.9,-6.8v-0.7c0,-0.9 -0.7,-1.6 -1.6,-1.6h-1c-0.9,0 -1.6,0.7 -1.6,1.6v0.7C6.8,4.7 5,7.5 5,10.8v5.4l-1.8,1.8v1h17.6v-1L19,16.2z" />
+</vector>

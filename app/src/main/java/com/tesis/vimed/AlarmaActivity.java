@@ -29,6 +29,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.tesis.vimed.utils.AlarmaReceiver;
 import com.tesis.vimed.utils.NotificationHelper;
@@ -82,6 +84,7 @@ public class AlarmaActivity extends AppCompatActivity {
                 | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
 
         setContentView(R.layout.activity_alarma);
+        ajustarBarrasDelSistema();
 
         leerExtras(getIntent());
         pintarDatos();
@@ -119,13 +122,39 @@ public class AlarmaActivity extends AppCompatActivity {
     }
 
     private void pintarDatos() {
-        TextView tvHora = findViewById(R.id.alarma_hora);
-        TextView tvMed  = findViewById(R.id.alarma_medicamento);
+        TextView tvHora  = findViewById(R.id.alarma_hora);
+        TextView tvMed   = findViewById(R.id.alarma_medicamento);
+        TextView tvDosis = findViewById(R.id.alarma_dosis);
 
         tvHora.setText(hora != null ? hora : horaAhora());
 
-        String mensaje = getIntent().getStringExtra(NotificationHelper.EXTRA_MENSAJE);
-        if (mensaje != null && !mensaje.isEmpty()) tvMed.setText(mensaje);
+        Intent i = getIntent();
+        String nombre = i.getStringExtra(NotificationHelper.EXTRA_NOMBRE);
+        String dosis  = i.getStringExtra(NotificationHelper.EXTRA_DOSIS);
+
+        // Respaldo para alarmas ya agendadas por una versión anterior, que
+        // solo mandaban el texto junto ("Diclofenac — 50 mg").
+        if (nombre == null || nombre.isEmpty()) {
+            String mensaje = i.getStringExtra(NotificationHelper.EXTRA_MENSAJE);
+            if (mensaje != null && !mensaje.isEmpty()) {
+                int corte = mensaje.indexOf(" — ");
+                if (corte > 0) {
+                    nombre = mensaje.substring(0, corte);
+                    dosis  = mensaje.substring(corte + 3);
+                } else {
+                    nombre = mensaje;
+                }
+            }
+        }
+
+        if (nombre != null && !nombre.isEmpty()) tvMed.setText(nombre);
+
+        if (dosis != null && !dosis.trim().isEmpty()) {
+            tvDosis.setText(dosis.trim());
+            tvDosis.setVisibility(View.VISIBLE);
+        } else {
+            tvDosis.setVisibility(View.GONE);
+        }
     }
 
     // ═══ Sonido + vibración ════════════════════════════════════
@@ -197,14 +226,15 @@ public class AlarmaActivity extends AppCompatActivity {
     private static final boolean PULSAR_CIRCULO = true;
 
     /** Alto/ancho del ImageView en el layout. Solo red de seguridad del pivote. */
-    private static final float CAMPANA_DP = 72f;
+    private static final float CAMPANA_DP = 52f;
 
     /**
-     * Fracción de la altura donde está la corona de la campana: ic_bell tiene
-     * viewport 24x24 y el domo arranca en y=2 → 2/24 ≈ 0.08. Rotar ahí es lo
-     * que la hace parecer colgada, en vez de girar sobre su propio centro.
+     * Fracción de la altura donde está la corona de la campana:
+     * ic_alarma_bell tiene viewport 24x24 y el asa arranca en y≈2.4 → 0.10.
+     * Rotar ahí es lo que la hace parecer colgada, en vez de girar sobre su
+     * propio centro como una hélice.
      */
-    private static final float PIVOTE_Y_FRAC = 0.08f;
+    private static final float PIVOTE_Y_FRAC = 0.10f;
 
     private final Runnable arrancarBalanceo = () -> {
         if (yaCerrada || isFinishing() || isDestroyed()) return;
@@ -367,6 +397,21 @@ public class AlarmaActivity extends AppCompatActivity {
     }
 
     // ═══ Helpers ═══════════════════════════════════════════════
+
+    /**
+     * El header violeta se dibuja por detrás de la barra de estado (a
+     * propósito), pero los botones de abajo no pueden quedar tapados por la
+     * barra de navegación. Así que solo compensamos el borde inferior.
+     */
+    private void ajustarBarrasDelSistema() {
+        final View raiz = findViewById(R.id.alarma_root);
+        ViewCompat.setOnApplyWindowInsetsListener(raiz, (v, insets) -> {
+            int abajo = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom;
+            v.setPadding(v.getPaddingLeft(), v.getPaddingTop(),
+                v.getPaddingRight(), abajo);
+            return insets;
+        });
+    }
 
     private void mostrarSobreBloqueo() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {

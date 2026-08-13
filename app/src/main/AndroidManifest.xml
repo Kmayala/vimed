@@ -86,7 +86,7 @@
             android:showWhenLocked="true"
             android:turnScreenOn="true"
             android:taskAffinity=""
-            android:theme="@style/Theme.Vimed" />
+            android:theme="@style/Theme.Vimed.Alarma" />
 
         <!-- Recibe los push de Firebase (avisos al cuidador) -->
         <service

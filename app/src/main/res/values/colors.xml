@@ -78,6 +78,13 @@
     <color name="black">#000000</color>
     <color name="rojo_error">#b91c1c</color>
 
+    <!-- ── Pantalla de alarma ─────────────────────────────────
+         Verde del botón "Ya tomé": más oscuro que el verde puro para que
+         el texto blanco en negrita quede sobre 3:1 (mínimo AA en texto
+         grande). Un verde más brillante se vería lindo pero ilegible. -->
+    <color name="alarma_verde">#16a34a</color>
+    <color name="alarma_verde_ripple">#3315803d</color>
+
     <!-- ── Superficie oscura (tarjeta destacada de próxima cita) -->
     <color name="surface_dark">#21222d</color>
     <color name="surface_dark_2">#2e2f3b</color>

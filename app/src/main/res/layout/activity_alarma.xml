@@ -1,129 +1,248 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Pantalla de alarma a pantalla completa (full-screen intent).
-     Pensada para adulto mayor: textos grandes, botones enormes,
-     alto contraste. Se abre incluso con el celular bloqueado. -->
+     Pensada para adulto mayor: tipografía grande, alto contraste y solo dos
+     acciones posibles. Se abre incluso con el celular bloqueado.
+
+     El header violeta se dibuja DEBAJO de la barra de estado (el tema
+     Theme.Vimed.Alarma desactiva fitsSystemWindows), por eso el contenido
+     de arriba lleva su propio paddingTop. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/alarma_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/brand_600"
-    android:gravity="center"
-    android:padding="24dp">
+    android:background="@color/paper">
 
-    <!-- Círculo con la campana. Ambos llevan id: la campana se balancea y
-         el círculo late mientras suena la alarma (ver AlarmaActivity). -->
-    <FrameLayout
-        android:id="@+id/alarma_circulo"
-        android:layout_width="140dp"
-        android:layout_height="140dp"
-        android:layout_marginBottom="28dp"
-        android:background="@drawable/bg_alarma_icono">
-
-        <ImageView
-            android:id="@+id/alarma_campana"
-            android:layout_width="72dp"
-            android:layout_height="72dp"
-            android:layout_gravity="center"
-            android:src="@drawable/ic_bell"
-            app:tint="@color/white"
-            android:importantForAccessibility="no" />
-    </FrameLayout>
-
-    <!-- Hora actual grande -->
-    <TextView
-        android:id="@+id/alarma_hora"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="00:00"
-        android:textColor="@color/white"
-        android:textSize="64sp"
-        android:textStyle="bold"
-        android:letterSpacing="0.02" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:text="Hora de tu medicamento"
-        android:textColor="@color/brand_100"
-        android:textSize="22sp" />
-
-    <!-- Nombre y dosis del medicamento -->
-    <TextView
-        android:id="@+id/alarma_medicamento"
+    <!-- ══ Header violeta con el borde inferior curvado ══════════ -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:gravity="center"
-        android:text="Medicamento"
-        android:textColor="@color/white"
-        android:textSize="30sp"
-        android:textStyle="bold"
-        android:lineSpacingMultiplier="1.1" />
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:background="@drawable/bg_alarma_header"
+        android:paddingTop="64dp"
+        android:paddingBottom="72dp"
+        android:paddingLeft="24dp"
+        android:paddingRight="24dp">
 
-    <!-- Espaciador flexible -->
+        <!-- Halo + disco blanco + campana.
+             La campana se balancea y el halo late (ver AlarmaActivity). -->
+        <FrameLayout
+            android:id="@+id/alarma_circulo"
+            android:layout_width="172dp"
+            android:layout_height="172dp"
+            android:background="@drawable/bg_alarma_icono">
+
+            <FrameLayout
+                android:layout_width="132dp"
+                android:layout_height="132dp"
+                android:layout_gravity="center"
+                android:background="@drawable/bg_alarma_circulo_blanco">
+
+                <!-- Ondas quietas… -->
+                <ImageView
+                    android:layout_width="96dp"
+                    android:layout_height="70dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_alarma_ondas"
+                    android:importantForAccessibility="no" />
+
+                <!-- …y la campana encima, que es la que se mueve.
+                     52dp para que calce con la escala de las ondas. -->
+                <ImageView
+                    android:id="@+id/alarma_campana"
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_alarma_bell"
+                    android:importantForAccessibility="no" />
+            </FrameLayout>
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="¡Es hora!"
+            android:textColor="@color/white"
+            android:textSize="42sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Tu medicamento"
+            android:textColor="@color/brand_100"
+            android:textSize="20sp" />
+    </LinearLayout>
+
+    <!-- ══ Tarjeta con la hora y el medicamento ══════════════════
+         El margen superior negativo la hace montarse sobre la curva. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="-48dp"
+        android:background="@drawable/bg_alarma_card"
+        android:elevation="8dp"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:paddingTop="18dp"
+        android:paddingBottom="18dp">
+
+        <!-- Hora -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:padding="13dp"
+                android:background="@drawable/bg_alarma_chip"
+                android:src="@drawable/ic_alarma_reloj"
+                android:importantForAccessibility="no" />
+
+            <TextView
+                android:id="@+id/alarma_hora"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="16dp"
+                android:layout_marginLeft="16dp"
+                android:text="00:00"
+                android:textColor="@color/ink"
+                android:textSize="40sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="14dp"
+            android:layout_marginBottom="14dp"
+            android:background="@color/ink_8" />
+
+        <!-- Medicamento -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:padding="13dp"
+                android:background="@drawable/bg_alarma_chip"
+                android:src="@drawable/ic_alarma_pastilla"
+                android:importantForAccessibility="no" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="16dp"
+                android:layout_marginLeft="16dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/alarma_medicamento"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Medicamento"
+                    android:textColor="@color/ink"
+                    android:textSize="26sp"
+                    android:textStyle="bold"
+                    android:lineSpacingMultiplier="1.05" />
+
+                <TextView
+                    android:id="@+id/alarma_dosis"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textColor="@color/brand_600"
+                    android:textSize="21sp"
+                    android:visibility="gone" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Empuja los botones al fondo -->
     <View
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-    <!-- Botón principal: Ya tomé mi medicación.
-         MaterialButton explícito + app:backgroundTint. NO poner android:background:
-         el tema infla los <Button> como MaterialButton, y al ver un background
-         propio le reenvía igual el tint del tema (colorPrimary = brand_500) a
-         AppCompat, que tiñe de violeta el shape blanco y lo deja "lavado".
-         insetTop/Bottom en 0: el fondo se envuelve en un InsetDrawable de 4dp
-         y perderíamos 8dp de alto pintado.
-         Alto por minHeight y no fijo: con la fuente del sistema agrandada
-         (habitual en adulto mayor) el texto pasa a más líneas y se recortaría. -->
+    <!-- ══ Acciones ══════════════════════════════════════════════
+         MaterialButton con app:backgroundTint (nunca android:background:
+         el componente le reenvía igual el tinte del tema y lo lava).
+         Alto por minHeight para que no se recorte si la persona tiene
+         agrandada la fuente del sistema. -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_ya_tome"
         style="@style/Widget.Material3.Button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="80dp"
-        android:layout_marginBottom="16dp"
+        android:minHeight="72dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="14dp"
         android:insetTop="0dp"
         android:insetBottom="0dp"
         android:paddingTop="12dp"
         android:paddingBottom="12dp"
-        android:text="✓  Ya tomé mi medicación"
-        android:textColor="@color/brand_700"
-        android:textSize="22sp"
+        android:text="Ya tomé mi medicación"
+        android:textColor="@color/white"
+        android:textSize="21sp"
         android:textStyle="bold"
         android:textAllCaps="false"
         android:stateListAnimator="@null"
-        app:backgroundTint="@color/white"
-        app:cornerRadius="20dp"
+        app:backgroundTint="@color/alarma_verde"
+        app:cornerRadius="36dp"
         app:elevation="0dp"
-        app:rippleColor="#66958CE8" />
+        app:icon="@drawable/ic_alarma_check"
+        app:iconSize="34dp"
+        app:iconPadding="14dp"
+        app:iconGravity="textStart"
+        app:iconTint="@color/white"
+        app:rippleColor="@color/alarma_verde_ripple" />
 
-    <!-- Botón secundario: Posponer.
-         Relleno transparente a propósito: el velo blanco anterior subía el fondo
-         y bajaba el contraste del texto blanco de 4.39:1 a 3.49:1. El contorno
-         blanco sólido de 2dp alcanza para que se lea como botón. -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_posponer"
         style="@style/Widget.Material3.Button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="68dp"
+        android:minHeight="64dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="28dp"
         android:insetTop="0dp"
         android:insetBottom="0dp"
-        android:paddingTop="12dp"
-        android:paddingBottom="12dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
         android:text="Posponer 15 minutos"
-        android:textColor="@color/white"
-        android:textSize="20sp"
+        android:textColor="@color/brand_600"
+        android:textSize="19sp"
         android:textStyle="bold"
         android:textAllCaps="false"
         android:stateListAnimator="@null"
         app:backgroundTint="@android:color/transparent"
-        app:cornerRadius="20dp"
+        app:cornerRadius="32dp"
         app:elevation="0dp"
-        app:strokeColor="@color/white"
-        app:strokeWidth="2dp"
-        app:rippleColor="#59FFFFFF" />
+        app:strokeColor="@color/brand_300"
+        app:strokeWidth="1.5dp"
+        app:icon="@drawable/ic_alarma_posponer"
+        app:iconSize="26dp"
+        app:iconPadding="12dp"
+        app:iconGravity="textStart"
+        app:iconTint="@color/brand_600"
+        app:rippleColor="@color/brand_50" />
 
 </LinearLayout>

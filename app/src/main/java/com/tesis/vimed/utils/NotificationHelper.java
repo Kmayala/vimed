@@ -44,6 +44,10 @@ public class NotificationHelper {
     public static final String EXTRA_HORA      = "hora";           // "HH:mm"
     public static final String EXTRA_INDICE    = "indice_alarma";  // 0..N
     public static final String EXTRA_MENSAJE   = "mensaje";        // texto del medicamento
+    // La pantalla de alarma muestra el nombre y la dosis en renglones
+    // distintos, así que viajan separados en vez de un solo texto pegado.
+    public static final String EXTRA_NOMBRE    = "nombre_med";     // "Diclofenac"
+    public static final String EXTRA_DOSIS     = "dosis_med";      // "50 mg"
 
     public static final int SNOOZE_MINUTOS = 15;
 
@@ -220,7 +224,8 @@ public class NotificationHelper {
     public static void mostrarRecordatorioToma(Context ctx, int idMedicamento,
                                                 int idHorario, int idRegistro,
                                                 String hora, int indice,
-                                                String titulo, String mensaje) {
+                                                String titulo, String mensaje,
+                                                String nombreMed, String dosisTxt) {
         // Intent del botón "Confirmar toma"
         Intent confirmIntent = new Intent(ctx, com.tesis.vimed.utils.AlarmaReceiver.class);
         confirmIntent.setAction(ACTION_CONFIRM);
@@ -256,6 +261,8 @@ public class NotificationHelper {
         alarmaIntent.putExtra(EXTRA_HORA, hora);
         alarmaIntent.putExtra(EXTRA_INDICE, indice);
         alarmaIntent.putExtra(EXTRA_MENSAJE, mensaje);
+        alarmaIntent.putExtra(EXTRA_NOMBRE, nombreMed);
+        alarmaIntent.putExtra(EXTRA_DOSIS, dosisTxt);
         PendingIntent piAlarma = PendingIntent.getActivity(ctx,
             requestCodeFor(idMedicamento, indice) + 3_000_000, alarmaIntent,
             PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);

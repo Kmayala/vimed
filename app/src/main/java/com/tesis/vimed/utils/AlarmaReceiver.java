@@ -96,12 +96,13 @@ public class AlarmaReceiver extends BroadcastReceiver {
         String dosis = med.getDosis() == (int) med.getDosis()
             ? String.valueOf((int) med.getDosis())
             : String.valueOf(med.getDosis());
-        String mensaje = med.getNombre() + " — " + dosis
-            + " " + (med.getUnidad() != null ? med.getUnidad() : "");
+        String dosisTxt = (dosis + " "
+            + (med.getUnidad() != null ? med.getUnidad() : "")).trim();
+        String mensaje = med.getNombre() + " — " + dosisTxt;
 
         NotificationHelper.mostrarRecordatorioToma(ctx,
             idMedicamento, idHorario, idRegistro, hora, indice,
-            "Hora de tu medicamento", mensaje);
+            "Hora de tu medicamento", mensaje, med.getNombre(), dosisTxt);
 
         // Queda en el historial, pero sin push: al cuidador no le sirve
         // enterarse de cada vez que suena una alarma.

@@ -33,4 +33,17 @@
 
     <style name="Theme.Vimed" parent="Base.Theme.Vimed" />
 
+    <!-- Alarma a pantalla completa: el header violeta tiene que llegar hasta
+         el borde superior, por detrás de la barra de estado. Por eso acá
+         apagamos fitsSystemWindows (el layout pone su propio paddingTop) y
+         los íconos de la barra pasan a blancos, que es lo legible sobre
+         violeta. La barra de abajo queda clara, como el fondo de la pantalla. -->
+    <style name="Theme.Vimed.Alarma" parent="Base.Theme.Vimed">
+        <item name="android:fitsSystemWindows">false</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@color/paper</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
+    </style>
+
 </resources>
