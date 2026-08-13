@@ -20,10 +20,17 @@ def localPropsFile = rootProject.file('local.properties')
 if (localPropsFile.exists()) {
     localPropsFile.withInputStream { localProps.load(it) }
 }
-def supabaseUrl = localProps.getProperty('SUPABASE_URL')
-    ?: System.getenv('SUPABASE_URL') ?: ''
-def supabaseAnonKey = localProps.getProperty('SUPABASE_ANON_KEY')
-    ?: System.getenv('SUPABASE_ANON_KEY') ?: ''
+// Se limpia TODO espacio en blanco (incluidos saltos de línea): al pegar
+// el anon key —un JWT larguísimo— en un secret de GitHub es muy fácil que
+// se cuele un enter, y eso generaba un BuildConfig.java con un string sin
+// cerrar que rompía la compilación. Ni la URL ni el JWT llevan espacios,
+// así que quitarlos es seguro.
+def limpiar = { String v -> v == null ? '' : v.replaceAll('\\s', '') }
+
+def supabaseUrl = limpiar(localProps.getProperty('SUPABASE_URL')
+    ?: System.getenv('SUPABASE_URL'))
+def supabaseAnonKey = limpiar(localProps.getProperty('SUPABASE_ANON_KEY')
+    ?: System.getenv('SUPABASE_ANON_KEY'))
 
 if (supabaseUrl.isEmpty() || supabaseAnonKey.isEmpty()) {
     logger.warn('⚠ SUPABASE_URL / SUPABASE_ANON_KEY vacías: ' +
