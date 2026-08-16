@@ -183,6 +183,18 @@
                 android:lineSpacingMultiplier="1.3"
                 android:layout_marginTop="20dp" />
 
+            <!-- Versión de la build. Sirve para saber si el celular tiene
+                 la última: en Firebase todas las versiones se ven iguales
+                 en la lista, así que sin esto hay que adivinar. -->
+            <TextView
+                android:id="@+id/tv_version"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textSize="13sp"
+                android:textColor="@color/ink_5"
+                android:layout_marginTop="26dp" />
+
         </LinearLayout>
     </ScrollView>
 

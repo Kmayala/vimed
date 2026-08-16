@@ -3,6 +3,7 @@ package com.tesis.vimed;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
@@ -30,6 +31,9 @@ public class ConfiguracionActivity extends AppCompatActivity {
         findViewById(R.id.opt_oscuro).setOnClickListener(v  -> elegir(TemaManager.OSCURO));
 
         pintarElegido(TemaManager.modoGuardado(this));
+
+        ((TextView) findViewById(R.id.tv_version))
+            .setText("Vimed " + BuildConfig.VERSION_NAME);
     }
 
     private void elegir(int modo) {

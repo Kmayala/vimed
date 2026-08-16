@@ -46,6 +46,12 @@ if (supabaseUrl.isEmpty() || supabaseAnonKey.isEmpty()) {
         'de una sola pieza y sin cortes.')
 }
 
+// Identidad de la build. GITHUB_RUN_NUMBER sube de a uno en cada corrida
+// del workflow, así que sirve de versionCode; el SHA corto dice
+// exactamente qué commit se está corriendo en el celular.
+def versionDeCI = System.getenv('GITHUB_RUN_NUMBER')
+def commitCorto = (System.getenv('GITHUB_SHA') ?: 'local').take(7)
+
 android {
     namespace 'com.tesis.vimed'
     compileSdk {
@@ -58,8 +64,18 @@ android {
         applicationId "com.tesis.vimed"
         minSdk 24
         targetSdk 36
-        versionCode 1
-        versionName "1.0"
+        // La versión sale del número de corrida de CI y del commit.
+        //
+        // Con versionCode 1 y versionName "1.0" fijos, TODAS las builds
+        // llegaban a Firebase App Distribution llamándose "1.0 (1)": en la
+        // lista de versiones no había forma de distinguir la recién subida
+        // de una de hace tres días, salvo mirando la fecha. Es muy fácil
+        // instalar la equivocada y creer que un cambio no se aplicó.
+        //
+        // Compilando desde Android Studio no hay esas variables, así que
+        // queda "1.0-local" y el código en 1.
+        versionCode versionDeCI ? versionDeCI.toInteger() : 1
+        versionName versionDeCI ? "1.0.${versionDeCI} (${commitCorto})" : "1.0-local"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
