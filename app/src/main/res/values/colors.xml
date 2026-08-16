@@ -119,6 +119,11 @@
     <color name="surface_dark">#280049</color>
     <color name="surface_dark_2">#3e195c</color>
 
+    <!-- Fondo del ícono adaptativo. No tiene versión oscura: el ícono
+         del launcher no sigue al tema de la app, lo dibuja el sistema.
+         Es el mismo blanco lavanda del logo original. -->
+    <color name="ic_launcher_bg">#f7f4fb</color>
+
     <!-- ── Modo oscuro (la app corre siempre en claro) ────── -->
     <color name="dark_bg">#21222d</color>
     <color name="dark_card">#2e2f3b</color>

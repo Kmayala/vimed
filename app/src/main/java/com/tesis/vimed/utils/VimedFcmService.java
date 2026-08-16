@@ -70,7 +70,7 @@ public class VimedFcmService extends FirebaseMessagingService {
 
         NotificationCompat.Builder b =
             new NotificationCompat.Builder(this, NotificationHelper.CHANNEL_ID)
-                .setSmallIcon(android.R.drawable.ic_dialog_info)
+                .setSmallIcon(R.drawable.ic_notificacion)
                 .setContentTitle(titulo)
                 .setContentText(mensaje)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(mensaje))

@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Ícono adaptativo. El sistema le aplica SU máscara (círculo, cuadrado
+  redondeado o gota según el celular), por eso acá el fondo es un color
+  plano y el símbolo va suelto: la imagen original ya traía su propio
+  cuadrado redondeado con sombra y habría quedado una calcomanía
+  redondeada dentro de un agujero redondo, con las esquinas cortadas.
+
+  monochrome es la silueta de un tono, para el ícono temado de Android 13+.
+-->
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <background android:drawable="@drawable/ic_launcher_background" />
-    <foreground android:drawable="@drawable/ic_launcher_foreground" />
-    <monochrome android:drawable="@drawable/ic_launcher_foreground" />
+    <background android:drawable="@color/ic_launcher_bg" />
+    <foreground android:drawable="@mipmap/ic_launcher_foreground" />
+    <monochrome android:drawable="@mipmap/ic_launcher_monochrome" />
 </adaptive-icon>

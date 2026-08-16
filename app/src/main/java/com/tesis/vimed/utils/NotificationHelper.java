@@ -364,7 +364,7 @@ public class NotificationHelper {
             PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         NotificationCompat.Builder b = new NotificationCompat.Builder(ctx, canalId)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setSmallIcon(R.drawable.ic_notificacion)
             .setContentTitle(titulo)
             .setContentText(mensaje)
             .setStyle(new NotificationCompat.BigTextStyle().bigText(mensaje))
@@ -401,7 +401,7 @@ public class NotificationHelper {
     /** Notificación simple sin acciones (para stock bajo, avisos generales). */
     public static void mostrarNotificacion(Context context, String titulo, String mensaje, int id) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setSmallIcon(R.drawable.ic_notificacion)
             .setContentTitle(titulo)
             .setContentText(mensaje)
             .setStyle(new NotificationCompat.BigTextStyle().bigText(mensaje))
