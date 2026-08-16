@@ -11,6 +11,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.tesis.vimed.api.auth.AuthPayloads;
+import com.tesis.vimed.api.auth.LoginGoogle;
 import com.tesis.vimed.api.auth.SupabaseAuthClient;
 import com.tesis.vimed.database.DatabaseHelper;
 import com.tesis.vimed.database.UsuarioDAO;
@@ -42,6 +43,7 @@ public class LoginActivity extends AppCompatActivity {
         etPassword = findViewById(R.id.et_password);
 
         btnLogin = findViewById(R.id.btn_login);
+        findViewById(R.id.btn_google).setOnClickListener(v -> entrarConGoogle());
         MaterialButton tvRegister = findViewById(R.id.tv_register);
         MaterialButton tvForgot   = findViewById(R.id.tv_forgot_password);
 
@@ -106,6 +108,67 @@ public class LoginActivity extends AppCompatActivity {
                         "Sin conexión: " + t.getMessage(), Toast.LENGTH_LONG).show();
                 }
             });
+    }
+
+    // ═══ Entrar con Google ═════════════════════════════════════
+
+    /**
+     * Pide el token a Google y lo canjea por una sesión de Supabase.
+     *
+     * Al final reusa {@link #onLoginExitoso}: ese método solo usa la
+     * contraseña para crear la fila local si no existe, y desde que la
+     * fuente de verdad es Auth ese campo ya no se consulta para nada. Se
+     * le pasa vacía en vez de duplicar todo el manejo de sesión.
+     */
+    private void entrarConGoogle() {
+        setCargandoGoogle(true);
+
+        LoginGoogle.pedirToken(this, new LoginGoogle.Callback() {
+            @Override
+            public void onToken(String idToken, String nonce) {
+                SupabaseAuthClient.getService()
+                    .signInConIdToken(new AuthPayloads.IdTokenRequest(idToken, nonce))
+                    .enqueue(new Callback<AuthPayloads.AuthResponse>() {
+                        @Override
+                        public void onResponse(Call<AuthPayloads.AuthResponse> c,
+                                               Response<AuthPayloads.AuthResponse> r) {
+                            setCargandoGoogle(false);
+                            AuthPayloads.AuthResponse body = r.body();
+                            if (r.isSuccessful() && body != null && body.accessToken != null) {
+                                String correo = body.user != null && body.user.email != null
+                                    ? body.user.email : "";
+                                onLoginExitoso(correo, "", body);
+                            } else {
+                                mostrarErrorRespuesta(r);
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<AuthPayloads.AuthResponse> c, Throwable t) {
+                            setCargandoGoogle(false);
+                            Toast.makeText(LoginActivity.this,
+                                "Sin conexión: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    });
+            }
+
+            @Override
+            public void onError(String mensaje, boolean cancelado) {
+                setCargandoGoogle(false);
+                // Si cerró la hoja de cuentas a propósito, no es un error
+                // que haya que anunciarle.
+                if (!cancelado) {
+                    Toast.makeText(LoginActivity.this, mensaje, Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+    }
+
+    private void setCargandoGoogle(boolean cargando) {
+        com.google.android.material.button.MaterialButton btn = findViewById(R.id.btn_google);
+        if (btn == null) return;
+        btn.setEnabled(!cargando);
+        btn.setText(cargando ? "Entrando…" : "Continuar con Google");
     }
 
     private void onLoginExitoso(String email, String password,

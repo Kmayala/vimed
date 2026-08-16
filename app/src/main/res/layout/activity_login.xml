@@ -196,6 +196,58 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
+                android:layout_marginTop="22dp"
+                android:layout_marginBottom="18dp">
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"
+                    android:background="@color/ink_7" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="o"
+                    android:textSize="15sp"
+                    android:textColor="@color/ink_4"
+                    android:paddingLeft="16dp"
+                    android:paddingRight="16dp" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"
+                    android:background="@color/ink_7" />
+            </LinearLayout>
+
+            <!-- Entrar con Google. Va DEBAJO del login por correo y no
+                 arriba: quien ya tiene cuenta creada en la app entra por
+                 donde siempre, y Google queda como alternativa. -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_google"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:text="Continuar con Google"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textAllCaps="false"
+                android:textColor="@color/ink_2"
+                app:icon="@drawable/ic_esp_cruz"
+                app:iconGravity="textStart"
+                app:iconPadding="12dp"
+                app:iconTint="@color/brand_600"
+                app:strokeColor="@color/ink_7"
+                app:strokeWidth="1.5dp"
+                app:cornerRadius="18dp" />
+
+            <!-- Separador -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
                 android:layout_marginBottom="16dp">
 
                 <View
