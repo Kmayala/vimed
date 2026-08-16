@@ -81,6 +81,9 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
         "Gotas", "Parche", "Inhalador", "Otro"
     };
 
+    /** Unidades de dosis. Doblan como tag de su botón en el paso 2. */
+    private static final String[] UNIDADES = {"mg", "ml", "mcg", "g", "UI"};
+
     private static final String[] INSTRUCCIONES_TAGS = {
         "despues_comer", "antes_comer", "ayunas", "con_agua",
         "con_leche", "antes_dormir", "al_despertar", "sin_restriccion"
@@ -153,6 +156,9 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
         progressBar.setProgress(index + 1);
 
         // Reflejar lo que ya está elegido (puede venir precargado del catálogo)
+        // La unidad puede haber cambiado en el paso 1 al elegir del catálogo,
+        // así que el resaltado se refresca al entrar y no solo al crear.
+        if (index == 1) resaltarSeleccion(pasos[1], UNIDADES, unidad);
         if (index == 2) resaltarSeleccion(pasos[2], PRESENTACIONES, presentacion);
         if (index == 3) resaltarSeleccion(pasos[3], INSTRUCCIONES_TAGS, instrucciones);
 
@@ -271,8 +277,11 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
     }
 
     private void setAdaptadorNombres(AutoCompleteTextView etNombre, List<String> nombres) {
+        // Fila propia en vez de simple_dropdown_item_1line: la del sistema
+        // usa su tipografía y filas de 40dp, difíciles de acertar para la
+        // persona a la que apunta la app.
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-            android.R.layout.simple_dropdown_item_1line, nombres);
+            R.layout.item_dropdown_vimed, nombres);
         etNombre.setAdapter(adapter);
         etNombre.setThreshold(1);
     }
@@ -312,16 +321,21 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
     // ── Paso 2: Dosis ──────────────────────────────────────────
     private void configurarPaso2() {
         // Campo manual y desplegable de unidad (ocultos al inicio)
-        View tilDosis  = pasos[1].findViewById(R.id.til_dosis_manual);
         TextInputEditText etDosis = pasos[1].findViewById(R.id.et_dosis_manual);
-        AutoCompleteTextView spUnidad = pasos[1].findViewById(R.id.sp_unidad);
-        View tilUnidad = pasos[1].findViewById(R.id.til_unidad);
         View btnSiguiente2 = pasos[1].findViewById(R.id.btn_siguiente_2);
 
-        String[] unidades = {"mg", "ml", "mcg", "g", "UI"};
-        spUnidad.setAdapter(new ArrayAdapter<>(this,
-            android.R.layout.simple_list_item_1, unidades));
-        spUnidad.setText(unidades[0], false);   // false = no filtrar la lista
+        // Unidad: botones a la vista, no un desplegable del sistema. Ver la
+        // nota en el layout — el popup de Android ni se parece al resto de
+        // la app y obliga a dos toques sobre ítems chicos.
+        for (String u : UNIDADES) {
+            View btn = pasos[1].findViewWithTag(u);
+            if (btn == null) continue;
+            btn.setOnClickListener(v -> {
+                unidad = u;
+                resaltarSeleccion(pasos[1], UNIDADES, unidad);
+            });
+        }
+        resaltarSeleccion(pasos[1], UNIDADES, unidad);
 
         // Presets rápidos — navegan directo al paso 3, salvo que la dosis
         // no se parezca a la del catálogo: ahí primero avisamos.
@@ -349,8 +363,7 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
             }
             try {
                 dosis = Float.parseFloat(dosisStr);
-                String u = spUnidad.getText().toString().trim();
-                if (!u.isEmpty()) unidad = u;
+                // La unidad ya quedó elegida al tocar su botón.
                 avisarSiLaDosisEsRara(() -> mostrarPaso(2));
             } catch (NumberFormatException e) {
                 etDosis.setError("Número inválido");
@@ -523,8 +536,9 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
     /** Abre el campo de dosis a mano, para corregir sin salir del paso. */
     private void mostrarCampoDosisManual() {
         pasos[1].findViewById(R.id.til_dosis_manual).setVisibility(View.VISIBLE);
-        pasos[1].findViewById(R.id.til_unidad).setVisibility(View.VISIBLE);
+        pasos[1].findViewById(R.id.fila_unidades).setVisibility(View.VISIBLE);
         pasos[1].findViewById(R.id.btn_siguiente_2).setVisibility(View.VISIBLE);
+        resaltarSeleccion(pasos[1], UNIDADES, unidad);
     }
 
     // ── Chequeo de interacciones antes de guardar ──────────────
