@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- El período elegido se rellena de cian, que es el color de "esto
-     está activo" en toda la app. El texto encima va oscuro: el cian
-     con contenido claro da 1.58. -->
+<!-- El período elegido se rellena con el violeta de la marca. -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_selected="true">
         <shape android:shape="rectangle">
-            <solid android:color="@color/cian_500" />
+            <solid android:color="@color/brand_500" />
             <corners android:radius="999dp" />
         </shape>
     </item>

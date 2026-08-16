@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Ícono de la barra. El elegido se dibuja ENCIMA de la píldora cian,
-     así que va oscuro: el cian con contenido claro encima da 1.58. -->
+<!-- Ícono de la barra. El elegido se dibuja encima de la píldora
+     lavanda, así que va en el violeta oscuro de la marca. -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:color="@color/sobre_cian" android:state_checked="true" />
+    <item android:color="@color/brand_600" android:state_checked="true" />
     <item android:color="@color/ink_4" />
 </selector>

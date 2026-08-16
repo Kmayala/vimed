@@ -61,18 +61,7 @@
     <color name="verde_500">#1b5e1f</color>
     <color name="verde_700">#18431e</color>
 
-    <!-- Cian de las alas. Como el amarillo, lleva texto OSCURO: con
-         blanco encima da 1.58, con ink da 10.01. El _700 es el tono
-         para cuando el cian tiene que ser texto. -->
-    <color name="cian_50">#e6fbfd</color>
-    <color name="cian_100">#b8f4f9</color>
-    <color name="cian_500">#1fe3f2</color>
-    <color name="cian_700">#0a6b74</color>
 
-    <!-- Contenido que va ENCIMA del cian. Fijo en los dos modos: el
-         cian es el mismo #1FE3F2 siempre, así que lo que lleve encima
-         tiene que ser oscuro siempre. Con blanco daría 1.58. -->
-    <color name="sobre_cian">#06343a</color>
 
     <color name="rosa_50">#f5ecf1</color>
     <color name="rosa_100">#e5cad8</color>

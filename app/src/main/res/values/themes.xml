@@ -113,11 +113,11 @@
         <item name="android:focusable">true</item>
     </style>
 
-    <!-- Píldora de la barra inferior: el cian es el color de "esto
-         está activo". Es el que más salta de la paleta, así que se
-         reserva para la selección y no se reparte como decoración. -->
+    <!-- Píldora de la barra inferior. Lavanda y no cian: el cian a
+         pleno resulta demasiado estridente para una app que usa un
+         adulto mayor todos los días. -->
     <style name="IndicadorNav" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
-        <item name="android:color">@color/cian_500</item>
+        <item name="android:color">@color/brand_100</item>
     </style>
 
     <style name="CheckTema">
