@@ -16,7 +16,7 @@
         android:paddingRight="14dp"
         android:paddingTop="10dp"
         android:paddingBottom="10dp"
-        android:textColor="@color/paper_2"
+        android:textColor="@color/white"
         android:textSize="15sp"
         android:lineSpacingMultiplier="1.3" />
 

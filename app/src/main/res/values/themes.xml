@@ -24,6 +24,16 @@
         <item name="colorOutline">@color/ink_6</item>
         <item name="colorError">@color/danger</item>
 
+        <!-- ── Diálogos y selectores del sistema ─────────────────
+             Sin esto, los ~58 AlertDialog de la app y los pickers de
+             fecha y hora se dibujan con el estilo de Android: otro
+             fondo, otras esquinas, otro violeta. Se atan acá y no en
+             cada llamada, así ninguna pantalla puede olvidarse. -->
+        <item name="alertDialogTheme">@style/Theme.Vimed.Dialogo</item>
+        <item name="materialAlertDialogTheme">@style/Theme.Vimed.Dialogo</item>
+        <item name="android:datePickerDialogTheme">@style/Theme.Vimed.Picker</item>
+        <item name="android:timePickerDialogTheme">@style/Theme.Vimed.Picker</item>
+
         <!-- ── Barras del sistema ──────────────────────────────
              Desde Android 15 (targetSdk 35+) el sistema fuerza
              edge-to-edge: la app dibuja debajo de la barra de
@@ -38,6 +48,35 @@
     </style>
 
     <style name="Theme.Vimed" parent="Base.Theme.Vimed" />
+
+    <!-- Diálogos: fondo y esquinas de la app, botones en el violeta
+         de la marca. Hereda de Material3 para que el modo oscuro lo
+         resuelva la misma paleta. -->
+    <style name="Theme.Vimed.Dialogo" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorPrimary">@color/brand_500</item>
+        <item name="colorSurface">@color/paper_2</item>
+        <item name="colorOnSurface">@color/ink</item>
+        <item name="android:textColorPrimary">@color/ink</item>
+        <item name="android:textColorSecondary">@color/ink_3</item>
+        <item name="android:background">@drawable/shape_dialog</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Boton.Dialogo</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Boton.Dialogo</item>
+        <item name="buttonBarNeutralButtonStyle">@style/Boton.Dialogo</item>
+    </style>
+
+    <style name="Boton.Dialogo" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/brand_600</item>
+        <item name="android:textSize">17sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- Los pickers de fecha y hora son del framework, no de Material:
+         necesitan un tema propio con el acento de la app. -->
+    <style name="Theme.Vimed.Picker" parent="android:Theme.Material.Light.Dialog">
+        <item name="android:colorAccent">@color/brand_500</item>
+        <item name="android:textColorPrimary">@color/ink</item>
+        <item name="android:windowBackground">@drawable/shape_dialog</item>
+    </style>
 
     <!-- Alarma a pantalla completa: el header violeta tiene que llegar hasta
          el borde superior, por detrás de la barra de estado. Por eso acá

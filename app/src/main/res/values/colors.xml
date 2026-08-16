@@ -13,16 +13,16 @@
          ═══════════════════════════════════════════════════════ -->
 
     <!-- ── Primario: violeta ─────────────────────────────────── -->
-    <color name="brand_50">#f5eff8</color>
-    <color name="brand_100">#e7dbef</color>
-    <color name="brand_200">#cfb6df</color>
-    <color name="brand_300">#b288ca</color>
-    <color name="brand_400">#8e52b2</color>
-    <color name="brand_500">#6a1b9a</color>   <!-- primario -->
-    <color name="brand_600">#5e1889</color>   <!-- texto/acciones sobre fondo claro -->
-    <color name="brand_700">#521577</color>
-    <color name="brand_800">#441163</color>
-    <color name="brand_900">#360d50</color>
+    <color name="brand_50">#f2eefb</color>
+    <color name="brand_100">#e7e0f7</color>
+    <color name="brand_200">#d3c2ee</color>
+    <color name="brand_300">#bca0e3</color>
+    <color name="brand_400">#8e5cb8</color>
+    <color name="brand_500">#5e2585</color>   <!-- primario -->
+    <color name="brand_600">#4f1f70</color>   <!-- texto/acciones sobre fondo claro -->
+    <color name="brand_700">#471b64</color>
+    <color name="brand_800">#391551</color>
+    <color name="brand_900">#2b0f3d</color>
 
     <!-- ══ FAMILIAS DE SECCIÓN ═══════════════════════════════════
          Cada zona de la app tiene su color, y el color es información:
@@ -44,12 +44,12 @@
          lleva texto OSCURO (8.69 contra ink), nunca blanco, y para
          usarlo COMO texto está amarillo_700, que sí es oscuro.     -->
 
-    <color name="azul_50">#ecf3fa</color>
-    <color name="azul_100">#cbddf1</color>
-    <color name="azul_200">#cbddf1</color>
-    <color name="azul_500">#1464c0</color>
-    <color name="azul_600">#1657a6</color>
-    <color name="azul_700">#13478e</color>
+    <color name="azul_50">#e9eff8</color>
+    <color name="azul_100">#c3d3ea</color>
+    <color name="azul_200">#c3d3ea</color>
+    <color name="azul_500">#0b3f91</color>
+    <color name="azul_600">#0a377f</color>
+    <color name="azul_700">#092c66</color>
 
     <color name="naranja_50">#faefeb</color>
     <color name="naranja_100">#f1d3c9</color>
@@ -60,6 +60,14 @@
     <color name="verde_100">#cddcce</color>
     <color name="verde_500">#1b5e1f</color>
     <color name="verde_700">#18431e</color>
+
+    <!-- Cian de las alas. Como el amarillo, lleva texto OSCURO: con
+         blanco encima da 1.58, con ink da 10.01. El _700 es el tono
+         para cuando el cian tiene que ser texto. -->
+    <color name="cian_50">#e6fbfd</color>
+    <color name="cian_100">#b8f4f9</color>
+    <color name="cian_500">#1fe3f2</color>
+    <color name="cian_700">#0a6b74</color>
 
     <color name="rosa_50">#f5ecf1</color>
     <color name="rosa_100">#e5cad8</color>
@@ -86,14 +94,14 @@
     <color name="verde_solido">#1b5e1f</color>
     <color name="naranja_solido">#be360b</color>
     <color name="amarillo_solido">#7a5600</color>
-    <color name="azul_solido">#1464c0</color>
+    <color name="azul_solido">#0b3f91</color>
     <color name="rosa_solido">#870e4f</color>
 
     <!-- Alias legacy (código que todavía dice "turquesa") -->
-    <color name="turquesa">#6a1b9a</color>
-    <color name="turquesa_dark">#5e1889</color>
-    <color name="turquesa_light">#f5eff8</color>
-    <color name="turquesa_border">#e7dbef</color>
+    <color name="turquesa">#5e2585</color>
+    <color name="turquesa_dark">#4f1f70</color>
+    <color name="turquesa_light">#f2eefb</color>
+    <color name="turquesa_border">#e7e0f7</color>
 
     <!-- ── Neutrales fríos (ink) ──────────────────────────── -->
     <color name="ink">#21222d</color>         <!-- texto principal -->
@@ -125,10 +133,10 @@
 
     <!-- ── Colores de pastillas (fondo de círculo, texto blanco) -->
     <color name="pill_rojo">#be360b</color>
-    <color name="pill_azul">#1464c0</color>
+    <color name="pill_azul">#0b3f91</color>
     <color name="pill_amarillo">#7a5600</color>
     <color name="pill_verde">#1b5e1f</color>
-    <color name="pill_morado">#6a1b9a</color>
+    <color name="pill_morado">#5e2585</color>
     <color name="pill_gris">#870e4f</color>
 
     <!-- ── Texto ──────────────────────────────────────────── -->
@@ -146,7 +154,13 @@
          violeta en los dos modos, así que su texto tampoco cambia. Si
          usara brand_100 —como antes— en modo oscuro se volvería violeta
          oscuro sobre violeta y se perdería (2.9 contra 3.93). -->
-    <color name="alarma_header_sub">#e7dbef</color>
+    <color name="alarma_header_sub">#e7e0f7</color>
+
+    <!-- Texto secundario sobre la tarjeta destacada (paciente, próxima
+         cita). Fijo en los dos modos, por el mismo motivo que
+         alarma_header_sub: esa tarjeta es oscura siempre, así que su
+         texto tiene que ser claro siempre. -->
+    <color name="sobre_superficie_oscura">#d3c2ee</color>
 
     <color name="alarma_verde">#16a34a</color>
     <color name="alarma_verde_ripple">#3315803d</color>
@@ -157,13 +171,13 @@
          azulado: es el mismo extremo oscuro de la escala, así que la
          tarjeta se lee como parte de la familia y no como un bloque
          negro prestado de otro diseño. Texto blanco encima: 17.7.  -->
-    <color name="surface_dark">#3d1073</color>
-    <color name="surface_dark_2">#6a1b9a</color>
+    <color name="surface_dark">#2b0f3d</color>
+    <color name="surface_dark_2">#5e2585</color>
 
     <!-- Fondo del ícono adaptativo. No tiene versión oscura: el ícono
          del launcher no sigue al tema de la app, lo dibuja el sistema.
          Es el mismo blanco lavanda del logo original. -->
-    <color name="ic_launcher_bg">#f5eff8</color>
+    <color name="ic_launcher_bg">#f2eefb</color>
 
     <!-- ── Modo oscuro (la app corre siempre en claro) ────── -->
     <color name="dark_bg">#21222d</color>

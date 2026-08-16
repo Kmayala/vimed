@@ -3,117 +3,126 @@
     <!-- ═══════════════════════════════════════════════════════
          PALETA VIMED — MODO OSCURO
 
-         Mismos nombres que en values/colors.xml: ninguna pantalla
-         sabe en qué modo está, solo pide @color/loquesea.
+         Negro real con acentos neón, no un violeta apagado.
 
-         La regla para traducir cada token NO es "invertir el color",
-         es RESPETAR SU ROL. Un token que en claro es fondo suave
-         (brand_50, brand_100) acá es un fondo apenas más claro que la
-         página; uno que en claro es texto (brand_600, brand_700) tiene
-         que volverse CLARO o desaparece sobre el fondo oscuro.
-         Invertir la escala a ciegas deja texto violeta oscuro sobre
-         negro, que es exactamente lo que pasa en las apps donde el
-         modo oscuro se siente roto.
+         La versión anterior teñía TODO de violeta, incluidos los
+         fondos, con la idea de que se leyera como la misma app con la
+         luz baja. En la práctica quedaba lavada: sobre un fondo que ya
+         tiene color, cualquier acento pierde fuerza, y todo terminaba
+         pareciéndose entre sí. Con el fondo en negro los colores
+         recuperan saturación y se pueden usar brillantes.
 
-         Los negros no son grises: llevan el tinte violeta de #280049,
-         así el modo oscuro se lee como la misma app con la luz baja y
-         no como otra app.
+             fondo    #000000   negro
+             tarjeta  #121212   apenas levantada
+             bordes   #2F2F2F   lo que separa una capa de otra
 
-         Contrastes verificados (WCAG, sobre tarjeta #1f1233):
-           ink       15.16      brand_600  8.94
-           ink_3      8.58      brand_700  9.27 (sobre brand_100)
-           ink_4      5.52      blanco sobre brand_500  5.09
+         Mismos nombres que en values/colors.xml: ninguna pantalla sabe
+         en qué modo está, solo pide @color/loquesea.
+
+         La regla para traducir cada token sigue siendo respetar su ROL,
+         no invertir el color. Un token que en claro es fondo suave acá
+         es un fondo apenas más claro que la página; uno que en claro es
+         texto tiene que volverse CLARO o desaparece.
+
+         Contrastes sobre la tarjeta #121212:
+           ink 18.7 · ink_3 9.4 · ink_4 7.4
+           verde 10.5 · azul 9.3 · amarillo 12.2 · naranja 7.2
+           violeta 7.3 · rosa 7.1 · blanco sobre brand_500 9.4
          ═══════════════════════════════════════════════════════ -->
 
     <!-- ── Primario ───────────────────────────────────────────
          500 queda IGUAL que en claro: es el relleno de los botones y
-         encima lleva texto blanco escrito a mano en los layouts. Si
-         se aclarara, ese blanco perdería contraste. Además el botón
-         se ve idéntico en los dos modos, que ayuda a reconocerlo.
-         600/700/800 se invierten porque su rol es texto.          -->
-    <color name="brand_50">#26123a</color>    <!-- fondo suave / ripple -->
-    <color name="brand_100">#361a4d</color>   <!-- círculos de ícono, chips -->
-    <color name="brand_200">#cfb6df</color>   <!-- texto sobre superficie oscura -->
-    <color name="brand_300">#dcc9e8</color>
-    <color name="brand_400">#b288ca</color>
-    <color name="brand_500">#6a1b9a</color>   <!-- primario (sin cambios) -->
-    <color name="brand_600">#d3aeea</color>   <!-- texto/íconos sobre fondo -->
-    <color name="brand_700">#e2c9f2</color>   <!-- texto sobre brand_100 -->
-    <color name="brand_800">#ecdcf7</color>
-    <color name="brand_900">#f5eefb</color>
+         de la burbuja del chat, y encima lleva texto blanco escrito a
+         mano en los layouts. Si se aclarara, ese blanco perdería
+         contraste. Los tonos de TEXTO (600 en adelante) sí pasan al
+         violeta neón.                                            -->
+    <color name="brand_50">#171018</color>    <!-- fondo suave / ripple -->
+    <color name="brand_100">#241a2e</color>   <!-- círculos de ícono, chips -->
+    <color name="brand_200">#cd88ff</color>   <!-- texto sobre superficie oscura -->
+    <color name="brand_300">#daa6ff</color>
+    <color name="brand_400">#8e5cb8</color>
+    <color name="brand_500">#5e2585</color>   <!-- primario (sin cambios) -->
+    <color name="brand_600">#cd88ff</color>   <!-- texto/íconos sobre fondo -->
+    <color name="brand_700">#daa6ff</color>   <!-- texto sobre brand_100 -->
+    <color name="brand_800">#e6c4ff</color>
+    <color name="brand_900">#f0dcff</color>
 
-    <!-- ── Secundario ─────────────────────────────────────── -->
-    <color name="azul_50">#0d1c2e</color>
-    <color name="azul_100">#12293f</color>
-    <color name="azul_200">#8ec0f0</color>
-    <color name="azul_500">#57a3f0</color>
-    <color name="azul_600">#7bb8f5</color>
-    <color name="azul_700">#9ecbf8</color>
+    <!-- ══ FAMILIAS DE SECCIÓN, en neón ══════════════════════════
+         El _50 es el fondo oscuro de la familia, el _500 el neón que
+         se usa como relleno o gráfico, y el _700 el mismo neón un paso
+         más claro para cuando va como texto.                      -->
 
-    <!-- ══ FAMILIAS DE SECCIÓN ═══════════════════════════════════
-         Mismo rol que en claro, invertido igual que el resto: el _50 es
-         un fondo apenas mas claro que la pagina y el _700 pasa a ser el
-         tono luminoso que va como texto o ícono encima. El _500 se aclara
-         para no perderse contra el fondo oscuro.                       -->
+    <color name="azul_50">#0a1a24</color>
+    <color name="azul_100">#0f2937</color>
+    <color name="azul_200">#5aa9ff</color>
+    <color name="azul_500">#5aa9ff</color>
+    <color name="azul_600">#7dbcff</color>
+    <color name="azul_700">#a3cdff</color>
 
-    <color name="verde_50">#0f2a12</color>
-    <color name="verde_100">#163d1a</color>
-    <color name="verde_500">#5cc763</color>
-    <color name="verde_700">#86d98b</color>
+    <color name="verde_50">#0a1f14</color>
+    <color name="verde_100">#0f3220</color>
+    <color name="verde_500">#3ddc84</color>
+    <color name="verde_700">#66e6a0</color>
 
-    <color name="naranja_50">#33150a</color>
-    <color name="naranja_100">#471e0f</color>
-    <color name="naranja_500">#f2794f</color>
-    <color name="naranja_700">#f7a184</color>
+    <color name="naranja_50">#241009</color>
+    <color name="naranja_100">#361a0f</color>
+    <color name="naranja_500">#ff7847</color>
+    <color name="naranja_700">#ff9670</color>
 
-    <color name="amarillo_50">#33260a</color>
-    <color name="amarillo_100">#47340d</color>
-    <color name="amarillo_500">#f9a825</color>
-    <color name="amarillo_700">#f6c256</color>
+    <color name="amarillo_50">#241d08</color>
+    <color name="amarillo_100">#372c0c</color>
+    <color name="amarillo_500">#ffc93c</color>
+    <color name="amarillo_700">#ffd76b</color>
+
+    <color name="cian_50">#07272b</color>
+    <color name="cian_100">#0b3a40</color>
+    <color name="cian_500">#1fe3f2</color>
+    <color name="cian_700">#5aecf7</color>
+
+    <color name="rosa_50">#240a17</color>
+    <color name="rosa_100">#371022</color>
+    <color name="rosa_500">#ff6fb0</color>
+    <color name="rosa_700">#ff8ec3</color>
 
     <!-- Alias legacy -->
-    <color name="turquesa">#6a1b9a</color>
-    <color name="turquesa_dark">#d3aeea</color>
-    <color name="turquesa_light">#26123a</color>
-    <color name="turquesa_border">#361a4d</color>
+    <color name="turquesa">#5e2585</color>
+    <color name="turquesa_dark">#cd88ff</color>
+    <color name="turquesa_light">#171018</color>
+    <color name="turquesa_border">#241a2e</color>
 
     <!-- ── Neutrales: la escala de ink se da vuelta ───────────
-         ink sigue siendo "el texto principal" y paper "el fondo",
-         solo que ahora uno es claro y el otro oscuro.            -->
-    <color name="ink">#f4eefa</color>         <!-- texto principal -->
-    <color name="ink_2">#e0d4ec</color>
-    <color name="ink_3">#bdb0ca</color>
-    <color name="ink_4">#b6a9c6</color>
-    <color name="ink_5">#9184a2</color>
-    <color name="ink_6">#72628a</color>
-    <!-- El borde de las tarjetas sube bastante: en oscuro es lo único que
-         separa una tarjeta del fondo, porque dos superficies oscuras
-         nunca se van a distinguir por su relleno. Con el valor anterior
-         apenas se veía y todo se leía como una mancha plana. -->
-    <color name="ink_7">#453061</color>       <!-- bordes / divisores -->
-    <color name="ink_8">#31204c</color>
-    <!-- Fondo más profundo y tarjeta más clara que antes: separarlos es
-         lo que da sensación de capas. -->
-    <color name="paper">#10061a</color>       <!-- fondo de pantalla -->
-    <color name="paper_2">#26143a</color>     <!-- cards -->
+         Grises neutros, sin tinte: es lo que deja que los neones se
+         vean neón. Un gris violáceo se los come.                 -->
+    <color name="ink">#ffffff</color>         <!-- texto principal -->
+    <color name="ink_2">#e8e8e8</color>
+    <color name="ink_3">#b8b8b8</color>
+    <color name="ink_4">#a3a3a3</color>
+    <color name="ink_5">#8a8a8a</color>
+    <color name="ink_6">#6b6b6b</color>
+    <!-- El borde es lo único que separa una tarjeta del fondo: dos
+         superficies oscuras nunca se van a distinguir por su relleno. -->
+    <color name="ink_7">#383838</color>       <!-- bordes / divisores -->
+    <color name="ink_8">#1c1c1c</color>
+    <color name="paper">#000000</color>       <!-- fondo de pantalla -->
+    <color name="paper_2">#121212</color>     <!-- cards -->
 
     <!-- Alias legacy -->
-    <color name="gris_fondo">#10061a</color>
-    <color name="gris_borde">#453061</color>
-    <color name="gris_texto">#ada0bd</color>
+    <color name="gris_fondo">#000000</color>
+    <color name="gris_borde">#2f2f2f</color>
+    <color name="gris_texto">#a3a3a3</color>
 
     <!-- ── Semánticos ─────────────────────────────────────────
-         El color plano (success, warn…) se usa como TEXTO, así que
-         sube de luminosidad; el _bg se usa de fondo y baja.       -->
-    <color name="success">#6ee7a5</color>
-    <color name="success_bg">#123021</color>
-    <color name="warn">#fbbf5c</color>
-    <color name="warn_bg">#3a2a10</color>
-    <color name="warn_border">#5c451c</color>
-    <color name="danger">#faa8a5</color>
-    <color name="danger_bg">#3d1b1b</color>
-    <color name="info">#93b4fb</color>
-    <color name="info_bg">#152744</color>
+         El color plano se usa como TEXTO y va en neón; el _bg es
+         fondo y se hunde.                                        -->
+    <color name="success">#3ddc84</color>
+    <color name="success_bg">#0a1f14</color>
+    <color name="warn">#ffc93c</color>
+    <color name="warn_bg">#241d08</color>
+    <color name="warn_border">#4a3a10</color>
+    <color name="danger">#ff8a8a</color>
+    <color name="danger_bg">#2a0f0f</color>
+    <color name="info">#4cc2ff</color>
+    <color name="info_bg">#0a1a24</color>
 
     <!-- Los pill_* NO se redefinen acá: llevan la inicial del
          medicamento en BLANCO encima, y ese blanco no cambia de modo.
@@ -121,13 +130,13 @@
          el único par que importaba (daban 2.4 contra el blanco). -->
 
     <!-- ── Texto ──────────────────────────────────────────── -->
-    <color name="texto_principal">#f4eefa</color>
+    <color name="texto_principal">#ffffff</color>
 
     <!-- ── Superficie destacada ───────────────────────────────
-         En claro es la tarjeta oscura que resalta sobre la página.
-         Acá la página YA es oscura, así que para que siga
-         destacando tiene que ser más CLARA que el fondo, no más
-         oscura. Mismo violeta, un paso arriba.                  -->
-    <color name="surface_dark">#4e1475</color>
-    <color name="surface_dark_2">#7d29ad</color>
+         En claro es la tarjeta violeta que resalta sobre la página.
+         Acá la página es negra, así que resaltar es LEVANTARSE: un
+         gris un paso por encima de la tarjeta común, y que el color lo
+         pongan los acentos neón de adentro.                      -->
+    <color name="surface_dark">#1e1e1e</color>
+    <color name="surface_dark_2">#2a2a2a</color>
 </resources>
