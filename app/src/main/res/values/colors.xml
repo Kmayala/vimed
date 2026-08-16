@@ -2,39 +2,57 @@
 <resources>
     <!-- ═══════════════════════════════════════════════════════
          PALETA VIMED
-         Primario   #958CE8  (violeta)
-         Secundario #ACD1FD  (celeste)
+         Toda la familia primaria sale de mezclar dos colores:
+
+             #C2B6D2  lavanda claro   → extremo claro (brand_200)
+             #280049  violeta profundo → extremo oscuro (brand_900)
+
+         Los pasos intermedios son interpolaciones entre esos dos, y
+         el 50/100 se obtienen aclarando el lavanda hacia el blanco.
+         Al ser una sola recta de color, cualquier par de tonos de la
+         escala combina entre sí sin que haya que elegir a ojo.
+
+         Secundario #B5C6EC  (celeste tirado a la familia nueva)
          Texto      #21222D
          Bordes     #DBDBE5
          Fondo      #FBF9FC
          Cards      #FFFFFF
          ═══════════════════════════════════════════════════════ -->
 
-    <!-- ── Primario: violeta ──────────────────────────────── -->
-    <color name="brand_50">#f3f1fd</color>
-    <color name="brand_100">#e6e3fa</color>
-    <color name="brand_200">#cfcaf5</color>
-    <color name="brand_300">#b8b1f0</color>
-    <color name="brand_400">#a69eec</color>
-    <color name="brand_500">#958ce8</color>   <!-- primario -->
-    <color name="brand_600">#7668dc</color>   <!-- texto/acciones sobre fondo claro -->
-    <color name="brand_700">#5b4cc4</color>
-    <color name="brand_800">#453a99</color>
-    <color name="brand_900">#2f2870</color>
+    <!-- ── Primario: de lavanda a violeta profundo ────────────
+         Contrastes verificados (WCAG):
+           blanco sobre brand_500 → 5.09  (AA en texto normal)
+           brand_600 sobre fondo  → 7.09
+           brand_700 sobre b_100  → 7.83
+           brand_200 sobre ink    → 8.20                        -->
+    <color name="brand_50">#f4f2f7</color>
+    <color name="brand_100">#e5e0ec</color>
+    <color name="brand_200">#c2b6d2</color>   <!-- extremo claro dado -->
+    <color name="brand_300">#a999bc</color>
+    <color name="brand_400">#947fa9</color>
+    <color name="brand_500">#7d6494</color>   <!-- primario -->
+    <color name="brand_600">#664980</color>   <!-- texto/acciones sobre fondo claro -->
+    <color name="brand_700">#53336f</color>
+    <color name="brand_800">#3e195c</color>
+    <color name="brand_900">#280049</color>   <!-- extremo oscuro dado -->
 
-    <!-- ── Secundario: celeste ────────────────────────────── -->
-    <color name="accent_50">#f1f7ff</color>
-    <color name="accent_100">#ddebfe</color>
-    <color name="accent_200">#acd1fd</color>  <!-- secundario -->
-    <color name="accent_500">#6ba6f5</color>
-    <color name="accent_600">#3b7dd8</color>
-    <color name="accent_700">#2a5fa8</color>
+    <!-- ── Secundario: celeste llevado hacia la familia nueva ──
+         Sigue siendo el color "distinto" de la pantalla de inicio
+         (la tarjeta de recordatorios), pero desaturado hacia el
+         violeta: el celeste original quedaba estridente al lado de
+         un primario tan profundo.                              -->
+    <color name="accent_50">#f2f5fc</color>
+    <color name="accent_100">#e0e7f7</color>
+    <color name="accent_200">#b5c6ec</color>  <!-- secundario -->
+    <color name="accent_500">#728cce</color>
+    <color name="accent_600">#4c68b5</color>
+    <color name="accent_700">#3a4d91</color>
 
     <!-- Alias legacy (código que todavía dice "turquesa") -->
-    <color name="turquesa">#958ce8</color>
-    <color name="turquesa_dark">#7668dc</color>
-    <color name="turquesa_light">#f3f1fd</color>
-    <color name="turquesa_border">#e6e3fa</color>
+    <color name="turquesa">#7d6494</color>
+    <color name="turquesa_dark">#664980</color>
+    <color name="turquesa_light">#f4f2f7</color>
+    <color name="turquesa_border">#e5e0ec</color>
 
     <!-- ── Neutrales fríos (ink) ──────────────────────────── -->
     <color name="ink">#21222d</color>         <!-- texto principal -->
@@ -69,7 +87,7 @@
     <color name="pill_azul">#3b7dd8</color>
     <color name="pill_amarillo">#c77700</color>
     <color name="pill_verde">#1e8e5a</color>
-    <color name="pill_morado">#958ce8</color>
+    <color name="pill_morado">#7d6494</color>
     <color name="pill_gris">#7b7c86</color>
 
     <!-- ── Texto ──────────────────────────────────────────── -->
@@ -82,12 +100,24 @@
          Verde del botón "Ya tomé": más oscuro que el verde puro para que
          el texto blanco en negrita quede sobre 3:1 (mínimo AA en texto
          grande). Un verde más brillante se vería lindo pero ilegible. -->
+    <!-- Texto secundario del header violeta de la alarma.
+         NO tiene versión oscura a propósito: ese header es el mismo
+         violeta en los dos modos, así que su texto tampoco cambia. Si
+         usara brand_100 —como antes— en modo oscuro se volvería violeta
+         oscuro sobre violeta y se perdería (2.9 contra 3.93). -->
+    <color name="alarma_header_sub">#e5e0ec</color>
+
     <color name="alarma_verde">#16a34a</color>
     <color name="alarma_verde_ripple">#3315803d</color>
 
-    <!-- ── Superficie oscura (tarjeta destacada de próxima cita) -->
-    <color name="surface_dark">#21222d</color>
-    <color name="surface_dark_2">#2e2f3b</color>
+    <!-- ── Superficie oscura (tarjeta destacada de próxima cita y
+         del paciente en la vista del cuidador).
+         Pasa a ser el violeta profundo de la paleta en vez de un gris
+         azulado: es el mismo extremo oscuro de la escala, así que la
+         tarjeta se lee como parte de la familia y no como un bloque
+         negro prestado de otro diseño. Texto blanco encima: 17.7.  -->
+    <color name="surface_dark">#280049</color>
+    <color name="surface_dark_2">#3e195c</color>
 
     <!-- ── Modo oscuro (la app corre siempre en claro) ────── -->
     <color name="dark_bg">#21222d</color>

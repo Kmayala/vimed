@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ═══════════════════════════════════════════════════════
+         PALETA VIMED — MODO OSCURO
+
+         Mismos nombres que en values/colors.xml: ninguna pantalla
+         sabe en qué modo está, solo pide @color/loquesea.
+
+         La regla para traducir cada token NO es "invertir el color",
+         es RESPETAR SU ROL. Un token que en claro es fondo suave
+         (brand_50, brand_100) acá es un fondo apenas más claro que la
+         página; uno que en claro es texto (brand_600, brand_700) tiene
+         que volverse CLARO o desaparece sobre el fondo oscuro.
+         Invertir la escala a ciegas deja texto violeta oscuro sobre
+         negro, que es exactamente lo que pasa en las apps donde el
+         modo oscuro se siente roto.
+
+         Los negros no son grises: llevan el tinte violeta de #280049,
+         así el modo oscuro se lee como la misma app con la luz baja y
+         no como otra app.
+
+         Contrastes verificados (WCAG, sobre tarjeta #1f1233):
+           ink       15.16      brand_600  8.94
+           ink_3      8.58      brand_700  9.27 (sobre brand_100)
+           ink_4      5.52      blanco sobre brand_500  5.09
+         ═══════════════════════════════════════════════════════ -->
+
+    <!-- ── Primario ───────────────────────────────────────────
+         500 queda IGUAL que en claro: es el relleno de los botones y
+         encima lleva texto blanco escrito a mano en los layouts. Si
+         se aclarara, ese blanco perdería contraste. Además el botón
+         se ve idéntico en los dos modos, que ayuda a reconocerlo.
+         600/700/800 se invierten porque su rol es texto.          -->
+    <color name="brand_50">#241539</color>    <!-- fondo suave / ripple -->
+    <color name="brand_100">#302047</color>   <!-- círculos de ícono, chips -->
+    <color name="brand_200">#c2b6d2</color>   <!-- texto sobre superficie oscura -->
+    <color name="brand_300">#a999bc</color>
+    <color name="brand_400">#947fa9</color>
+    <color name="brand_500">#7d6494</color>   <!-- primario (sin cambios) -->
+    <color name="brand_600">#c3b2d6</color>   <!-- texto/íconos sobre fondo -->
+    <color name="brand_700">#d5c8e3</color>   <!-- texto sobre brand_100 -->
+    <color name="brand_800">#e2d9ec</color>
+    <color name="brand_900">#f0eaf6</color>
+
+    <!-- ── Secundario ─────────────────────────────────────── -->
+    <color name="accent_50">#161d2e</color>
+    <color name="accent_100">#1e2740</color>
+    <color name="accent_200">#8fa4d8</color>
+    <color name="accent_500">#8ba3dd</color>
+    <color name="accent_600">#9fb3e8</color>
+    <color name="accent_700">#b6c5ef</color>
+
+    <!-- Alias legacy -->
+    <color name="turquesa">#7d6494</color>
+    <color name="turquesa_dark">#c3b2d6</color>
+    <color name="turquesa_light">#241539</color>
+    <color name="turquesa_border">#302047</color>
+
+    <!-- ── Neutrales: la escala de ink se da vuelta ───────────
+         ink sigue siendo "el texto principal" y paper "el fondo",
+         solo que ahora uno es claro y el otro oscuro.            -->
+    <color name="ink">#f1ecf7</color>         <!-- texto principal -->
+    <color name="ink_2">#ded7e8</color>
+    <color name="ink_3">#b9b2c4</color>
+    <color name="ink_4">#948da1</color>
+    <color name="ink_5">#736c80</color>
+    <color name="ink_6">#4b4359</color>
+    <color name="ink_7">#362a48</color>       <!-- bordes / divisores -->
+    <color name="ink_8">#2a1e3d</color>
+    <color name="paper">#150a26</color>       <!-- fondo de pantalla -->
+    <color name="paper_2">#1f1233</color>     <!-- cards -->
+
+    <!-- Alias legacy -->
+    <color name="gris_fondo">#150a26</color>
+    <color name="gris_borde">#362a48</color>
+    <color name="gris_texto">#948da1</color>
+
+    <!-- ── Semánticos ─────────────────────────────────────────
+         El color plano (success, warn…) se usa como TEXTO, así que
+         sube de luminosidad; el _bg se usa de fondo y baja.       -->
+    <color name="success">#6ee7a5</color>
+    <color name="success_bg">#123021</color>
+    <color name="warn">#fbbf5c</color>
+    <color name="warn_bg">#3a2a10</color>
+    <color name="warn_border">#5c451c</color>
+    <color name="danger">#f8908d</color>
+    <color name="danger_bg">#3d1b1b</color>
+    <color name="info">#93b4fb</color>
+    <color name="info_bg">#152744</color>
+
+    <!-- ── Pastillas: se aclaran para no perderse en el fondo,
+         pero siguen llevando texto blanco encima.               -->
+    <color name="pill_rojo">#d4574a</color>
+    <color name="pill_azul">#5590e0</color>
+    <color name="pill_amarillo">#d18a1a</color>
+    <color name="pill_verde">#2ba46e</color>
+    <color name="pill_morado">#8a70a1</color>
+    <color name="pill_gris">#8b8494</color>
+
+    <!-- ── Texto ──────────────────────────────────────────── -->
+    <color name="texto_principal">#f1ecf7</color>
+
+    <!-- ── Superficie destacada ───────────────────────────────
+         En claro es la tarjeta oscura que resalta sobre la página.
+         Acá la página YA es oscura, así que para que siga
+         destacando tiene que ser más CLARA que el fondo, no más
+         oscura. Mismo violeta, un paso arriba.                  -->
+    <color name="surface_dark">#33195c</color>
+    <color name="surface_dark_2">#452573</color>
+</resources>

@@ -1,9 +1,15 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Light fijo (no DayNight): toda la paleta de Vimed (paper, ink…)
-         está definida solo en tono claro. Con DayNight, un celular en
-         modo oscuro renderiza diálogos y campos oscuros sobre nuestros
-         fondos claros y queda ilegible. -->
-    <style name="Base.Theme.Vimed" parent="Theme.Material3.Light.NoActionBar">
+    <!-- DayNight: la paleta ahora existe en los dos tonos (ver
+         values-night/colors.xml), así que los diálogos y campos que
+         dibuja Material siguen al modo igual que nuestras pantallas.
+         Antes esto era Light fijo justamente porque faltaba esa mitad:
+         en un celular en oscuro salían campos oscuros sobre nuestros
+         fondos claros.
+
+         Qué modo se usa no lo decide el sistema solo: TemaManager
+         aplica lo que la persona eligió en Configuración, y "Según el
+         sistema" es una de las tres opciones. -->
+    <style name="Base.Theme.Vimed" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/brand_500</item>
         <item name="colorOnPrimary">@color/white</item>
         <item name="colorPrimaryContainer">@color/brand_100</item>
@@ -38,6 +44,29 @@
          apagamos fitsSystemWindows (el layout pone su propio paddingTop) y
          los íconos de la barra pasan a blancos, que es lo legible sobre
          violeta. La barra de abajo queda clara, como el fondo de la pantalla. -->
+    <!-- Fila de opción de la pantalla de Configuración. Alta (72dp) y de
+         ancho completo: el objetivo de toque es toda la fila, no un
+         radio button de 20dp. -->
+    <style name="OpcionTema">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">72dp</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:background">@drawable/shape_card</item>
+        <item name="android:padding">18dp</item>
+        <item name="android:layout_marginBottom">10dp</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+    </style>
+
+    <style name="CheckTema">
+        <item name="android:layout_width">26dp</item>
+        <item name="android:layout_height">26dp</item>
+        <item name="android:src">@drawable/ic_check</item>
+        <item name="android:contentDescription">Elegido</item>
+    </style>
+
     <style name="Theme.Vimed.Alarma" parent="Base.Theme.Vimed">
         <item name="android:fitsSystemWindows">false</item>
         <item name="android:windowLightStatusBar">false</item>

@@ -88,7 +88,7 @@
                 android:id="@+id/tv_cartel_paciente"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/shape_chip_pending"
+                android:background="@drawable/bg_info_note"
                 android:padding="14dp"
                 android:textSize="15sp"
                 android:textStyle="bold"

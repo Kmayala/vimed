@@ -72,6 +72,7 @@
             android:exported="false" />
 
         <activity android:name=".MedsListActivity" android:exported="false" />
+        <activity android:name=".ConfiguracionActivity" android:exported="false" />
         <activity android:name=".AppointmentsActivity" android:exported="false" />
         <activity android:name=".DashboardActivity" android:exported="false" />
         <activity android:name=".AgregarCitaActivity" android:exported="false" />

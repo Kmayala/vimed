@@ -142,12 +142,14 @@ public class MainActivity extends AppCompatActivity {
 
         // Icono de perfil → menú de opciones
         findViewById(R.id.btn_profile).setOnClickListener(v -> {
-            String[] opciones = {"Vincular familiar", "Cerrar sesión"};
+            String[] opciones = {"Vincular familiar", "Configuración", "Cerrar sesión"};
             new AlertDialog.Builder(this)
                 .setTitle(nombre != null ? nombre : "Perfil")
                 .setItems(opciones, (d, which) -> {
                     if (which == 0) {
                         startActivity(new Intent(this, VincularFamiliarActivity.class));
+                    } else if (which == 1) {
+                        startActivity(new Intent(this, ConfiguracionActivity.class));
                     } else {
                         new AlertDialog.Builder(this)
                             .setTitle("Cerrar sesión")

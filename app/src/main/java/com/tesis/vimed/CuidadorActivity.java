@@ -118,11 +118,14 @@ public class CuidadorActivity extends AppCompatActivity {
         // destino que merezca un lugar fijo en la navegación.
         new AlertDialog.Builder(this)
             .setTitle(sessionManager.getNombre())
-            .setItems(new String[]{"Actualizar", "Vincular familiar", "Cerrar sesión"}, (d, w) -> {
+            .setItems(new String[]{"Actualizar", "Vincular familiar",
+                                   "Configuración", "Cerrar sesión"}, (d, w) -> {
                 if (w == 0) {
                     cargarVinculo();
                 } else if (w == 1) {
                     startActivity(new Intent(this, VincularFamiliarActivity.class));
+                } else if (w == 2) {
+                    startActivity(new Intent(this, ConfiguracionActivity.class));
                 } else {
                     sessionManager.logout();
                     Intent i = new Intent(this, WelcomeActivity.class);

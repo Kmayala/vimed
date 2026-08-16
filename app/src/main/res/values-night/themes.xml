@@ -1,6 +1,46 @@
-<resources>
-    <!-- Vimed usa una única paleta clara (ver values/themes.xml).
-         Este archivo existe para que el modo oscuro del sistema NO
-         cambie el tema: hereda tal cual la versión clara. -->
-    <style name="Theme.Vimed" parent="Base.Theme.Vimed" />
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!--
+      Modo oscuro. Solo cambia lo que NO puede salir de colors.xml:
+      la base de Material (para que sus diálogos, menús y campos nazcan
+      oscuros) y el brillo de los íconos de las barras del sistema.
+
+      Todo el resto de los colores ya viene resuelto por
+      values-night/colors.xml, así que acá no se repite ni un tono.
+    -->
+    <style name="Base.Theme.Vimed.Night" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/brand_500</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/brand_100</item>
+        <item name="colorOnPrimaryContainer">@color/brand_800</item>
+        <item name="colorSecondary">@color/brand_400</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="android:colorBackground">@color/paper</item>
+        <item name="colorSurface">@color/paper_2</item>
+        <item name="colorOnSurface">@color/ink</item>
+        <item name="colorSurfaceVariant">@color/ink_8</item>
+        <item name="colorOnSurfaceVariant">@color/ink_3</item>
+        <item name="colorOutline">@color/ink_6</item>
+        <item name="colorError">@color/danger</item>
+
+        <item name="android:fitsSystemWindows">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <!-- Fondos oscuros → íconos de la barra en claro -->
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">false</item>
+    </style>
+
+    <style name="Theme.Vimed" parent="Base.Theme.Vimed.Night" />
+
+    <!-- La pantalla de alarma dibuja su propio header a sangre, así que
+         apaga fitsSystemWindows igual que en claro. -->
+    <style name="Theme.Vimed.Alarma" parent="Base.Theme.Vimed.Night">
+        <item name="android:fitsSystemWindows">false</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@color/paper</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">false</item>
+    </style>
+
 </resources>

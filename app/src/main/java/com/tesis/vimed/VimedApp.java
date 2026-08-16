@@ -15,6 +15,11 @@ public class VimedApp extends Application {
         super.onCreate();
         // El cliente Supabase necesita un context para leer el access_token
         // del SessionManager en cada request.
+        // Antes que cualquier pantalla: el modo claro/oscuro que la persona
+        // eligió. Si se aplicara más tarde, la primera Activity nacería con
+        // el tema anterior y se vería el cambio de golpe.
+        com.tesis.vimed.utils.TemaManager.aplicarGuardado(this);
+
         SupabaseClient.init(this);
 
         // Los canales se crean acá y no solo en MainActivity: cuando llega la
