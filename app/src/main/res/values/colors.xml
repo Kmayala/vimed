@@ -104,20 +104,20 @@
     <color name="turquesa_border">#e7e0f7</color>
 
     <!-- ── Neutrales fríos (ink) ──────────────────────────── -->
-    <color name="ink">#21222d</color>         <!-- texto principal -->
-    <color name="ink_2">#34353f</color>
-    <color name="ink_3">#4f505a</color>
-    <color name="ink_4">#565760</color>
-    <color name="ink_5">#6a6b74</color>
-    <color name="ink_6">#8a8b95</color>
-    <color name="ink_7">#a8a9b3</color>       <!-- bordes / divisores -->
-    <color name="ink_8">#ededf2</color>
-    <color name="paper">#fbf9fc</color>       <!-- fondo de pantalla -->
+    <color name="ink">#1f1a2e</color>         <!-- texto principal -->
+    <color name="ink_2">#332e44</color>
+    <color name="ink_3">#4d4760</color>
+    <color name="ink_4">#585167</color>
+    <color name="ink_5">#6d6480</color>
+    <color name="ink_6">#8b7fa0</color>
+    <color name="ink_7">#b6a9cc</color>       <!-- bordes / divisores -->
+    <color name="ink_8">#e9e2f5</color>
+    <color name="paper">#f4f0fb</color>       <!-- fondo de pantalla -->
     <color name="paper_2">#ffffff</color>     <!-- cards -->
 
     <!-- Alias legacy -->
-    <color name="gris_fondo">#fbf9fc</color>
-    <color name="gris_borde">#a8a9b3</color>
+    <color name="gris_fondo">#f4f0fb</color>
+    <color name="gris_borde">#b6a9cc</color>
     <color name="gris_texto">#565760</color>
 
     <!-- ── Semánticos (estados) ───────────────────────────── -->
@@ -140,7 +140,7 @@
     <color name="pill_gris">#870e4f</color>
 
     <!-- ── Texto ──────────────────────────────────────────── -->
-    <color name="texto_principal">#21222d</color>
+    <color name="texto_principal">#1f1a2e</color>
     <color name="white">#ffffff</color>
     <color name="black">#000000</color>
     <color name="rojo_error">#b91c1c</color>

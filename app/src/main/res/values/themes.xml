@@ -58,7 +58,7 @@
         <item name="colorOnSurface">@color/ink</item>
         <item name="android:textColorPrimary">@color/ink</item>
         <item name="android:textColorSecondary">@color/ink_3</item>
-        <item name="android:background">@drawable/shape_dialog</item>
+        <item name="android:windowBackground">@drawable/shape_dialog</item>
         <item name="buttonBarPositiveButtonStyle">@style/Boton.Dialogo</item>
         <item name="buttonBarNegativeButtonStyle">@style/Boton.Dialogo</item>
         <item name="buttonBarNeutralButtonStyle">@style/Boton.Dialogo</item>
