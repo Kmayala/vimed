@@ -29,7 +29,6 @@
                 android:text="Progreso"
                 android:textSize="32sp"
                 android:fontFamily="serif"
-                android:textStyle="normal"
                 android:textColor="@color/ink"
                 android:letterSpacing="-0.02" />
 
@@ -40,9 +39,7 @@
                 android:textSize="16sp"
                 android:textColor="@color/ink_4"
                 android:layout_marginTop="4dp" />
-
         </LinearLayout>
-
     </LinearLayout>
 
     <ScrollView
@@ -59,7 +56,6 @@
             android:paddingRight="20dp"
             android:paddingBottom="28dp">
 
-            <!-- Cartel de contexto del cuidador (ver ModoPaciente). -->
             <TextView
                 android:id="@+id/tv_cartel_paciente"
                 android:layout_width="match_parent"
@@ -73,40 +69,42 @@
                 android:layout_marginBottom="14dp"
                 android:visibility="gone" />
 
-            <!-- ─── Tu progreso: objetivo semanal ─── -->
+            <!-- ─── Selector de período ───
+                 Tres rangos: la semana dice cómo viene ahora, el trimestre
+                 si el tratamiento se sostiene. Sin poder cambiarlo, la
+                 pantalla contestaba una sola pregunta. -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:id="@+id/chip_7"
+                    style="@style/ChipPeriodo"
+                    android:text="7 días" />
+
+                <TextView
+                    android:id="@+id/chip_30"
+                    style="@style/ChipPeriodo"
+                    android:layout_marginStart="8dp"
+                    android:text="30 días" />
+
+                <TextView
+                    android:id="@+id/chip_90"
+                    style="@style/ChipPeriodo"
+                    android:layout_marginStart="8dp"
+                    android:text="3 meses" />
+            </LinearLayout>
+
+            <!-- ─── Tarjeta principal: anillo + racha ─── -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:background="@drawable/shape_card"
-                android:padding="22dp"
-                android:layout_marginTop="6dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="18dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Tu progreso"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/ink" />
-
-                    <TextView
-                        android:id="@+id/tv_semana_label"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Esta semana"
-                        android:textSize="15sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/brand_600" />
-                </LinearLayout>
+                android:background="@drawable/shape_card_menta"
+                android:padding="22dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -114,21 +112,20 @@
                     android:orientation="horizontal"
                     android:gravity="center_vertical">
 
-                    <!-- Anillo -->
                     <FrameLayout
-                        android:layout_width="132dp"
-                        android:layout_height="132dp"
+                        android:layout_width="128dp"
+                        android:layout_height="128dp"
                         android:layout_marginEnd="20dp">
 
                         <com.google.android.material.progressindicator.CircularProgressIndicator
                             android:id="@+id/progress_semana"
-                            android:layout_width="132dp"
-                            android:layout_height="132dp"
+                            android:layout_width="128dp"
+                            android:layout_height="128dp"
                             android:layout_gravity="center"
-                            app:indicatorColor="@color/brand_500"
-                            app:trackColor="@color/brand_50"
+                            app:indicatorColor="@color/menta_500"
+                            app:trackColor="@color/menta_50"
                             app:trackThickness="13dp"
-                            app:indicatorSize="118dp"
+                            app:indicatorSize="114dp"
                             app:trackCornerRadius="8dp"
                             android:progress="0"
                             android:max="100" />
@@ -142,10 +139,9 @@
                             android:textStyle="bold"
                             android:textColor="@color/ink"
                             android:letterSpacing="-0.02"
-                            android:text="0%" />
+                            android:text="—" />
                     </FrameLayout>
 
-                    <!-- Texto -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -153,20 +149,13 @@
                         android:orientation="vertical">
 
                         <TextView
-                            android:layout_width="wrap_content"
+                            android:id="@+id/tv_animo"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Objetivo semanal"
                             android:textSize="19sp"
                             android:textStyle="bold"
-                            android:textColor="@color/ink" />
-
-                        <TextView
-                            android:id="@+id/tv_animo"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="16sp"
-                            android:textColor="@color/ink_3"
-                            android:layout_marginTop="3dp" />
+                            android:textColor="@color/ink"
+                            android:lineSpacingMultiplier="1.2" />
 
                         <TextView
                             android:id="@+id/tv_resumen_semana"
@@ -174,26 +163,83 @@
                             android:layout_height="wrap_content"
                             android:textSize="16sp"
                             android:textColor="@color/ink_3"
-                            android:lineSpacingMultiplier="1.35"
-                            android:layout_marginTop="8dp" />
-
-                        <!-- 7 dots, uno por día -->
-                        <LinearLayout
-                            android:id="@+id/dots_dias"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:layout_marginTop="14dp" />
-
+                            android:lineSpacingMultiplier="1.3"
+                            android:layout_marginTop="6dp" />
                     </LinearLayout>
+                </LinearLayout>
+
+                <!-- Racha -->
+                <LinearLayout
+                    android:id="@+id/card_racha"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="@drawable/bg_menta_note"
+                    android:padding="14dp"
+                    android:layout_marginTop="18dp">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_sparkle"
+                        android:tint="@color/menta_700"
+                        android:layout_marginEnd="12dp"
+                        android:contentDescription="Racha" />
+
+                    <TextView
+                        android:id="@+id/tv_racha"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/menta_700"
+                        android:lineSpacingMultiplier="1.3" />
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- ─── Estadísticas del mes ─── -->
+            <!-- ─── Gráfico por día ─── -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Este mes"
+                android:text="Día por día"
+                android:textSize="26sp"
+                android:fontFamily="serif"
+                android:textColor="@color/ink"
+                android:letterSpacing="-0.02"
+                android:layout_marginTop="26dp"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Tocá una barra para ver ese día."
+                android:textSize="15sp"
+                android:textColor="@color/ink_4"
+                android:layout_marginBottom="12dp" />
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/shape_card"
+                android:padding="18dp"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:id="@+id/grafico_dias"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="bottom" />
+            </HorizontalScrollView>
+
+            <!-- ─── Por medicamento ─── -->
+            <TextView
+                android:id="@+id/tv_titulo_meds"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Por medicamento"
                 android:textSize="26sp"
                 android:fontFamily="serif"
                 android:textColor="@color/ink"
@@ -202,66 +248,44 @@
                 android:layout_marginBottom="12dp" />
 
             <LinearLayout
+                android:id="@+id/meds_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="vertical" />
 
-                <!-- Confirmadas -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:background="@drawable/shape_card"
-                    android:padding="18dp"
-                    android:layout_marginEnd="7dp">
+            <!-- ─── Horarios que más se pierden ─── -->
+            <TextView
+                android:id="@+id/tv_titulo_flojos"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Los horarios que más se pierden"
+                android:textSize="26sp"
+                android:fontFamily="serif"
+                android:textColor="@color/ink"
+                android:letterSpacing="-0.02"
+                android:layout_marginTop="26dp"
+                android:layout_marginBottom="12dp"
+                android:visibility="gone" />
 
-                    <TextView
-                        android:id="@+id/tv_stat_confirmadas"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="30sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/success"
-                        android:text="0" />
+            <LinearLayout
+                android:id="@+id/flojos_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Tomas confirmadas"
-                        android:textSize="15sp"
-                        android:textColor="@color/ink_3"
-                        android:layout_marginTop="4dp" />
-                </LinearLayout>
-
-                <!-- Omitidas -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:background="@drawable/shape_card"
-                    android:padding="18dp"
-                    android:layout_marginStart="7dp">
-
-                    <TextView
-                        android:id="@+id/tv_stat_omitidas"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="30sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/warn"
-                        android:text="0" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Tomas omitidas"
-                        android:textSize="15sp"
-                        android:textColor="@color/ink_3"
-                        android:layout_marginTop="4dp" />
-                </LinearLayout>
-            </LinearLayout>
+            <TextView
+                android:id="@+id/tv_sin_datos"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/shape_dose_card"
+                android:padding="26dp"
+                android:gravity="center"
+                android:text="Todavía no hay tomas registradas en este período."
+                android:textSize="16sp"
+                android:textColor="@color/ink_4"
+                android:lineSpacingMultiplier="1.35"
+                android:layout_marginTop="16dp"
+                android:visibility="gone" />
 
         </LinearLayout>
     </ScrollView>

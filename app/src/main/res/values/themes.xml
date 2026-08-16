@@ -60,6 +60,20 @@
         <item name="android:focusable">true</item>
     </style>
 
+    <!-- Chip del selector de período en Progreso. -->
+    <style name="ChipPeriodo">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">46dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:gravity">center</item>
+        <item name="android:background">@drawable/shape_chip_periodo</item>
+        <item name="android:textColor">@color/texto_chip_periodo</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+    </style>
+
     <style name="CheckTema">
         <item name="android:layout_width">26dp</item>
         <item name="android:layout_height">26dp</item>

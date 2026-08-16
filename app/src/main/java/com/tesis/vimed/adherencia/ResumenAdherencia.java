@@ -160,6 +160,19 @@ public final class ResumenAdherencia {
             || "pospuesta".equals(estado);
     }
 
+    /**
+     * Mismo criterio, expuesto para que la pantalla de Progreso señale los
+     * mismos horarios que el resumen del cuidador. Dos pantallas marcando
+     * horarios distintos con los mismos datos es peor que no marcar nada.
+     *
+     * @param porHorario id_horario → [falladas, total]
+     */
+    public static List<PuntoFlojo> puntosFlojosDesde(List<Medicamento> medicamentos,
+                                                     List<Horario> horarios,
+                                                     Map<Integer, int[]> porHorario) {
+        return armarPuntosFlojos(medicamentos, horarios, porHorario);
+    }
+
     private static List<PuntoFlojo> armarPuntosFlojos(List<Medicamento> medicamentos,
                                                       List<Horario> horarios,
                                                       Map<Integer, int[]> porHorario) {
