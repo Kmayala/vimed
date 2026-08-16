@@ -1,21 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Nav del rol FAMILIAR. Tiene menos ítems que el del adulto mayor a
-  propósito: "Medicamentos", "Citas" y "Progreso" abren pantallas que leen
-  los datos del usuario LOGUEADO, así que al cuidador le mostrarían todo
-  vacío. Los medicamentos y las citas del paciente ya están en Inicio.
+  Nav del rol FAMILIAR. Usa LOS MISMOS ids que bottom_nav_menu a
+  propósito: las pantallas de medicamentos, citas y progreso son
+  compartidas entre los dos roles, y con ids distintos cada una habría
+  necesitado dos ramas de navegación. Lo único que cambia es a dónde va
+  "Inicio" y que todos los destinos arrastran el id del paciente.
 -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/nav_cuidador_home"
+        android:id="@+id/nav_home"
         android:icon="@drawable/ic_nav_home"
         android:title="Inicio" />
     <item
-        android:id="@+id/nav_cuidador_vinculo"
-        android:icon="@drawable/ic_users"
-        android:title="Familiares" />
+        android:id="@+id/nav_meds"
+        android:icon="@drawable/ic_nav_meds"
+        android:title="Medicamentos" />
     <item
-        android:id="@+id/nav_cuidador_vita"
+        android:id="@+id/nav_appointments"
+        android:icon="@drawable/ic_nav_calendar"
+        android:title="Citas" />
+    <item
+        android:id="@+id/nav_stats"
+        android:icon="@drawable/ic_nav_stats"
+        android:title="Progreso" />
+    <item
+        android:id="@+id/nav_vita"
         android:icon="@drawable/ic_sparkle"
         android:title="Vita" />
 </menu>

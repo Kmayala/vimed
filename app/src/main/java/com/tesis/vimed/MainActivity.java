@@ -25,6 +25,8 @@ import com.tesis.vimed.models.CitaMedica;
 import com.tesis.vimed.models.Horario;
 import com.tesis.vimed.models.Medicamento;
 import com.tesis.vimed.models.RegistroToma;
+import com.tesis.vimed.utils.ModoPaciente;
+import com.tesis.vimed.utils.NavInferior;
 import com.tesis.vimed.utils.NotificationHelper;
 import com.tesis.vimed.utils.TomaManager;
 
@@ -662,32 +664,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupBottomNav() {
-        BottomNavigationView nav = findViewById(R.id.bottom_nav);
-        nav.setSelectedItemId(R.id.nav_home);
-
-        nav.setOnItemSelectedListener(item -> {
-            int id = item.getItemId();
-            if (id == R.id.nav_home) {
-                return true;
-            } else if (id == R.id.nav_meds) {
-                startActivity(new Intent(this, MedsListActivity.class));
-                overridePendingTransition(0, 0);
-                return true;
-            } else if (id == R.id.nav_appointments) {
-                startActivity(new Intent(this, AppointmentsActivity.class));
-                overridePendingTransition(0, 0);
-                return true;
-            } else if (id == R.id.nav_stats) {
-                startActivity(new Intent(this, DashboardActivity.class));
-                overridePendingTransition(0, 0);
-                return true;
-            } else if (id == R.id.nav_vita) {
-                startActivity(new Intent(this, ChatbotActivity.class));
-                overridePendingTransition(0, 0);
-                return true;
-            }
-            return false;
-        });
+        // Esta es la pantalla de inicio del adulto mayor: cerrarla al
+        // navegar lo dejaría sin nada atrás, de ahí el false.
+        NavInferior.configurar(this, ModoPaciente.propio(), R.id.nav_home, false);
     }
 
     private int colorForMed(String colorKey) {

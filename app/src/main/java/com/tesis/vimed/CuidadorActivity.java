@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.tesis.vimed.adherencia.ResumenAdherencia;
 import com.tesis.vimed.api.VimedRepo;
+import com.tesis.vimed.utils.ModoPaciente;
 import com.tesis.vimed.models.CitaMedica;
 import com.tesis.vimed.models.Horario;
 import com.tesis.vimed.models.Medicamento;
@@ -106,17 +107,22 @@ public class CuidadorActivity extends AppCompatActivity {
         // Al volver del chatbot o de la pantalla de vínculos, la barra
         // quedaría marcando esa sección y no la que se está viendo.
         BottomNavigationView nav = findViewById(R.id.bottom_nav_cuidador);
-        if (nav != null) nav.setSelectedItemId(R.id.nav_cuidador_home);
+        if (nav != null) nav.setSelectedItemId(R.id.nav_home);
 
         cargarVinculo();
     }
 
     private void menuPerfil() {
+        // "Vincular familiar" vive acá desde que la barra de abajo pasó a
+        // replicar la del adulto mayor: es una acción ocasional, no un
+        // destino que merezca un lugar fijo en la navegación.
         new AlertDialog.Builder(this)
             .setTitle(sessionManager.getNombre())
-            .setItems(new String[]{"Actualizar", "Cerrar sesión"}, (d, w) -> {
+            .setItems(new String[]{"Actualizar", "Vincular familiar", "Cerrar sesión"}, (d, w) -> {
                 if (w == 0) {
                     cargarVinculo();
+                } else if (w == 1) {
+                    startActivity(new Intent(this, VincularFamiliarActivity.class));
                 } else {
                     sessionManager.logout();
                     Intent i = new Intent(this, WelcomeActivity.class);
@@ -438,30 +444,38 @@ public class CuidadorActivity extends AppCompatActivity {
     // ═══ Navegación ════════════════════════════════════════════
 
     /**
-     * El nav del cuidador tiene menos ítems que el del adulto mayor a
-     * propósito: "Medicamentos", "Citas" y "Progreso" abren pantallas que
-     * consultan los datos del usuario LOGUEADO, así que acá aparecerían
-     * vacías. Lo del paciente ya está en esta misma pantalla.
+     * Mismas pantallas que el adulto mayor, pero apuntando al paciente.
+     *
+     * El destino se arma en el momento del toque y no al crear la barra:
+     * el vínculo llega por red y el cuidador puede cambiar de familiar sin
+     * salir de acá, así que un intent construido de antemano quedaría
+     * apuntando al paciente equivocado.
      */
     private void setupBottomNav() {
         BottomNavigationView nav = findViewById(R.id.bottom_nav_cuidador);
         if (nav == null) return;
-        nav.setSelectedItemId(R.id.nav_cuidador_home);
+        nav.setSelectedItemId(R.id.nav_home);
 
         nav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
-            if (id == R.id.nav_cuidador_home) {
-                return true;
-            } else if (id == R.id.nav_cuidador_vinculo) {
-                startActivity(new Intent(this, VincularFamiliarActivity.class));
-                overridePendingTransition(0, 0);
-                return true;
-            } else if (id == R.id.nav_cuidador_vita) {
-                startActivity(new Intent(this, ChatbotActivity.class));
-                overridePendingTransition(0, 0);
-                return true;
+            if (id == R.id.nav_home) return true;
+
+            Class<?> destino;
+            if (id == R.id.nav_meds)              destino = MedsListActivity.class;
+            else if (id == R.id.nav_appointments) destino = AppointmentsActivity.class;
+            else if (id == R.id.nav_stats)        destino = DashboardActivity.class;
+            else if (id == R.id.nav_vita)         destino = ChatbotActivity.class;
+            else return false;
+
+            if (idAdulto <= 0) {
+                Toast.makeText(this, "Todavía no hay un familiar vinculado",
+                    Toast.LENGTH_SHORT).show();
+                return false;
             }
-            return false;
+
+            startActivity(ModoPaciente.de(idAdulto, nombreAdulto).intent(this, destino));
+            overridePendingTransition(0, 0);
+            return true;
         });
     }
 

@@ -1,6 +1,5 @@
 package com.tesis.vimed;
 
-import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -15,9 +14,10 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.tesis.vimed.api.VimedRepo;
 import com.tesis.vimed.models.CitaMedica;
+import com.tesis.vimed.utils.ModoPaciente;
+import com.tesis.vimed.utils.NavInferior;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -57,10 +57,15 @@ public class AppointmentsActivity extends AppCompatActivity {
 
     private boolean modoCalendario = false;
 
+    /** De quién son las citas que se están mostrando. */
+    private ModoPaciente modo = ModoPaciente.propio();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_appointments);
+
+        modo = ModoPaciente.de(this);
 
         appointmentsContainer = findViewById(R.id.appointments_container);
         dayContainer          = findViewById(R.id.day_container);
@@ -95,9 +100,18 @@ public class AppointmentsActivity extends AppCompatActivity {
                 .setPositiveButton("Entendido", null)
                 .show());
 
+        mostrarCartelDePaciente();
         dibujarEncabezadoDias();
         cambiarModo(false);
         setupBottomNav();
+    }
+
+    private void mostrarCartelDePaciente() {
+        TextView cartel = findViewById(R.id.tv_cartel_paciente);
+        if (cartel == null) return;
+        if (!modo.esDeOtro()) { cartel.setVisibility(View.GONE); return; }
+        cartel.setText(modo.cartel("las citas"));
+        cartel.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -107,7 +121,9 @@ public class AppointmentsActivity extends AppCompatActivity {
     }
 
     private void nuevaCita() {
-        startActivity(new Intent(this, AgregarCitaActivity.class));
+        // El intent arrastra el paciente, si no la cita se la carga el
+        // cuidador a sí mismo.
+        startActivity(modo.intent(this, AgregarCitaActivity.class));
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -115,7 +131,7 @@ public class AppointmentsActivity extends AppCompatActivity {
     // ═══════════════════════════════════════════════════════════
 
     private void cargarCitas() {
-        VimedRepo.listarCitas(this, new VimedRepo.Cb<List<CitaMedica>>() {
+        VimedRepo.Cb<List<CitaMedica>> cb = new VimedRepo.Cb<List<CitaMedica>>() {
             @Override
             public void onOk(List<CitaMedica> data) {
                 citas.clear();
@@ -131,7 +147,13 @@ public class AppointmentsActivity extends AppCompatActivity {
                 pintarLista();
                 pintarCalendario();
             }
-        });
+        };
+
+        if (modo.esDeOtro()) {
+            VimedRepo.listarCitasDe(modo.idUsuario, cb);
+        } else {
+            VimedRepo.listarCitas(this, cb);
+        }
     }
 
     /** Citas cuya fecha es hoy o posterior, en orden. */
@@ -525,34 +547,6 @@ public class AppointmentsActivity extends AppCompatActivity {
     }
 
     private void setupBottomNav() {
-        BottomNavigationView nav = findViewById(R.id.bottom_nav);
-        nav.setSelectedItemId(R.id.nav_appointments);
-        nav.setOnItemSelectedListener(item -> {
-            int id = item.getItemId();
-            if (id == R.id.nav_home) {
-                startActivity(new Intent(this, MainActivity.class));
-                overridePendingTransition(0, 0);
-                finish();
-                return true;
-            } else if (id == R.id.nav_meds) {
-                startActivity(new Intent(this, MedsListActivity.class));
-                overridePendingTransition(0, 0);
-                finish();
-                return true;
-            } else if (id == R.id.nav_appointments) {
-                return true;
-            } else if (id == R.id.nav_stats) {
-                startActivity(new Intent(this, DashboardActivity.class));
-                overridePendingTransition(0, 0);
-                finish();
-                return true;
-            } else if (id == R.id.nav_vita) {
-                startActivity(new Intent(this, ChatbotActivity.class));
-                overridePendingTransition(0, 0);
-                finish();
-                return true;
-            }
-            return false;
-        });
+        NavInferior.configurar(this, modo, R.id.nav_appointments, true);
     }
 }

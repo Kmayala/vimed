@@ -81,6 +81,22 @@
             android:paddingTop="4dp"
             android:paddingBottom="28dp">
 
+            <!-- Cartel de contexto del cuidador. Ver ModoPaciente: sin
+                 esto es fácil creer que la lista es la propia y cargarle
+                 un medicamento a la persona equivocada. -->
+            <TextView
+                android:id="@+id/tv_cartel_paciente"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/shape_chip_pending"
+                android:padding="14dp"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="@color/brand_700"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="14dp"
+                android:visibility="gone" />
+
             <!-- Estado vacío — FUERA del meds_container para que no sea eliminado -->
             <LinearLayout
                 android:id="@+id/empty_meds"

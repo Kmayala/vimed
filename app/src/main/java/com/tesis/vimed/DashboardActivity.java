@@ -1,6 +1,5 @@
 package com.tesis.vimed;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -9,10 +8,11 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.tesis.vimed.api.VimedRepo;
 import com.tesis.vimed.models.RegistroToma;
+import com.tesis.vimed.utils.ModoPaciente;
+import com.tesis.vimed.utils.NavInferior;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -30,17 +30,31 @@ import java.util.Set;
  */
 public class DashboardActivity extends AppCompatActivity {
 
+    /** De quién es el progreso que se está mostrando. */
+    private ModoPaciente modo = ModoPaciente.propio();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
 
+        modo = ModoPaciente.de(this);
+
         String mes = new SimpleDateFormat("MMMM yyyy", new Locale("es")).format(new Date());
         mes = mes.substring(0, 1).toUpperCase() + mes.substring(1);
         ((TextView) findViewById(R.id.tv_month)).setText(mes);
 
+        mostrarCartelDePaciente();
         cargarProgreso();
         setupBottomNav();
+    }
+
+    private void mostrarCartelDePaciente() {
+        TextView cartel = findViewById(R.id.tv_cartel_paciente);
+        if (cartel == null) return;
+        if (!modo.esDeOtro()) { cartel.setVisibility(View.GONE); return; }
+        cartel.setText(modo.cartel("el progreso"));
+        cartel.setVisibility(View.VISIBLE);
     }
 
     private void cargarProgreso() {
@@ -54,7 +68,7 @@ public class DashboardActivity extends AppCompatActivity {
         Calendar lunes = lunesDeEstaSemana();
         if (ymd(lunes).compareTo(desde) < 0) desde = ymd(lunes);
 
-        VimedRepo.listarTomasDelDia(this, desde, new VimedRepo.Cb<List<RegistroToma>>() {
+        VimedRepo.Cb<List<RegistroToma>> cb = new VimedRepo.Cb<List<RegistroToma>>() {
             @Override
             public void onOk(List<RegistroToma> registros) {
                 pintarSemana(registros);
@@ -66,7 +80,13 @@ public class DashboardActivity extends AppCompatActivity {
                 pintarSemana(java.util.Collections.emptyList());
                 pintarMes(java.util.Collections.emptyList());
             }
-        });
+        };
+
+        if (modo.esDeOtro()) {
+            VimedRepo.listarTomasDelDiaDe(modo.idUsuario, desde, cb);
+        } else {
+            VimedRepo.listarTomasDelDia(this, desde, cb);
+        }
     }
 
     /** Anillo + mensaje + 7 dots. Un día cuenta como "cumplido" si tuvo
@@ -188,34 +208,6 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     private void setupBottomNav() {
-        BottomNavigationView nav = findViewById(R.id.bottom_nav);
-        nav.setSelectedItemId(R.id.nav_stats);
-        nav.setOnItemSelectedListener(item -> {
-            int id = item.getItemId();
-            if (id == R.id.nav_home) {
-                startActivity(new Intent(this, MainActivity.class));
-                overridePendingTransition(0, 0);
-                finish();
-                return true;
-            } else if (id == R.id.nav_meds) {
-                startActivity(new Intent(this, MedsListActivity.class));
-                overridePendingTransition(0, 0);
-                finish();
-                return true;
-            } else if (id == R.id.nav_appointments) {
-                startActivity(new Intent(this, AppointmentsActivity.class));
-                overridePendingTransition(0, 0);
-                finish();
-                return true;
-            } else if (id == R.id.nav_stats) {
-                return true;
-            } else if (id == R.id.nav_vita) {
-                startActivity(new Intent(this, ChatbotActivity.class));
-                overridePendingTransition(0, 0);
-                finish();
-                return true;
-            }
-            return false;
-        });
+        NavInferior.configurar(this, modo, R.id.nav_stats, true);
     }
 }

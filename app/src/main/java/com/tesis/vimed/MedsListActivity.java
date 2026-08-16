@@ -1,6 +1,5 @@
 package com.tesis.vimed;
 
-import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
@@ -16,10 +15,11 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.tesis.vimed.api.VimedRepo;
 import com.tesis.vimed.models.Horario;
 import com.tesis.vimed.models.Medicamento;
+import com.tesis.vimed.utils.ModoPaciente;
+import com.tesis.vimed.utils.NavInferior;
 import com.tesis.vimed.utils.NotificationHelper;
 
 import java.util.ArrayList;
@@ -32,28 +32,43 @@ public class MedsListActivity extends AppCompatActivity {
     private View emptyMeds;
     private TextView tvSubtitle;
 
+    /** De quién son los medicamentos que se están mostrando. */
+    private ModoPaciente modo = ModoPaciente.propio();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_meds_list);
 
         sessionManager = new SessionManager(this);
+        modo = ModoPaciente.de(this);
 
         medsContainer = findViewById(R.id.meds_container);
         emptyMeds = findViewById(R.id.empty_meds);
         tvSubtitle = findViewById(R.id.tv_meds_subtitle);
 
-        findViewById(R.id.btn_add_med).setOnClickListener(v ->
-            startActivity(new Intent(this, AgregarMedicamentoActivity.class)));
+        mostrarCartelDePaciente();
+
+        // El intent arrastra el paciente: si no, el cuidador se cargaría el
+        // medicamento a sí mismo sin darse cuenta.
+        View.OnClickListener agregar = v ->
+            startActivity(modo.intent(this, AgregarMedicamentoActivity.class));
+
+        findViewById(R.id.btn_add_med).setOnClickListener(agregar);
 
         View btnAddFirst = findViewById(R.id.btn_add_first);
-        if (btnAddFirst != null) {
-            btnAddFirst.setOnClickListener(v ->
-                startActivity(new Intent(this, AgregarMedicamentoActivity.class)));
-        }
+        if (btnAddFirst != null) btnAddFirst.setOnClickListener(agregar);
 
         setupBottomNav();
         loadMeds();
+    }
+
+    private void mostrarCartelDePaciente() {
+        TextView cartel = findViewById(R.id.tv_cartel_paciente);
+        if (cartel == null) return;
+        if (!modo.esDeOtro()) { cartel.setVisibility(View.GONE); return; }
+        cartel.setText(modo.cartel("los medicamentos"));
+        cartel.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -65,7 +80,7 @@ public class MedsListActivity extends AppCompatActivity {
     private void loadMeds() {
         tvSubtitle.setText("Cargando…");
 
-        VimedRepo.listarMedicamentos(this, new VimedRepo.Cb<List<Medicamento>>() {
+        VimedRepo.Cb<List<Medicamento>> cb = new VimedRepo.Cb<List<Medicamento>>() {
             @Override
             public void onOk(List<Medicamento> meds) {
                 medsContainer.removeAllViews();
@@ -94,7 +109,13 @@ public class MedsListActivity extends AppCompatActivity {
                 tvSubtitle.setText("Sin conexión");
                 Toast.makeText(MedsListActivity.this, msg, Toast.LENGTH_LONG).show();
             }
-        });
+        };
+
+        if (modo.esDeOtro()) {
+            VimedRepo.listarMedicamentosDe(modo.idUsuario, cb);
+        } else {
+            VimedRepo.listarMedicamentos(this, cb);
+        }
     }
 
     private void bindMedCard(View item, Medicamento med) {
@@ -273,34 +294,6 @@ public class MedsListActivity extends AppCompatActivity {
     }
 
     private void setupBottomNav() {
-        BottomNavigationView nav = findViewById(R.id.bottom_nav);
-        nav.setSelectedItemId(R.id.nav_meds);
-        nav.setOnItemSelectedListener(item -> {
-            int id = item.getItemId();
-            if (id == R.id.nav_home) {
-                startActivity(new Intent(this, MainActivity.class));
-                overridePendingTransition(0, 0);
-                finish();
-                return true;
-            } else if (id == R.id.nav_meds) {
-                return true;
-            } else if (id == R.id.nav_appointments) {
-                startActivity(new Intent(this, AppointmentsActivity.class));
-                overridePendingTransition(0, 0);
-                finish();
-                return true;
-            } else if (id == R.id.nav_stats) {
-                startActivity(new Intent(this, DashboardActivity.class));
-                overridePendingTransition(0, 0);
-                finish();
-                return true;
-            } else if (id == R.id.nav_vita) {
-                startActivity(new Intent(this, ChatbotActivity.class));
-                overridePendingTransition(0, 0);
-                finish();
-                return true;
-            }
-            return false;
-        });
+        NavInferior.configurar(this, modo, R.id.nav_meds, true);
     }
 }
