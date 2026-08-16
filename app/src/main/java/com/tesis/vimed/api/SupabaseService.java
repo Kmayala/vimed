@@ -87,6 +87,13 @@ public interface SupabaseService {
     @POST("horarios")
     Call<List<Horario>> crearHorario(@Body Horario nuevo);
 
+    /** @param cambios DTO de parche — ver nota en actualizarMedicamento. */
+    @PATCH("horarios")
+    Call<List<Horario>> actualizarHorario(
+        @Query("id_horario") String idEq,
+        @Body Object cambios
+    );
+
     @DELETE("horarios")
     Call<Void> eliminarHorario(@Query("id_horario") String idEq);
 

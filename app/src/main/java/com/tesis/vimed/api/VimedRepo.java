@@ -63,6 +63,11 @@ public final class VimedRepo {
         String estado;
     }
 
+    private static class HorarioPatch {
+        @com.google.gson.annotations.SerializedName("hora_inicio")
+        String horaInicio;
+    }
+
     // ═══════════════════════════════════════════════════════════
     //  MEDICAMENTOS
     // ═══════════════════════════════════════════════════════════
@@ -168,6 +173,19 @@ public final class VimedRepo {
             });
     }
 
+    /**
+     * Cambia la hora de inicio de un horario. Lo usa el ajuste de
+     * recordatorios: la nueva hora tiene que viajar al servidor porque el
+     * celular del cuidador programa sus alarmas desde ahí.
+     */
+    public static void actualizarHoraInicio(int idHorario, String horaHHMM, Cb<Void> cb) {
+        HorarioPatch cambios = new HorarioPatch();
+        cambios.horaInicio = horaHHMM;
+        SupabaseClient.getService()
+            .actualizarHorario("eq." + idHorario, cambios)
+            .enqueue(VimedRepo.<Horario>voidCb(cb));
+    }
+
     // ═══════════════════════════════════════════════════════════
     //  REGISTRO DE TOMAS
     // ═══════════════════════════════════════════════════════════
@@ -182,6 +200,16 @@ public final class VimedRepo {
             .getRegistrosTomas("eq." + idUsuario, "gte." + fechaYMD,
                 "fecha_hora_programada.asc")
             .enqueue(lista(cb));
+    }
+
+    /**
+     * Historial de tomas desde una fecha hacia acá, para analizar hábitos.
+     * @param desdeYMD formato "yyyy-MM-dd".
+     */
+    public static void listarTomasDesde(Context ctx, String desdeYMD,
+                                        Cb<List<RegistroToma>> cb) {
+        // Mismo endpoint que las tomas del día: el filtro ya es "gte.".
+        listarTomasDelDia(ctx, desdeYMD, cb);
     }
 
     public static RegistroToma crearTomaSync(RegistroToma r) {

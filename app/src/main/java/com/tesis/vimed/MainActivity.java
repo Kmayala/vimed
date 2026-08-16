@@ -6,6 +6,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -16,6 +17,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
+import com.tesis.vimed.adherencia.AjustesAdherencia;
+import com.tesis.vimed.adherencia.AnalizadorAdherencia;
+import com.tesis.vimed.adherencia.Sugerencia;
 import com.tesis.vimed.api.VimedRepo;
 import com.tesis.vimed.models.CitaMedica;
 import com.tesis.vimed.models.Horario;
@@ -29,8 +33,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -203,6 +209,7 @@ public class MainActivity extends AppCompatActivity {
     /** Pide los horarios de cada medicamento y arma la grilla del día. */
     private void cargarHorariosYPintar(List<Medicamento> meds, List<RegistroToma> registrosHoy) {
         final List<DoseItem> doses = new ArrayList<>();
+        final List<Horario> todosLosHorarios = new ArrayList<>();
         final int[] pendientes = { meds.size() };
 
         for (Medicamento med : meds) {
@@ -211,12 +218,20 @@ public class MainActivity extends AppCompatActivity {
                 public void onOk(List<Horario> horarios) {
                     for (Horario hor : horarios) {
                         agregarTomasDelHorario(doses, med, hor, registrosHoy);
+                        todosLosHorarios.add(hor);
                     }
-                    if (--pendientes[0] == 0) pintarTomas(doses);
+                    if (--pendientes[0] == 0) terminar();
                 }
                 @Override
                 public void onError(String msg) {
-                    if (--pendientes[0] == 0) pintarTomas(doses);
+                    if (--pendientes[0] == 0) terminar();
+                }
+
+                private void terminar() {
+                    pintarTomas(doses);
+                    // Los horarios ya están en memoria: aprovechamos para
+                    // mirar si el historial sugiere ajustar alguno.
+                    buscarSugerencias(meds, todosLosHorarios);
                 }
             });
         }
@@ -368,6 +383,114 @@ public class MainActivity extends AppCompatActivity {
 
     private void refrescarTomas() {
         loadTodayDoses();   // pintarTomas ya limpia el contenedor
+    }
+
+    // ═══ Recordatorios que se ajustan al hábito real ═══════════
+
+    /**
+     * Mira el historial del último mes y, si encuentra un patrón, ofrece un
+     * ajuste. Se muestra UNA sugerencia por vez: el dashboard de un adulto
+     * mayor no es lugar para una lista de recomendaciones.
+     */
+    private void buscarSugerencias(List<Medicamento> meds, List<Horario> horarios) {
+        if (horarios.isEmpty()) { ocultarSugerencia(); return; }
+
+        Calendar desde = Calendar.getInstance();
+        desde.add(Calendar.DAY_OF_YEAR, -AnalizadorAdherencia.DIAS_HISTORIAL);
+        String desdeYMD = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            .format(desde.getTime());
+
+        VimedRepo.listarTomasDesde(this, desdeYMD, new VimedRepo.Cb<List<RegistroToma>>() {
+            @Override
+            public void onOk(List<RegistroToma> historial) {
+                Map<Integer, String> originales = new HashMap<>();
+                for (Horario h : horarios) {
+                    String orig = AjustesAdherencia.horaOriginal(MainActivity.this, h.getId());
+                    if (orig != null) originales.put(h.getId(), orig);
+                }
+
+                List<Sugerencia> sugerencias = AnalizadorAdherencia.analizar(
+                    meds, horarios, historial, originales);
+
+                for (Sugerencia s : sugerencias) {
+                    // Las que ya se rechazaron no vuelven a aparecer por un tiempo.
+                    if (!AjustesAdherencia.estaSilenciada(MainActivity.this, s)) {
+                        mostrarSugerencia(s);
+                        return;
+                    }
+                }
+                ocultarSugerencia();
+            }
+
+            @Override
+            public void onError(String msg) {
+                // Sin historial no hay nada que sugerir; no molestamos con el error.
+                ocultarSugerencia();
+            }
+        });
+    }
+
+    private void mostrarSugerencia(Sugerencia s) {
+        View card = findViewById(R.id.card_sugerencia);
+        if (card == null) return;
+
+        ((TextView) findViewById(R.id.tv_sugerencia_titulo)).setText(s.titulo());
+        ((TextView) findViewById(R.id.tv_sugerencia_detalle)).setText(s.detalle());
+
+        Button btnSi = findViewById(R.id.btn_sugerencia_si);
+        btnSi.setText(s.textoAceptar());
+        btnSi.setOnClickListener(v -> aplicarSugerencia(s));
+
+        findViewById(R.id.btn_sugerencia_no).setOnClickListener(v -> {
+            AjustesAdherencia.silenciar(this, s);
+            ocultarSugerencia();
+        });
+
+        card.setVisibility(View.VISIBLE);
+    }
+
+    private void ocultarSugerencia() {
+        View card = findViewById(R.id.card_sugerencia);
+        if (card != null) card.setVisibility(View.GONE);
+    }
+
+    private void aplicarSugerencia(Sugerencia s) {
+        if (s.tipo == Sugerencia.Tipo.REFORZAR) {
+            AjustesAdherencia.activarRefuerzo(this, s.idHorario);
+            ocultarSugerencia();
+            Toast.makeText(this, "Listo: esa alarma va a sonar más tiempo.",
+                Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        // Antes del primer ajuste guardamos la hora que indicó el médico: es
+        // la referencia que impide que el recordatorio se aleje sin control.
+        AjustesAdherencia.recordarHoraOriginal(this, s.idHorario, s.horaActual);
+
+        Button btnSi = findViewById(R.id.btn_sugerencia_si);
+        if (btnSi != null) btnSi.setEnabled(false);
+
+        VimedRepo.actualizarHoraInicio(s.idHorario, s.horaSugerida,
+            new VimedRepo.Cb<Void>() {
+                @Override
+                public void onOk(Void v) {
+                    // Reprograma las alarmas de este celular con la hora nueva.
+                    // Pisa las viejas: mismo request code por medicamento.
+                    com.tesis.vimed.utils.AlarmaSync.sincronizar(MainActivity.this);
+                    ocultarSugerencia();
+                    Toast.makeText(MainActivity.this,
+                        "Recordatorio movido a las " + s.horaSugerida,
+                        Toast.LENGTH_LONG).show();
+                    refrescarTomas();
+                }
+
+                @Override
+                public void onError(String msg) {
+                    if (btnSi != null) btnSi.setEnabled(true);
+                    Toast.makeText(MainActivity.this,
+                        "No se pudo cambiar la hora: " + msg, Toast.LENGTH_LONG).show();
+                }
+            });
     }
 
     /** Subtítulos de las tarjetas de acceso rápido. */

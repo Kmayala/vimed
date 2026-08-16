@@ -45,6 +45,20 @@ public class AlarmaService extends Service {
     /** Cuánto suena antes de posponerse sola si nadie responde. */
     public static final long DURACION_MS = 60_000L;
 
+    /**
+     * Cuánto suena en un horario marcado como "insistir más" desde las
+     * sugerencias de adherencia. El doble: si esa toma se viene perdiendo
+     * seguido, un minuto de alarma ya demostró no alcanzar.
+     */
+    public static final long DURACION_REFUERZO_MS = 2 * DURACION_MS;
+
+    /** Cuánto tiene que sonar esta toma, según si su horario tiene refuerzo. */
+    public static long duracionPara(Context ctx, int idHorario) {
+        return idHorario > 0
+            && com.tesis.vimed.adherencia.AjustesAdherencia.tieneRefuerzo(ctx, idHorario)
+            ? DURACION_REFUERZO_MS : DURACION_MS;
+    }
+
     private static final long[] PATRON_VIBRACION = {0, 800, 600};
 
     /**
@@ -164,7 +178,8 @@ public class AlarmaService extends Service {
             empezarSonido();
             // Si nadie responde, se pospone sola: ni suena para siempre ni
             // se come la batería.
-            handler.postDelayed(this::posponerPorFaltaDeRespuesta, DURACION_MS);
+            handler.postDelayed(this::posponerPorFaltaDeRespuesta,
+                duracionPara(this, idHorario));
         }
 
         return START_NOT_STICKY;

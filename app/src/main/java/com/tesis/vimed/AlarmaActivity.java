@@ -51,8 +51,9 @@ import java.util.Locale;
 public class AlarmaActivity extends AppCompatActivity {
 
     /** Tiempo que suena antes de posponerse sola si nadie responde.
-     *  Lo define el servicio, que es quien manda el reloj de la alarma. */
-    private static final long AUTO_POSPONER_MS = AlarmaService.DURACION_MS;
+     *  Lo define el servicio, que es quien manda el reloj de la alarma;
+     *  puede ser más largo si el horario está marcado para insistir. */
+    private long autoPosponerMs = AlarmaService.DURACION_MS;
 
     private final Handler autoHandler = new Handler(Looper.getMainLooper());
 
@@ -99,18 +100,20 @@ public class AlarmaActivity extends AppCompatActivity {
         empezarAlarma();
         escucharFinDeAlarma();
 
+        autoPosponerMs = AlarmaService.duracionPara(this, idHorario);
+
         if (AlarmaService.estaActivo()) {
             // El servicio es el dueño del tiempo de espera: cuando se cansa,
             // pospone él y nos avisa. Acá solo dejamos una red de seguridad
             // por si ese aviso se pierde — cierra la pantalla, sin volver a
             // posponer (eso duplicaría el aviso al cuidador).
             autoHandler.postDelayed(this::cerrarSinResponder,
-                AUTO_POSPONER_MS + 10_000L);
+                autoPosponerMs + 10_000L);
         } else {
             // Camino de respaldo (la alarma sonó solo por la notificación):
             // acá no hay servicio que posponga, así que lo hacemos nosotros.
             autoHandler.postDelayed(() -> responder(NotificationHelper.ACTION_SNOOZE),
-                AUTO_POSPONER_MS);
+                autoPosponerMs);
         }
     }
 
