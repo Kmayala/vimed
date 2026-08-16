@@ -59,9 +59,13 @@
         </FrameLayout>
     </LinearLayout>
 
+    <!-- Alto 0 + peso 1: el scroll toma lo que sobra y la barra de abajo
+         queda siempre visible. Con match_parent empujaba la barra fuera
+         de la pantalla. -->
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:fillViewport="true">
 
         <LinearLayout
@@ -131,8 +135,11 @@
                 android:orientation="vertical"
                 android:visibility="gone">
 
-                <!-- Tarjeta del paciente (oscura, destacada) -->
+                <!-- Tarjeta del paciente (oscura, destacada).
+                     Con más de un familiar a cargo se vuelve tocable para
+                     cambiar de paciente. -->
                 <LinearLayout
+                    android:id="@+id/card_paciente"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
@@ -140,15 +147,33 @@
                     android:padding="20dp"
                     android:layout_marginTop="8dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="ESTÁS CUIDANDO A"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:textColor="#9c9da6"
-                        android:letterSpacing="0.12"
-                        android:layout_marginBottom="10dp" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="10dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="ESTÁS CUIDANDO A"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:textColor="#9c9da6"
+                            android:letterSpacing="0.12" />
+
+                        <TextView
+                            android:id="@+id/tv_cambiar_paciente"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Cambiar"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/brand_200"
+                            android:visibility="gone" />
+                    </LinearLayout>
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -290,6 +315,108 @@
                         app:strokeColor="@color/brand_200" />
                 </LinearLayout>
 
+                <!-- ─── Cómo viene el tratamiento ───
+                     Hechos, no sugerencias: el familiar decide con el
+                     médico, la app no le propone cambios sobre el
+                     tratamiento de otra persona. -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Cómo viene el tratamiento"
+                    android:textSize="26sp"
+                    android:fontFamily="serif"
+                    android:textColor="@color/ink"
+                    android:letterSpacing="-0.02"
+                    android:layout_marginTop="26dp"
+                    android:layout_marginBottom="12dp" />
+
+                <LinearLayout
+                    android:id="@+id/card_adherencia"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:background="@drawable/shape_dose_card"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:id="@+id/tv_adherencia_titular"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/ink"
+                        android:lineSpacingMultiplier="1.25" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="16dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tv_adherencia_semana"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="30sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/brand_700" />
+
+                            <TextView
+                                android:id="@+id/tv_adherencia_semana_sub"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="14sp"
+                                android:textColor="@color/ink_4" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tv_adherencia_mes"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="30sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/ink_3" />
+
+                            <TextView
+                                android:id="@+id/tv_adherencia_mes_sub"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="14sp"
+                                android:textColor="@color/ink_4" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tv_puntos_flojos_titulo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Los horarios que más se le pasan"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/ink_2"
+                        android:layout_marginTop="20dp"
+                        android:layout_marginBottom="6dp"
+                        android:visibility="gone" />
+
+                    <LinearLayout
+                        android:id="@+id/puntos_flojos_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical" />
+                </LinearLayout>
+
                 <!-- Tomas de hoy del paciente -->
                 <TextView
                     android:layout_width="match_parent"
@@ -423,5 +550,15 @@
 
         </LinearLayout>
     </ScrollView>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_nav_cuidador"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/paper_2"
+        app:menu="@menu/bottom_nav_cuidador"
+        app:itemIconTint="@color/nav_item_color"
+        app:itemTextColor="@color/nav_item_color"
+        app:labelVisibilityMode="labeled" />
 
 </LinearLayout>

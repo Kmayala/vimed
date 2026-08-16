@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Nav del rol FAMILIAR. Tiene menos ítems que el del adulto mayor a
+  propósito: "Medicamentos", "Citas" y "Progreso" abren pantallas que leen
+  los datos del usuario LOGUEADO, así que al cuidador le mostrarían todo
+  vacío. Los medicamentos y las citas del paciente ya están en Inicio.
+-->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_cuidador_home"
+        android:icon="@drawable/ic_nav_home"
+        android:title="Inicio" />
+    <item
+        android:id="@+id/nav_cuidador_vinculo"
+        android:icon="@drawable/ic_users"
+        android:title="Familiares" />
+    <item
+        android:id="@+id/nav_cuidador_vita"
+        android:icon="@drawable/ic_sparkle"
+        android:title="Vita" />
+</menu>

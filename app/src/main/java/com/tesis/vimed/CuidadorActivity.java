@@ -13,6 +13,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.tesis.vimed.adherencia.ResumenAdherencia;
 import com.tesis.vimed.api.VimedRepo;
 import com.tesis.vimed.models.CitaMedica;
 import com.tesis.vimed.models.Horario;
@@ -53,6 +55,12 @@ public class CuidadorActivity extends AppCompatActivity {
      */
     private final Map<Integer, Medicamento> medPorHorario = new HashMap<>();
 
+    /** Todos los familiares a cargo de este cuidador. */
+    private final List<Vinculacion> misVinculos = new ArrayList<>();
+
+    /** id_usuario → nombre, para el selector cuando hay más de uno. */
+    private final Map<Integer, String> nombrePorAdulto = new HashMap<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,6 +80,7 @@ public class CuidadorActivity extends AppCompatActivity {
             "Hola, " + (nombre != null && !nombre.isEmpty() ? nombre : "cuidador") + ".");
 
         findViewById(R.id.btn_profile).setOnClickListener(v -> menuPerfil());
+        setupBottomNav();
 
         // Lo que el cuidador carga acá aparece en la app del adulto mayor
         findViewById(R.id.btn_agregar_med_cuidador).setOnClickListener(v -> {
@@ -94,6 +103,11 @@ public class CuidadorActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        // Al volver del chatbot o de la pantalla de vínculos, la barra
+        // quedaría marcando esa sección y no la que se está viendo.
+        BottomNavigationView nav = findViewById(R.id.bottom_nav_cuidador);
+        if (nav != null) nav.setSelectedItemId(R.id.nav_cuidador_home);
+
         cargarVinculo();
     }
 
@@ -123,8 +137,20 @@ public class CuidadorActivity extends AppCompatActivity {
                     mostrarVacio();
                     return;
                 }
-                // Por ahora un cuidador monitorea a su primer vínculo aceptado
-                idAdulto = vinculos.get(0).getIdAdulto();
+                misVinculos.clear();
+                misVinculos.addAll(vinculos);
+
+                // Respetamos al paciente que el cuidador venía mirando; si ya
+                // no está vinculado, caemos al primero.
+                int guardado = sessionManager != null ? pacienteGuardado() : -1;
+                idAdulto = -1;
+                for (Vinculacion v : vinculos) {
+                    if (v.getIdAdulto() == guardado) { idAdulto = guardado; break; }
+                }
+                if (idAdulto <= 0) idAdulto = vinculos.get(0).getIdAdulto();
+
+                mostrarSelectorSiHayVarios();
+                resolverNombresDelSelector();
                 cargarPaciente();
             }
 
@@ -134,6 +160,101 @@ public class CuidadorActivity extends AppCompatActivity {
                 Toast.makeText(CuidadorActivity.this, msg, Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    // ═══ Varios familiares a cargo ═════════════════════════════
+
+    /**
+     * Con un solo vínculo la cabecera se comporta como antes. Con dos o más
+     * se vuelve tocable: sin esto, el segundo familiar era invisible y no
+     * había forma de llegar a él.
+     */
+    private void mostrarSelectorSiHayVarios() {
+        View header = findViewById(R.id.card_paciente);
+        TextView pista = findViewById(R.id.tv_cambiar_paciente);
+
+        boolean varios = misVinculos.size() > 1;
+        if (pista != null) pista.setVisibility(varios ? View.VISIBLE : View.GONE);
+        if (header == null) return;
+
+        if (varios) {
+            header.setOnClickListener(v -> elegirPaciente());
+        } else {
+            header.setOnClickListener(null);
+            header.setClickable(false);
+        }
+    }
+
+    /**
+     * Pide el nombre de los familiares que NO se están mostrando, para que
+     * el diálogo de cambio diga "Rosa" y no "Familiar #12". El que se está
+     * viendo ya lo resuelve cargarPaciente().
+     */
+    private void resolverNombresDelSelector() {
+        if (misVinculos.size() < 2) return;
+        for (Vinculacion v : misVinculos) {
+            final int id = v.getIdAdulto();
+            if (id == idAdulto || nombrePorAdulto.containsKey(id)) continue;
+            VimedRepo.buscarPerfilPorId(id, new VimedRepo.Cb<UsuarioSupabase>() {
+                @Override public void onOk(UsuarioSupabase perfil) {
+                    if (perfil != null && perfil.getNombre() != null) {
+                        nombrePorAdulto.put(id, perfil.getNombre());
+                    }
+                }
+            });
+        }
+    }
+
+    private void elegirPaciente() {
+        // Los nombres ya se resolvieron al pintar cada paciente; los que
+        // falten se muestran por id hasta que se carguen.
+        final List<Vinculacion> opciones = new ArrayList<>(misVinculos);
+        String[] etiquetas = new String[opciones.size()];
+        for (int i = 0; i < opciones.size(); i++) {
+            int id = opciones.get(i).getIdAdulto();
+            String nombre = nombrePorAdulto.get(id);
+            etiquetas[i] = nombre != null ? nombre : "Familiar #" + id;
+        }
+
+        new AlertDialog.Builder(this)
+            .setTitle("¿A quién querés ver?")
+            .setItems(etiquetas, (d, w) -> {
+                int elegido = opciones.get(w).getIdAdulto();
+                if (elegido == idAdulto) return;
+                idAdulto = elegido;
+                guardarPacienteElegido(elegido);
+                limpiarSeccionesDelPacienteAnterior();
+                cargarPaciente();
+            })
+            .show();
+    }
+
+    /**
+     * Las secciones se pintan a medida que van llegando las respuestas de
+     * red. Si no se vacían al cambiar de paciente, durante ese rato se ven
+     * los datos del anterior bajo el nombre del nuevo.
+     */
+    private void limpiarSeccionesDelPacienteAnterior() {
+        tomasContainer.removeAllViews();
+        actividadContainer.removeAllViews();
+        medsContainer.removeAllViews();
+        citasContainer.removeAllViews();
+        medPorHorario.clear();
+        findViewById(R.id.alert_stock_cuidador).setVisibility(View.GONE);
+        findViewById(R.id.card_adherencia).setVisibility(View.GONE);
+    }
+
+    private static final String PREFS_CUIDADOR = "vimed_cuidador";
+    private static final String K_PACIENTE = "ultimo_paciente";
+
+    private int pacienteGuardado() {
+        return getSharedPreferences(PREFS_CUIDADOR, MODE_PRIVATE)
+            .getInt(K_PACIENTE, -1);
+    }
+
+    private void guardarPacienteElegido(int idAdulto) {
+        getSharedPreferences(PREFS_CUIDADOR, MODE_PRIVATE)
+            .edit().putInt(K_PACIENTE, idAdulto).apply();
     }
 
     private void mostrarVacio() {
@@ -152,6 +273,7 @@ public class CuidadorActivity extends AppCompatActivity {
                 String nombre = perfil != null && perfil.getNombre() != null
                     ? perfil.getNombre() : "Adulto mayor";
                 nombreAdulto = nombre;
+                nombrePorAdulto.put(idAdulto, nombre);
                 ((TextView) findViewById(R.id.tv_paciente_nombre)).setText(nombre);
                 ((TextView) findViewById(R.id.tv_paciente_initial)).setText(
                     nombre.substring(0, 1).toUpperCase(Locale.getDefault()));
@@ -212,6 +334,7 @@ public class CuidadorActivity extends AppCompatActivity {
                     if (m != null) medPorHorario.put(h.getId(), m);
                 }
                 cargarTomasDeHoy();
+                cargarResumenAdherencia(meds, horarios);
             }
 
             @Override
@@ -228,6 +351,117 @@ public class CuidadorActivity extends AppCompatActivity {
             public void onOk(List<RegistroToma> tomas) {
                 pintarTomasHoy(tomas, hoy);
             }
+        });
+    }
+
+    // ═══ Cómo viene el tratamiento ═════════════════════════════
+
+    /**
+     * El familiar es quien puede hacer algo con esta información, así que
+     * el resumen del último mes va acá y no en la app del adulto mayor.
+     *
+     * A diferencia del dashboard del adulto, esta tarjeta NO propone nada:
+     * son hechos para conversar con el médico. Sugerirle a un familiar que
+     * cambie el tratamiento de otra persona es un lugar al que la app no
+     * tiene por qué meterse.
+     */
+    private void cargarResumenAdherencia(List<Medicamento> meds, List<Horario> horarios) {
+        final String hoy = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            .format(new Date());
+        String desde = ResumenAdherencia.restarDias(hoy, ResumenAdherencia.DIAS_LARGO);
+
+        VimedRepo.listarTomasDelDiaDe(idAdulto, desde, new VimedRepo.Cb<List<RegistroToma>>() {
+            @Override
+            public void onOk(List<RegistroToma> historial) {
+                pintarResumenAdherencia(
+                    ResumenAdherencia.calcular(meds, horarios, historial, hoy));
+            }
+
+            @Override
+            public void onError(String msg) {
+                findViewById(R.id.card_adherencia).setVisibility(View.GONE);
+            }
+        });
+    }
+
+    private void pintarResumenAdherencia(ResumenAdherencia.Resumen r) {
+        View card = findViewById(R.id.card_adherencia);
+        card.setVisibility(View.VISIBLE);
+
+        ((TextView) findViewById(R.id.tv_adherencia_titular)).setText(r.titular());
+
+        pintarPorcentaje(R.id.tv_adherencia_semana, R.id.tv_adherencia_semana_sub,
+            r.porcentajeCorto(), r.confirmadasCorto, r.totalCorto, "Últimos 7 días");
+        pintarPorcentaje(R.id.tv_adherencia_mes, R.id.tv_adherencia_mes_sub,
+            r.porcentajeLargo(), r.confirmadasLargo, r.totalLargo, "Últimos 30 días");
+
+        // Horarios que se pierden seguido
+        LinearLayout cont = findViewById(R.id.puntos_flojos_container);
+        View titulo = findViewById(R.id.tv_puntos_flojos_titulo);
+        cont.removeAllViews();
+
+        if (r.puntosFlojos.isEmpty()) {
+            titulo.setVisibility(View.GONE);
+            return;
+        }
+        titulo.setVisibility(View.VISIBLE);
+
+        LayoutInflater inflater = LayoutInflater.from(this);
+        for (ResumenAdherencia.PuntoFlojo p : r.puntosFlojos) {
+            View item = inflater.inflate(R.layout.item_actividad, cont, false);
+            ((ImageView) item.findViewById(R.id.act_icon))
+                .setImageResource(R.drawable.ic_warn);
+            ((TextView) item.findViewById(R.id.act_mensaje))
+                .setText(p.nombreMedicamento
+                    + (p.hora.isEmpty() ? "" : " · " + p.hora));
+            ((TextView) item.findViewById(R.id.act_fecha)).setText(p.detalle());
+            cont.addView(item);
+        }
+    }
+
+    private void pintarPorcentaje(int idNumero, int idSub, int pct,
+                                  int confirmadas, int total, String etiqueta) {
+        TextView tvNum = findViewById(idNumero);
+        TextView tvSub = findViewById(idSub);
+
+        if (pct < 0) {
+            // Sin tomas en la ventana: un "0%" ahí diría que no tomó nada,
+            // que es muy distinto de que no hubiera nada para tomar.
+            tvNum.setText("—");
+            tvSub.setText(etiqueta + ": sin tomas");
+            return;
+        }
+        tvNum.setText(pct + "%");
+        tvSub.setText(etiqueta + " · " + confirmadas + " de " + total);
+    }
+
+    // ═══ Navegación ════════════════════════════════════════════
+
+    /**
+     * El nav del cuidador tiene menos ítems que el del adulto mayor a
+     * propósito: "Medicamentos", "Citas" y "Progreso" abren pantallas que
+     * consultan los datos del usuario LOGUEADO, así que acá aparecerían
+     * vacías. Lo del paciente ya está en esta misma pantalla.
+     */
+    private void setupBottomNav() {
+        BottomNavigationView nav = findViewById(R.id.bottom_nav_cuidador);
+        if (nav == null) return;
+        nav.setSelectedItemId(R.id.nav_cuidador_home);
+
+        nav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_cuidador_home) {
+                return true;
+            } else if (id == R.id.nav_cuidador_vinculo) {
+                startActivity(new Intent(this, VincularFamiliarActivity.class));
+                overridePendingTransition(0, 0);
+                return true;
+            } else if (id == R.id.nav_cuidador_vita) {
+                startActivity(new Intent(this, ChatbotActivity.class));
+                overridePendingTransition(0, 0);
+                return true;
+            }
+            return false;
         });
     }
 
@@ -434,9 +668,13 @@ public class CuidadorActivity extends AppCompatActivity {
             String esp = c.getEspecialidad();
             msg.setText(esp != null && !esp.isEmpty() ? medico + " · " + esp : medico);
 
-            String cuando = c.getFechaHora() != null ? c.getFechaHora() : "";
+            // fechaLegible: sin esto se veía el timestamp crudo de Postgres
+            // ("2026-08-20T15:00:00+00:00") en la tarjeta de la cita.
+            String cuando = fechaLegible(c.getFechaHora());
             String lugar = c.getLugar();
-            fecha.setText(lugar != null && !lugar.isEmpty() ? cuando + " · " + lugar : cuando);
+            fecha.setText(lugar != null && !lugar.isEmpty() && !cuando.isEmpty()
+                ? cuando + " · " + lugar
+                : (cuando.isEmpty() ? (lugar != null ? lugar : "") : cuando));
             citasContainer.addView(item);
         }
     }
