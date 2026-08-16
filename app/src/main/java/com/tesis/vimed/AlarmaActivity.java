@@ -5,8 +5,10 @@ import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
 import android.app.KeyguardManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -22,10 +24,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.tesis.vimed.utils.AlarmaReceiver;
+import com.tesis.vimed.utils.AlarmaService;
 import com.tesis.vimed.utils.NotificationHelper;
 
 import java.util.Locale;
@@ -46,8 +50,9 @@ import java.util.Locale;
  */
 public class AlarmaActivity extends AppCompatActivity {
 
-    /** Tiempo que suena antes de posponerse sola si nadie responde (60 s). */
-    private static final long AUTO_POSPONER_MS = 60_000L;
+    /** Tiempo que suena antes de posponerse sola si nadie responde.
+     *  Lo define el servicio, que es quien manda el reloj de la alarma. */
+    private static final long AUTO_POSPONER_MS = AlarmaService.DURACION_MS;
 
     private final Handler autoHandler = new Handler(Looper.getMainLooper());
 
@@ -56,6 +61,9 @@ public class AlarmaActivity extends AppCompatActivity {
     private String hora;
 
     private boolean yaCerrada = false;
+
+    /** Escucha {@link AlarmaService#ACTION_TERMINADA}. */
+    private BroadcastReceiver finReceiver;
 
     // Vistas y animadores de la campana
     private ImageView vCampana;
@@ -89,10 +97,42 @@ public class AlarmaActivity extends AppCompatActivity {
         btnPosponer.setOnClickListener(v -> responder(NotificationHelper.ACTION_SNOOZE));
 
         empezarAlarma();
+        escucharFinDeAlarma();
 
-        // Si nadie responde, se pospone sola
-        autoHandler.postDelayed(() -> responder(NotificationHelper.ACTION_SNOOZE),
-            AUTO_POSPONER_MS);
+        if (AlarmaService.estaActivo()) {
+            // El servicio es el dueño del tiempo de espera: cuando se cansa,
+            // pospone él y nos avisa. Acá solo dejamos una red de seguridad
+            // por si ese aviso se pierde — cierra la pantalla, sin volver a
+            // posponer (eso duplicaría el aviso al cuidador).
+            autoHandler.postDelayed(this::cerrarSinResponder,
+                AUTO_POSPONER_MS + 10_000L);
+        } else {
+            // Camino de respaldo (la alarma sonó solo por la notificación):
+            // acá no hay servicio que posponga, así que lo hacemos nosotros.
+            autoHandler.postDelayed(() -> responder(NotificationHelper.ACTION_SNOOZE),
+                AUTO_POSPONER_MS);
+        }
+    }
+
+    /** El servicio avisa cuando la alarma terminó (la respondieron desde la
+     *  notificación, o se pospuso sola): esta pantalla ya no tiene sentido. */
+    private void escucharFinDeAlarma() {
+        finReceiver = new BroadcastReceiver() {
+            @Override public void onReceive(Context ctx, Intent intent) {
+                cerrarSinResponder();
+            }
+        };
+        ContextCompat.registerReceiver(this, finReceiver,
+            new IntentFilter(AlarmaService.ACTION_TERMINADA),
+            ContextCompat.RECEIVER_NOT_EXPORTED);
+    }
+
+    /** Cierra la pantalla sin tocar los datos: la toma ya fue resuelta. */
+    private void cerrarSinResponder() {
+        if (yaCerrada) return;
+        yaCerrada = true;
+        pararAlarma();
+        finish();
     }
 
     /** Si llega otra alarma mientras esta ya está abierta, actualizamos los datos. */
@@ -151,18 +191,18 @@ public class AlarmaActivity extends AppCompatActivity {
     // ═══ Arranque de la alarma ═════════════════════════════════
 
     /**
-     * El SONIDO Y LA VIBRACIÓN NO SE MANEJAN ACÁ: los pone la notificación
-     * (canal de alarma + FLAG_INSISTENT, ver NotificationHelper).
+     * El SONIDO Y LA VIBRACIÓN NO SE MANEJAN ACÁ: los pone
+     * {@link AlarmaService}, que arranca junto con la alarma.
      *
-     * Antes los ponía esta pantalla, y ese era el motivo de que con el celular
-     * bloqueado no sonara nada: si el sistema no dejaba abrir la pantalla
-     * completa —cosa habitual estando bloqueado, o si el permiso está
-     * denegado—, no había quién reprodujera el tono. Ahora la notificación
-     * suena sola y esta pantalla es solo la cara visible; si además abre,
-     * no se duplica el audio porque hay un único emisor.
+     * Antes los ponía esta pantalla, y ese era el motivo de que la alarma
+     * solo sonara al tocar la notificación: si el sistema no dejaba abrir la
+     * pantalla completa —cosa habitual con el celular bloqueado, o si el
+     * permiso está denegado—, no había quién reprodujera el tono. Ahora el
+     * servicio suena solo y esta pantalla es apenas la cara visible; si
+     * además abre, no se duplica el audio porque hay un único emisor.
      *
-     * Al responder, {@link #responder} cancela la notificación y con eso se
-     * corta el sonido.
+     * Al responder, {@link #responder} avisa al AlarmaReceiver, que detiene
+     * el servicio y con eso corta el sonido.
      */
     private void empezarAlarma() {
         // La campana se balancea mientras la notificación suena.
@@ -352,6 +392,10 @@ public class AlarmaActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (finReceiver != null) {
+            try { unregisterReceiver(finReceiver); } catch (Exception ignored) { }
+            finReceiver = null;
+        }
         pararAlarma();
     }
 

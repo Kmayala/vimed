@@ -15,6 +15,13 @@
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
+    <!-- AlarmaService: reproduce el tono en loop con la app cerrada.
+         WAKE_LOCK mantiene la CPU despierta mientras suena; sin eso el
+         audio se corta cuando el celular vuelve a dormirse. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
     <application
         android:name=".VimedApp"
         android:allowBackup="true"
@@ -87,6 +94,13 @@
             android:turnScreenOn="true"
             android:taskAffinity=""
             android:theme="@style/Theme.Vimed.Alarma" />
+
+        <!-- Hace sonar la alarma de medicación. En primer plano porque tiene
+             que seguir sonando con la app cerrada y la pantalla apagada. -->
+        <service
+            android:name=".utils.AlarmaService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
 
         <!-- Recibe los push de Firebase (avisos al cuidador) -->
         <service

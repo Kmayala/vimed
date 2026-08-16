@@ -42,6 +42,12 @@ public class NotificationHelper {
     /** Id del canal mudo original, solo para poder borrarlo. */
     private static final String ALARM_CHANNEL_ID_VIEJO = "vimed_alarma_channel";
 
+    // Canal de la notificación que sostiene a AlarmaService. Este SÍ es mudo
+    // a propósito: mientras el servicio vive, el tono lo pone su MediaPlayer.
+    // Si sonara también el canal, se escucharían dos alarmas encimadas.
+    public static final String ALARM_FG_CHANNEL_ID   = "vimed_alarma_activa_v1";
+    public static final String ALARM_FG_CHANNEL_NAME = "Alarma sonando";
+
     // Acciones que reconoce AlarmaReceiver
     public static final String ACTION_FIRE    = "com.tesis.vimed.FIRE";      // dispara la alarma
     public static final String ACTION_CONFIRM = "com.tesis.vimed.CONFIRM";   // botón "Confirmar toma"
@@ -89,6 +95,19 @@ public class NotificationHelper {
             alarma.setBypassDnd(true);   // suena aunque esté en "No molestar"
             alarma.setLockscreenVisibility(android.app.Notification.VISIBILITY_PUBLIC);
             manager.createNotificationChannel(alarma);
+
+            // Canal de la alarma EN CURSO (la que sostiene AlarmaService).
+            // Importancia HIGH para que el full-screen intent siga
+            // funcionando, pero sin sonido ni vibración propios.
+            NotificationChannel alarmaActiva = new NotificationChannel(
+                ALARM_FG_CHANNEL_ID, ALARM_FG_CHANNEL_NAME,
+                NotificationManager.IMPORTANCE_HIGH);
+            alarmaActiva.setDescription("Notificación de la alarma mientras está sonando");
+            alarmaActiva.setSound(null, null);
+            alarmaActiva.enableVibration(false);
+            alarmaActiva.setBypassDnd(true);
+            alarmaActiva.setLockscreenVisibility(android.app.Notification.VISIBILITY_PUBLIC);
+            manager.createNotificationChannel(alarmaActiva);
 
             // Sacamos de los ajustes el canal mudo viejo, para que la persona
             // no vea dos "Alarma de medicación" y silencie el que sí anda.
@@ -280,6 +299,29 @@ public class NotificationHelper {
                                                 String titulo, String mensaje,
                                                 String nombreMed, String dosisTxt,
                                                 boolean esActualizacion) {
+        android.app.Notification n = construirNotificacionToma(ctx, idMedicamento,
+            idHorario, idRegistro, hora, indice, titulo, mensaje, nombreMed,
+            dosisTxt, ALARM_CHANNEL_ID, esActualizacion);
+
+        NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (nm != null) nm.notify(idNotifPara(idMedicamento, indice), n);
+    }
+
+    /**
+     * Arma la tarjeta de "Hora de tu medicamento" con sus dos botones y el
+     * full-screen intent, sin publicarla.
+     *
+     * @param canalId {@link #ALARM_CHANNEL_ID} cuando el tono lo tiene que
+     *        poner el canal (camino de respaldo, sin servicio), o
+     *        {@link #ALARM_FG_CHANNEL_ID} cuando la notificación es la que
+     *        sostiene a {@link AlarmaService} y el audio ya corre por su
+     *        MediaPlayer.
+     */
+    public static android.app.Notification construirNotificacionToma(
+            Context ctx, int idMedicamento, int idHorario, int idRegistro,
+            String hora, int indice, String titulo, String mensaje,
+            String nombreMed, String dosisTxt, String canalId,
+            boolean esActualizacion) {
         // Intent del botón "Confirmar toma"
         Intent confirmIntent = new Intent(ctx, com.tesis.vimed.utils.AlarmaReceiver.class);
         confirmIntent.setAction(ACTION_CONFIRM);
@@ -321,7 +363,7 @@ public class NotificationHelper {
             requestCodeFor(idMedicamento, indice) + 3_000_000, alarmaIntent,
             PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        NotificationCompat.Builder b = new NotificationCompat.Builder(ctx, ALARM_CHANNEL_ID)
+        NotificationCompat.Builder b = new NotificationCompat.Builder(ctx, canalId)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle(titulo)
             .setContentText(mensaje)
@@ -353,8 +395,7 @@ public class NotificationHelper {
         // pedirlo lo reiniciaría.
         if (!esActualizacion) n.flags |= android.app.Notification.FLAG_INSISTENT;
 
-        NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
-        if (nm != null) nm.notify(idNotifPara(idMedicamento, indice), n);
+        return n;
     }
 
     /** Notificación simple sin acciones (para stock bajo, avisos generales). */
@@ -384,7 +425,7 @@ public class NotificationHelper {
         return idMedicamento * 100 + indice;
     }
 
-    private static int idNotifPara(int idMedicamento, int indice) {
+    public static int idNotifPara(int idMedicamento, int indice) {
         return 500_000 + idMedicamento * 100 + indice;
     }
 

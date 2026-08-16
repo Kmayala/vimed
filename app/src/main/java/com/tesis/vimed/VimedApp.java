@@ -17,6 +17,12 @@ public class VimedApp extends Application {
         // del SessionManager en cada request.
         SupabaseClient.init(this);
 
+        // Los canales se crean acá y no solo en MainActivity: cuando llega la
+        // hora de una toma con la app cerrada, el proceso arranca por la
+        // alarma y nunca pasa por ninguna pantalla. Sin canal, Android
+        // descarta la notificación en silencio.
+        com.tesis.vimed.utils.NotificationHelper.crearCanal(this);
+
         // Refresca el token de push. Firebase lo rota cada tanto, así que
         // no alcanza con guardarlo una sola vez al registrarse.
         if (new SessionManager(this).isLoggedIn()) {

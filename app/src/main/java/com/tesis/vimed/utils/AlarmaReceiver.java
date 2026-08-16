@@ -51,6 +51,14 @@ public class AlarmaReceiver extends BroadcastReceiver {
         final String hora       = intent.getStringExtra(NotificationHelper.EXTRA_HORA);
         final int indice        = intent.getIntExtra(NotificationHelper.EXTRA_INDICE, 0);
 
+        // El sonido se corta ACÁ, en el hilo principal y antes de tocar la
+        // red: si esperara al trabajo de fondo, la alarma seguiría sonando
+        // los segundos que tarde Supabase en responder.
+        if (NotificationHelper.ACTION_CONFIRM.equals(accion)
+                || NotificationHelper.ACTION_SNOOZE.equals(accion)) {
+            AlarmaService.detener(appCtx);
+        }
+
         final PendingResult pending = goAsync();
         POOL.execute(() -> {
             try {
@@ -97,9 +105,19 @@ public class AlarmaReceiver extends BroadcastReceiver {
 
         String mensaje = dosisTxt.isEmpty() ? nombre : nombre + " — " + dosisTxt;
 
-        NotificationHelper.mostrarRecordatorioToma(ctx,
-            idMedicamento, idHorario, -1, hora, indice,
-            "Hora de tu medicamento", mensaje, nombre, dosisTxt);
+        // El tono lo pone AlarmaService, no el canal de notificación: así
+        // suena como despertador aunque la pantalla completa no llegue a
+        // abrirse y aunque después repintemos la notificación.
+        boolean conServicio = AlarmaService.iniciar(ctx,
+            idMedicamento, idHorario, -1, hora, indice, mensaje, nombre, dosisTxt);
+
+        if (!conServicio) {
+            // El sistema no dejó levantar el servicio en segundo plano.
+            // Respaldo: notificación con sonido de canal + FLAG_INSISTENT.
+            NotificationHelper.mostrarRecordatorioToma(ctx,
+                idMedicamento, idHorario, -1, hora, indice,
+                "Hora de tu medicamento", mensaje, nombre, dosisTxt);
+        }
 
         // 3) Recién ahora, lo que sí necesita conexión. Si falla, ya sonó.
         Medicamento med = VimedRepo.buscarMedicamentoSync(idMedicamento);
@@ -118,10 +136,15 @@ public class AlarmaReceiver extends BroadcastReceiver {
             if (creado != null) {
                 // La notificación ya está en pantalla, pero sin el id de la
                 // fila. La repintamos con el id para que los botones sepan
-                // cuál actualizar.
-                NotificationHelper.mostrarRecordatorioToma(ctx,
-                    idMedicamento, idHorario, creado.getId(), hora, indice,
-                    "Hora de tu medicamento", mensaje, nombre, dosisTxt, true);
+                // cuál actualizar. El tono no se entera: lo tiene el servicio.
+                if (conServicio) {
+                    AlarmaService.actualizarRegistro(ctx, idMedicamento, idHorario,
+                        creado.getId(), hora, indice, mensaje, nombre, dosisTxt);
+                } else {
+                    NotificationHelper.mostrarRecordatorioToma(ctx,
+                        idMedicamento, idHorario, creado.getId(), hora, indice,
+                        "Hora de tu medicamento", mensaje, nombre, dosisTxt, true);
+                }
             }
         }
 
