@@ -69,6 +69,11 @@
     <color name="cian_500">#1fe3f2</color>
     <color name="cian_700">#0a6b74</color>
 
+    <!-- Contenido que va ENCIMA del cian. Fijo en los dos modos: el
+         cian es el mismo #1FE3F2 siempre, así que lo que lleve encima
+         tiene que ser oscuro siempre. Con blanco daría 1.58. -->
+    <color name="sobre_cian">#06343a</color>
+
     <color name="rosa_50">#f5ecf1</color>
     <color name="rosa_100">#e5cad8</color>
     <color name="rosa_500">#870e4f</color>

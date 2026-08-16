@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Círculo de acción de Citas. azul_solido y no azul_500: lleva el
+     ícono en blanco encima, y azul_500 se aclara en modo oscuro. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="@color/azul_solido" />
+</shape>

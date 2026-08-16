@@ -53,7 +53,7 @@
                 android:id="@+id/btn_add_appt"
                 android:layout_width="56dp"
                 android:layout_height="56dp"
-                android:background="@drawable/shape_logo_container"
+                android:background="@drawable/shape_icon_azul"
                 android:elevation="4dp"
                 android:clickable="true"
                 android:focusable="true">
@@ -73,7 +73,7 @@
                 android:text="Nueva cita"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                android:textColor="@color/brand_600"
+                android:textColor="@color/azul_600"
                 android:layout_marginTop="6dp" />
         </LinearLayout>
 
@@ -557,7 +557,8 @@
         android:layout_height="wrap_content"
         android:background="@color/paper_2"
         app:menu="@menu/bottom_nav_menu"
-        app:itemIconTint="@color/nav_item_color"
+        app:itemIconTint="@color/nav_icono_color"
+        app:itemActiveIndicatorStyle="@style/IndicadorNav"
         app:itemTextColor="@color/nav_item_color"
         app:labelVisibilityMode="labeled" />
 

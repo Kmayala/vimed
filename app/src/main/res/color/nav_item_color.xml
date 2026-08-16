@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Etiqueta de la barra inferior. Va sobre el fondo de la barra, no
+     sobre la píldora cian, así que usa el violeta de la marca. -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:color="@color/brand_600" android:state_checked="true" />
     <item android:color="@color/ink_4" />

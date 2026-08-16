@@ -172,7 +172,8 @@
         android:layout_height="wrap_content"
         android:background="@color/paper_2"
         app:menu="@menu/bottom_nav_menu"
-        app:itemIconTint="@color/nav_item_color"
+        app:itemIconTint="@color/nav_icono_color"
+        app:itemActiveIndicatorStyle="@style/IndicadorNav"
         app:itemTextColor="@color/nav_item_color"
         app:labelVisibilityMode="labeled" />
 
