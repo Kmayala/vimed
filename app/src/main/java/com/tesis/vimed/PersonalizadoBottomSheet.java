@@ -15,18 +15,41 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
+import java.util.Locale;
+
+/**
+ * Hoja inferior para elegir hora de inicio e intervalo a mano.
+ *
+ * OJO con cómo se crea y cómo devuelve el resultado: el sistema puede
+ * destruir y recrear este fragment solo (rotar la pantalla, o matar la
+ * actividad en segundo plano por memoria). Cuando lo recrea, lo hace con
+ * el constructor VACÍO, así que nada que se pase por constructor
+ * sobrevive: los datos de entrada van por {@link #newInstance} en los
+ * arguments, y la respuesta sale por setFragmentResult en vez de un
+ * callback en memoria. Con un callback, después de recrearse la hoja
+ * quedaba muda: la persona tocaba "Confirmar" y no pasaba nada.
+ */
 public class PersonalizadoBottomSheet extends BottomSheetDialogFragment {
 
-    public interface Callback {
-        void onConfirmar(String hora, int intervalo);
-    }
+    /** Clave con la que la actividad escucha el resultado. */
+    public static final String REQUEST_KEY = "personalizado_horario";
 
-    private final String horaActual;
-    private final Callback callback;
+    /** "HH:mm" elegido en el tambor. */
+    public static final String RESULT_HORA = "hora";
+    /** Cada cuántas horas se repite la toma (1..24). */
+    public static final String RESULT_INTERVALO = "intervalo";
 
-    public PersonalizadoBottomSheet(String horaActual, Callback callback) {
-        this.horaActual = horaActual;
-        this.callback = callback;
+    private static final String ARG_HORA_ACTUAL = "hora_actual";
+
+    /** Necesario para que el sistema pueda recrear el fragment. */
+    public PersonalizadoBottomSheet() { }
+
+    public static PersonalizadoBottomSheet newInstance(String horaActual) {
+        PersonalizadoBottomSheet hoja = new PersonalizadoBottomSheet();
+        Bundle args = new Bundle();
+        args.putString(ARG_HORA_ACTUAL, horaActual);
+        hoja.setArguments(args);
+        return hoja;
     }
 
     @Override
@@ -38,6 +61,7 @@ public class PersonalizadoBottomSheet extends BottomSheetDialogFragment {
 
         // Pre-cargar la hora actual del medicamento
         try {
+            String horaActual = requireArguments().getString(ARG_HORA_ACTUAL);
             String[] partes = horaActual.split(":");
             tp.setHour(Integer.parseInt(partes[0]));
             tp.setMinute(Integer.parseInt(partes[1]));
@@ -71,8 +95,11 @@ public class PersonalizadoBottomSheet extends BottomSheetDialogFragment {
                 return;
             }
 
-            String hora = String.format("%02d:%02d", tp.getHour(), tp.getMinute());
-            if (callback != null) callback.onConfirmar(hora, intervalo);
+            Bundle resultado = new Bundle();
+            resultado.putString(RESULT_HORA,
+                String.format(Locale.getDefault(), "%02d:%02d", tp.getHour(), tp.getMinute()));
+            resultado.putInt(RESULT_INTERVALO, intervalo);
+            getParentFragmentManager().setFragmentResult(REQUEST_KEY, resultado);
             dismiss();
         });
 

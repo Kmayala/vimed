@@ -420,16 +420,21 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
         pasos[5].findViewById(R.id.btn_12h).setOnClickListener(v -> { intervaloHoras = 12; mostrarPaso(6); });
         pasos[5].findViewById(R.id.btn_24h).setOnClickListener(v -> { intervaloHoras = 24; mostrarPaso(6); });
 
-        pasos[5].findViewById(R.id.btn_personalizado).setOnClickListener(v -> {
-            personalizado = true;
-            PersonalizadoBottomSheet sheet = new PersonalizadoBottomSheet(horaInicio,
-                (horaPersonalizada, intervalo) -> {
-                    horaInicio = horaPersonalizada;
-                    intervaloHoras = intervalo;
-                    mostrarPaso(6);
-                });
-            sheet.show(getSupportFragmentManager(), "personalizado");
-        });
+        // El listener se registra siempre, no al abrir la hoja: si el sistema
+        // recrea la actividad con la hoja abierta (rotar la pantalla), el
+        // resultado tiene que encontrar a alguien escuchando igual.
+        getSupportFragmentManager().setFragmentResultListener(
+            PersonalizadoBottomSheet.REQUEST_KEY, this, (clave, datos) -> {
+                horaInicio = datos.getString(PersonalizadoBottomSheet.RESULT_HORA, horaInicio);
+                intervaloHoras = datos.getInt(PersonalizadoBottomSheet.RESULT_INTERVALO,
+                    intervaloHoras);
+                personalizado = true;
+                mostrarPaso(6);
+            });
+
+        pasos[5].findViewById(R.id.btn_personalizado).setOnClickListener(v ->
+            PersonalizadoBottomSheet.newInstance(horaInicio)
+                .show(getSupportFragmentManager(), "personalizado"));
     }
 
     // ── Paso 6: Stock ──────────────────────────────────────────
