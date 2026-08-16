@@ -1,12 +1,16 @@
 package com.tesis.vimed;
 
+import android.app.Dialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TimePicker;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -73,5 +77,37 @@ public class PersonalizadoBottomSheet extends BottomSheetDialogFragment {
         });
 
         return view;
+    }
+
+    /**
+     * Ajustes de la ventana del diálogo. Sin esto la hoja abría a media
+     * altura y con el teclado encima: el campo de las horas y el botón de
+     * confirmar quedaban fuera de la pantalla, sin forma de llegar a ellos.
+     */
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        Dialog dialogo = getDialog();
+        if (dialogo == null) return;
+
+        Window ventana = dialogo.getWindow();
+        if (ventana != null) {
+            // STATE_HIDDEN: el teclado no aparece hasta que la persona toca
+            // el campo. ADJUST_RESIZE: cuando aparece, la hoja se achica en
+            // vez de quedar tapada — y el NestedScrollView deja llegar al
+            // botón.
+            ventana.setSoftInputMode(
+                WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
+                    | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        }
+
+        View hoja = dialogo.findViewById(
+            com.google.android.material.R.id.design_bottom_sheet);
+        if (hoja != null) {
+            BottomSheetBehavior<View> comportamiento = BottomSheetBehavior.from(hoja);
+            comportamiento.setState(BottomSheetBehavior.STATE_EXPANDED);
+            comportamiento.setSkipCollapsed(true);
+        }
     }
 }
