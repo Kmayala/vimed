@@ -3,6 +3,6 @@
      vino ese día; acá solo la forma. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <solid android:color="@color/menta_500" />
+    <solid android:color="@color/verde_500" />
     <corners android:radius="5dp" />
 </shape>

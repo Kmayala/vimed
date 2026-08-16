@@ -78,19 +78,41 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Especialidad -->
-            <com.google.android.material.textfield.TextInputLayout
+            <!-- ─── Especialidad ───
+                 Grilla en vez de campo libre: escrito a mano, la misma
+                 consulta quedaba guardada como "cardiologo", "Cardiología"
+                 o vacía, y no habia forma de agrupar nada. Las filas se
+                 arman en código desde el enum Especialidad. -->
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Especialidad"
+                android:text="Especialidad"
+                android:textSize="16sp"
+                android:textColor="@color/ink_3"
+                android:layout_marginBottom="10dp" />
+
+            <LinearLayout
+                android:id="@+id/especialidades_grid"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Solo aparece al elegir "Otra". -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/til_especialidad"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="¿Cuál especialidad?"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="16dp"
+                android:visibility="gone">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_especialidad"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
-                    android:inputType="text"
+                    android:inputType="textCapSentences"
                     android:textSize="16sp" />
 
             </com.google.android.material.textfield.TextInputLayout>

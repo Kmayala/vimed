@@ -161,7 +161,7 @@
                             android:text="ESTÁS CUIDANDO A"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            android:textColor="@color/brand_300"
+                            android:textColor="@color/brand_100"
                             android:letterSpacing="0.12" />
 
                         <TextView
@@ -171,7 +171,7 @@
                             android:text="Cambiar"
                             android:textSize="13sp"
                             android:textStyle="bold"
-                            android:textColor="@color/brand_200"
+                            android:textColor="@color/brand_100"
                             android:visibility="gone" />
                     </LinearLayout>
 
@@ -211,7 +211,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textSize="15sp"
-                                android:textColor="@color/brand_200"
+                                android:textColor="@color/brand_100"
                                 android:layout_marginTop="2dp" />
                         </LinearLayout>
                     </LinearLayout>

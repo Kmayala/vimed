@@ -31,24 +31,24 @@
          se aclarara, ese blanco perdería contraste. Además el botón
          se ve idéntico en los dos modos, que ayuda a reconocerlo.
          600/700/800 se invierten porque su rol es texto.          -->
-    <color name="brand_50">#241539</color>    <!-- fondo suave / ripple -->
-    <color name="brand_100">#302047</color>   <!-- círculos de ícono, chips -->
-    <color name="brand_200">#c2b6d2</color>   <!-- texto sobre superficie oscura -->
-    <color name="brand_300">#d2c7de</color>
-    <color name="brand_400">#947fa9</color>
-    <color name="brand_500">#664980</color>   <!-- primario (sin cambios) -->
-    <color name="brand_600">#c3b2d6</color>   <!-- texto/íconos sobre fondo -->
-    <color name="brand_700">#d5c8e3</color>   <!-- texto sobre brand_100 -->
-    <color name="brand_800">#e2d9ec</color>
-    <color name="brand_900">#f0eaf6</color>
+    <color name="brand_50">#26123a</color>    <!-- fondo suave / ripple -->
+    <color name="brand_100">#361a4d</color>   <!-- círculos de ícono, chips -->
+    <color name="brand_200">#cfb6df</color>   <!-- texto sobre superficie oscura -->
+    <color name="brand_300">#dcc9e8</color>
+    <color name="brand_400">#b288ca</color>
+    <color name="brand_500">#6a1b9a</color>   <!-- primario (sin cambios) -->
+    <color name="brand_600">#d3aeea</color>   <!-- texto/íconos sobre fondo -->
+    <color name="brand_700">#e2c9f2</color>   <!-- texto sobre brand_100 -->
+    <color name="brand_800">#ecdcf7</color>
+    <color name="brand_900">#f5eefb</color>
 
     <!-- ── Secundario ─────────────────────────────────────── -->
-    <color name="accent_50">#161d2e</color>
-    <color name="accent_100">#1e2740</color>
-    <color name="accent_200">#8fa4d8</color>
-    <color name="accent_500">#8ba3dd</color>
-    <color name="accent_600">#9fb3e8</color>
-    <color name="accent_700">#b6c5ef</color>
+    <color name="azul_50">#0d1c2e</color>
+    <color name="azul_100">#12293f</color>
+    <color name="azul_200">#8ec0f0</color>
+    <color name="azul_500">#57a3f0</color>
+    <color name="azul_600">#7bb8f5</color>
+    <color name="azul_700">#9ecbf8</color>
 
     <!-- ══ FAMILIAS DE SECCIÓN ═══════════════════════════════════
          Mismo rol que en claro, invertido igual que el resto: el _50 es
@@ -56,51 +56,51 @@
          tono luminoso que va como texto o ícono encima. El _500 se aclara
          para no perderse contra el fondo oscuro.                       -->
 
-    <color name="menta_50">#123528</color>
-    <color name="menta_100">#194a38</color>
-    <color name="menta_500">#3fbf95</color>
-    <color name="menta_700">#5fd1ac</color>
+    <color name="verde_50">#0f2a12</color>
+    <color name="verde_100">#163d1a</color>
+    <color name="verde_500">#5cc763</color>
+    <color name="verde_700">#86d98b</color>
 
-    <color name="coral_50">#3a1d15</color>
-    <color name="coral_100">#4e281d</color>
-    <color name="coral_500">#e07a60</color>
-    <color name="coral_700">#f4a692</color>
+    <color name="naranja_50">#33150a</color>
+    <color name="naranja_100">#471e0f</color>
+    <color name="naranja_500">#f2794f</color>
+    <color name="naranja_700">#f7a184</color>
 
-    <color name="ambar_50">#3a2a10</color>
-    <color name="ambar_100">#4e3915</color>
-    <color name="ambar_500">#d69f45</color>
-    <color name="ambar_700">#e8b25c</color>
+    <color name="amarillo_50">#33260a</color>
+    <color name="amarillo_100">#47340d</color>
+    <color name="amarillo_500">#f9a825</color>
+    <color name="amarillo_700">#f6c256</color>
 
     <!-- Alias legacy -->
-    <color name="turquesa">#7d6494</color>
-    <color name="turquesa_dark">#c3b2d6</color>
-    <color name="turquesa_light">#241539</color>
-    <color name="turquesa_border">#302047</color>
+    <color name="turquesa">#6a1b9a</color>
+    <color name="turquesa_dark">#d3aeea</color>
+    <color name="turquesa_light">#26123a</color>
+    <color name="turquesa_border">#361a4d</color>
 
     <!-- ── Neutrales: la escala de ink se da vuelta ───────────
          ink sigue siendo "el texto principal" y paper "el fondo",
          solo que ahora uno es claro y el otro oscuro.            -->
-    <color name="ink">#f1ecf7</color>         <!-- texto principal -->
-    <color name="ink_2">#ded7e8</color>
-    <color name="ink_3">#b9b2c4</color>
-    <color name="ink_4">#aaa3b8</color>
-    <color name="ink_5">#8e879c</color>
-    <color name="ink_6">#6f6482</color>
+    <color name="ink">#f4eefa</color>         <!-- texto principal -->
+    <color name="ink_2">#e0d4ec</color>
+    <color name="ink_3">#bdb0ca</color>
+    <color name="ink_4">#b6a9c6</color>
+    <color name="ink_5">#9184a2</color>
+    <color name="ink_6">#72628a</color>
     <!-- El borde de las tarjetas sube bastante: en oscuro es lo único que
          separa una tarjeta del fondo, porque dos superficies oscuras
          nunca se van a distinguir por su relleno. Con el valor anterior
          apenas se veía y todo se leía como una mancha plana. -->
-    <color name="ink_7">#3f2f59</color>       <!-- bordes / divisores -->
-    <color name="ink_8">#2c1e45</color>
+    <color name="ink_7">#453061</color>       <!-- bordes / divisores -->
+    <color name="ink_8">#31204c</color>
     <!-- Fondo más profundo y tarjeta más clara que antes: separarlos es
          lo que da sensación de capas. -->
-    <color name="paper">#0d0518</color>       <!-- fondo de pantalla -->
-    <color name="paper_2">#221336</color>     <!-- cards -->
+    <color name="paper">#10061a</color>       <!-- fondo de pantalla -->
+    <color name="paper_2">#26143a</color>     <!-- cards -->
 
     <!-- Alias legacy -->
-    <color name="gris_fondo">#150a26</color>
-    <color name="gris_borde">#3f2f59</color>
-    <color name="gris_texto">#aaa3b8</color>
+    <color name="gris_fondo">#10061a</color>
+    <color name="gris_borde">#453061</color>
+    <color name="gris_texto">#ada0bd</color>
 
     <!-- ── Semánticos ─────────────────────────────────────────
          El color plano (success, warn…) se usa como TEXTO, así que
@@ -121,13 +121,13 @@
          el único par que importaba (daban 2.4 contra el blanco). -->
 
     <!-- ── Texto ──────────────────────────────────────────── -->
-    <color name="texto_principal">#f1ecf7</color>
+    <color name="texto_principal">#f4eefa</color>
 
     <!-- ── Superficie destacada ───────────────────────────────
          En claro es la tarjeta oscura que resalta sobre la página.
          Acá la página YA es oscura, así que para que siga
          destacando tiene que ser más CLARA que el fondo, no más
          oscura. Mismo violeta, un paso arriba.                  -->
-    <color name="surface_dark">#33195c</color>
-    <color name="surface_dark_2">#452573</color>
+    <color name="surface_dark">#4e1475</color>
+    <color name="surface_dark_2">#7d29ad</color>
 </resources>

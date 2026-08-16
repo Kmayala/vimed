@@ -589,7 +589,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:background="@drawable/shape_card_celeste"
+                android:background="@drawable/shape_card_azul"
                 android:padding="18dp"
                 android:layout_marginTop="14dp"
                 android:clickable="true"
@@ -630,7 +630,7 @@
                         android:layout_height="wrap_content"
                         android:textSize="16sp"
                         android:textStyle="bold"
-                        android:textColor="@color/accent_600"
+                        android:textColor="@color/azul_600"
                         android:layout_marginTop="2dp" />
                 </LinearLayout>
 

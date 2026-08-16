@@ -103,7 +103,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:background="@drawable/shape_card_menta"
+                android:background="@drawable/shape_card_verde"
                 android:padding="22dp">
 
                 <LinearLayout
@@ -122,8 +122,8 @@
                             android:layout_width="128dp"
                             android:layout_height="128dp"
                             android:layout_gravity="center"
-                            app:indicatorColor="@color/menta_500"
-                            app:trackColor="@color/menta_50"
+                            app:indicatorColor="@color/verde_500"
+                            app:trackColor="@color/verde_50"
                             app:trackThickness="13dp"
                             app:indicatorSize="114dp"
                             app:trackCornerRadius="8dp"
@@ -175,7 +175,7 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:background="@drawable/bg_menta_note"
+                    android:background="@drawable/bg_verde_note"
                     android:padding="14dp"
                     android:layout_marginTop="18dp">
 
@@ -183,7 +183,7 @@
                         android:layout_width="22dp"
                         android:layout_height="22dp"
                         android:src="@drawable/ic_sparkle"
-                        android:tint="@color/menta_700"
+                        android:tint="@color/verde_700"
                         android:layout_marginEnd="12dp"
                         android:contentDescription="Racha" />
 
@@ -194,7 +194,7 @@
                         android:layout_weight="1"
                         android:textSize="16sp"
                         android:textStyle="bold"
-                        android:textColor="@color/menta_700"
+                        android:textColor="@color/verde_700"
                         android:lineSpacingMultiplier="1.3" />
                 </LinearLayout>
             </LinearLayout>

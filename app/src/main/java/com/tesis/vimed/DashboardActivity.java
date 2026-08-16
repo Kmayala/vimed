@@ -346,7 +346,7 @@ public class DashboardActivity extends AppCompatActivity {
             View item = inflater.inflate(R.layout.item_actividad, cont, false);
             android.widget.ImageView icono = item.findViewById(R.id.act_icon);
             icono.setImageResource(R.drawable.ic_alarma_reloj);
-            icono.setColorFilter(ContextCompat.getColor(this, R.color.coral_500));
+            icono.setColorFilter(ContextCompat.getColor(this, R.color.naranja_500));
             ((TextView) item.findViewById(R.id.act_mensaje)).setText(
                 f.nombreMedicamento + (f.hora.isEmpty() ? "" : " · " + f.hora));
             ((TextView) item.findViewById(R.id.act_fecha)).setText(f.detalle());
@@ -359,9 +359,9 @@ public class DashboardActivity extends AppCompatActivity {
     /** Menta si viene bien, ámbar si flojea, coral si se está perdiendo. */
     private int colorDeNivel(int pct) {
         if (pct < 0)  return R.color.ink_6;
-        if (pct >= 80) return R.color.menta_500;
-        if (pct >= 50) return R.color.ambar_500;
-        return R.color.coral_500;
+        if (pct >= 80) return R.color.verde_500;
+        if (pct >= 50) return R.color.amarillo_700;
+        return R.color.naranja_500;
     }
 
     private String animo(int pct) {

@@ -279,7 +279,10 @@ public final class VimedRepo {
                     if (r.isSuccessful() && r.body() != null && !r.body().isEmpty()) {
                         cb.onOk(r.body().get(0));
                     } else {
-                        cb.onError("No se pudo guardar la cita (código " + r.code() + ")");
+                        // mensajeDeError trae el cuerpo de la respuesta: PostgREST
+                        // dice ahí qué columna o restricción falló, y
+                        // sin eso un 400 no se puede diagnosticar.
+                        cb.onError(mensajeDeError(r));
                     }
                 }
                 @Override
