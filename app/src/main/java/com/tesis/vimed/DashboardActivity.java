@@ -312,7 +312,7 @@ public class DashboardActivity extends AppCompatActivity {
             int pct = m.porcentaje();
             TextView tvPct = item.findViewById(R.id.tv_pct);
             tvPct.setText(pct + "%");
-            tvPct.setTextColor(ContextCompat.getColor(this, colorDeNivel(pct)));
+            tvPct.setTextColor(ContextCompat.getColor(this, colorDeNivelTexto(pct)));
 
             View barra = item.findViewById(R.id.barra);
             barra.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
@@ -356,12 +356,27 @@ public class DashboardActivity extends AppCompatActivity {
 
     // ═══ Color y texto según el nivel ══════════════════════════
 
-    /** Menta si viene bien, ámbar si flojea, coral si se está perdiendo. */
+    /**
+     * Color de RELLENO según el nivel: verde si viene bien, amarillo si
+     * flojea, rojo si se está perdiendo. Son los tres colores vivos de la
+     * paleta, sin apagar.
+     */
     private int colorDeNivel(int pct) {
         if (pct < 0)  return R.color.ink_6;
         if (pct >= 80) return R.color.verde_500;
-        if (pct >= 50) return R.color.amarillo_700;
+        if (pct >= 50) return R.color.amarillo_500;
         return R.color.naranja_500;
+    }
+
+    /**
+     * Color de TEXTO para el mismo nivel. Casi siempre es el mismo, pero el
+     * amarillo vivo sobre fondo claro da 1.97 de contraste: como número
+     * sería ilegible, así que ahí —y solo ahí— se usa el tono oscuro de la
+     * familia. El relleno de la barra sigue siendo el amarillo vivo.
+     */
+    private int colorDeNivelTexto(int pct) {
+        if (pct >= 50 && pct < 80) return R.color.amarillo_700;
+        return colorDeNivel(pct);
     }
 
     private String animo(int pct) {

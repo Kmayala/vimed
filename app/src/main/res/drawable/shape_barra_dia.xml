@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Barra de un día del gráfico. El color lo pone el código según cómo
-     vino ese día; acá solo la forma. -->
+<!-- Barra del gráfico. El color lo pone el código según cómo vino ese día.
+
+     Lleva un contorno del mismo tono un paso más oscuro: el amarillo vivo
+     sobre una tarjeta clara da 1.97 de contraste y la barra desaparece.
+     El borde le da el límite que le falta al relleno, así el amarillo
+     puede seguir siendo amarillo en vez de terminar en un marrón. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <solid android:color="@color/verde_500" />
+    <stroke android:width="1.5dp" android:color="#33000000" />
     <corners android:radius="5dp" />
 </shape>
