@@ -78,34 +78,38 @@ public class MainActivity extends AppCompatActivity {
         // así evitamos pedir los mismos datos dos veces al abrir la pantalla.
     }
 
+    /**
+     * Antes esto abría hasta tres diálogos encadenados al entrar, y si la
+     * persona tocaba "Ahora no" no había forma de volver a encontrarlos.
+     * Ahora el permiso de notificaciones —el único que se concede sin
+     * salir de la app— se pide directo, y del resto avisa un cartel que
+     * lleva a la revisión completa en Configuración.
+     */
     private void pedirPermisosNotificacion() {
-        // Android 13+ requiere POST_NOTIFICATIONS explícito
         if (!NotificationHelper.tienePermisoNotificaciones(this)) {
             NotificationHelper.pedirPermisoNotificaciones(this);
         }
-        // Android 12+ requiere ir a Settings para alarmas exactas
-        if (!NotificationHelper.puedeAlarmasExactas(this)) {
-            new androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("Recordatorios exactos")
-                .setMessage("Para que los recordatorios de medicación te suenen a la hora "
-                    + "exacta necesitamos que actives \"Alarmas y recordatorios\" en los ajustes.")
-                .setNegativeButton("Ahora no", null)
-                .setPositiveButton("Ir a ajustes", (d, w) ->
-                    NotificationHelper.pedirPermisoAlarmasExactas(this))
-                .show();
+    }
+
+    /** Cartel de "la alarma puede no sonar", con lo que falta. */
+    private void revisarPermisosDeAlarma() {
+        View aviso = findViewById(R.id.alert_permisos);
+        TextView texto = findViewById(R.id.tv_permisos_text);
+        if (aviso == null || texto == null) return;
+
+        int faltan = com.tesis.vimed.utils.PermisosAlarma.faltantesComprobables(this);
+        if (faltan == 0) {
+            aviso.setVisibility(View.GONE);
+            return;
         }
-        // Android 14+ requiere permiso aparte para la alarma a pantalla completa
-        if (!NotificationHelper.puedeFullScreenIntent(this)) {
-            new androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("Alarma a pantalla completa")
-                .setMessage("Para que el aviso de medicación te aparezca en toda la pantalla "
-                    + "como una alarma (aunque el celular esté bloqueado), activá el permiso "
-                    + "de \"Notificaciones a pantalla completa\" en los ajustes.")
-                .setNegativeButton("Ahora no", null)
-                .setPositiveButton("Ir a ajustes", (d, w) ->
-                    NotificationHelper.pedirPermisoFullScreenIntent(this))
-                .show();
-        }
+
+        texto.setText(faltan == 1
+            ? "Falta un permiso para que la alarma suene con el celular bloqueado. Tocá para revisarlo."
+            : "Faltan " + faltan + " permisos para que la alarma suene con el celular "
+                + "bloqueado. Tocá para revisarlos.");
+        aviso.setVisibility(View.VISIBLE);
+        aviso.setOnClickListener(v ->
+            startActivity(new Intent(this, ConfiguracionActivity.class)));
     }
 
     @Override
@@ -113,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         loadTodayDoses();          // pintarTomas limpia el contenedor al recibir la respuesta
         setupAppointmentPlaceholder();
+        revisarPermisosDeAlarma();  // en onResume: al volver de los ajustes tiene que actualizarse
         // Toma las alarmas de los medicamentos que haya cargado el cuidador
         // desde su propio teléfono (AlarmManager es local a cada aparato).
         com.tesis.vimed.utils.AlarmaSync.sincronizar(this);
@@ -571,11 +576,17 @@ public class MainActivity extends AppCompatActivity {
         iconContainer.setBackground(circle);
 
         // Tilde de la derecha: verde lleno si está confirmada, gris si no
+        // El tilde de la derecha acompaña al chip: verde si se tomó, rojo
+        // si se perdió, ámbar si quedó pospuesta. Con un solo color gris
+        // para todo lo no confirmado, la fila no decía nada de lejos.
         android.widget.ImageView ivCheck = item.findViewById(R.id.iv_check);
         if (ivCheck != null) {
-            ivCheck.setColorFilter(dose.estaConfirmada()
-                ? getColor(R.color.success)
-                : getColor(R.color.ink_6));
+            int tinte;
+            if (dose.estaConfirmada())              tinte = R.color.success;
+            else if ("omitida".equals(dose.estado)) tinte = R.color.danger;
+            else if ("pospuesta".equals(dose.estado)) tinte = R.color.warn;
+            else                                    tinte = R.color.ink_6;
+            ivCheck.setColorFilter(getColor(tinte));
         }
 
         // Estado
@@ -587,17 +598,22 @@ public class MainActivity extends AppCompatActivity {
                 tvStatus.setBackgroundResource(R.drawable.shape_chip_success);
                 tvStatus.setTextColor(getColor(R.color.success));
                 break;
+            // Cada estado con su color. Antes pendiente, pospuesta y
+            // omitida usaban el mismo chip gris y solo cambiaba la
+            // palabra: había que leer cada fila para saber cómo venía el
+            // día, que es justo lo contrario de lo que tiene que hacer un
+            // dashboard.
             case "pospuesta":
                 tvTime.setTextColor(getColor(R.color.ink));
                 tvStatus.setText("Pospuesta");
-                tvStatus.setBackgroundResource(R.drawable.shape_chip_ink);
-                tvStatus.setTextColor(getColor(R.color.ink_3));
+                tvStatus.setBackgroundResource(R.drawable.shape_chip_warn);
+                tvStatus.setTextColor(getColor(R.color.warn));
                 break;
             case "omitida":
                 tvTime.setTextColor(getColor(R.color.ink_4));
                 tvStatus.setText("Omitida");
-                tvStatus.setBackgroundResource(R.drawable.shape_chip_ink);
-                tvStatus.setTextColor(getColor(R.color.ink_3));
+                tvStatus.setBackgroundResource(R.drawable.shape_chip_danger);
+                tvStatus.setTextColor(getColor(R.color.danger));
                 break;
             default: // pendiente
                 tvTime.setTextColor(getColor(R.color.ink));

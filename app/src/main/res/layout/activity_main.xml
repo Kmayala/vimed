@@ -157,6 +157,56 @@
 
             </LinearLayout>
 
+            <!-- ─── La alarma puede no sonar ───
+                 Va arriba de todo y en tono de advertencia: si falta un
+                 permiso, el recordatorio de medicación no suena, que es
+                 lo más grave que puede fallar en esta app. -->
+            <LinearLayout
+                android:id="@+id/alert_permisos"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/shape_warn_alert"
+                android:padding="16dp"
+                android:layout_marginBottom="14dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="gone">
+
+                <FrameLayout
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:background="@drawable/shape_warn_icon_circle"
+                    android:layout_marginEnd="14dp">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_bell"
+                        android:tint="#FFFFFF"
+                        android:contentDescription="Revisar permisos" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tv_permisos_text"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="16sp"
+                    android:textColor="@color/warn"
+                    android:lineSpacingMultiplier="1.35" />
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_chevron_right"
+                    android:tint="@color/warn"
+                    android:contentDescription="Revisar" />
+
+            </LinearLayout>
+
             <!-- ─── Sugerencia de ajuste de recordatorio ───
                  La app propone, la persona decide. Nunca se aplica sola:
                  la hora de una medicación la indicó un médico. -->
@@ -480,7 +530,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:background="@drawable/shape_card"
+                android:background="@drawable/shape_card_violeta"
                 android:padding="18dp"
                 android:layout_marginTop="24dp"
                 android:clickable="true"
@@ -539,7 +589,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:background="@drawable/shape_card"
+                android:background="@drawable/shape_card_celeste"
                 android:padding="18dp"
                 android:layout_marginTop="14dp"
                 android:clickable="true"

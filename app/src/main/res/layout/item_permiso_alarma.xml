@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Fila de la revisión de alarma: qué requisito es, si está cumplido y un
+  toque para ir al ajuste. Toda la fila es el objetivo de toque.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="@drawable/shape_card"
+    android:padding="16dp"
+    android:layout_marginBottom="10dp"
+    android:clickable="true"
+    android:focusable="true">
+
+    <ImageView
+        android:id="@+id/iv_estado"
+        android:layout_width="26dp"
+        android:layout_height="26dp"
+        android:layout_marginEnd="14dp"
+        android:contentDescription="Estado" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_titulo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:textColor="@color/ink" />
+
+        <TextView
+            android:id="@+id/tv_detalle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"
+            android:textColor="@color/ink_3"
+            android:lineSpacingMultiplier="1.3"
+            android:layout_marginTop="3dp" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/iv_flecha"
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+        android:src="@drawable/ic_chevron_right"
+        android:tint="@color/ink_5"
+        android:layout_marginStart="10dp"
+        android:contentDescription="Abrir ajuste" />
+
+</LinearLayout>

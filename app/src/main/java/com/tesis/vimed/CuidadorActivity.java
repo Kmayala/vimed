@@ -529,19 +529,25 @@ public class CuidadorActivity extends AppCompatActivity {
             String nombreMed = med != null && med.getNombre() != null
                 ? med.getNombre() : "Medicamento";
 
+            // Mismo código de color que en la app del adulto mayor: verde
+            // tomada, ámbar pospuesta, rojo sin confirmar. Así el familiar
+            // ve cómo viene el día sin leer fila por fila.
             String estado;
             switch (t.getEstado() != null ? t.getEstado() : "omitida") {
                 case "confirmada":
                     estado = "Tomó " + nombreMed + " ✓";
                     icon.setImageResource(R.drawable.ic_check);
+                    icon.setColorFilter(getColor(R.color.success));
                     break;
                 case "pospuesta":
                     estado = nombreMed + " — pospuesta";
                     icon.setImageResource(R.drawable.ic_refresh);
+                    icon.setColorFilter(getColor(R.color.warn));
                     break;
                 default:
                     estado = nombreMed + " — sin confirmar";
                     icon.setImageResource(R.drawable.ic_warn);
+                    icon.setColorFilter(getColor(R.color.danger));
                     break;
             }
 

@@ -28,12 +28,12 @@
     <color name="brand_50">#f4f2f7</color>
     <color name="brand_100">#e5e0ec</color>
     <color name="brand_200">#c2b6d2</color>   <!-- extremo claro dado -->
-    <color name="brand_300">#a999bc</color>
+    <color name="brand_300">#b8a9c9</color>
     <color name="brand_400">#947fa9</color>
-    <color name="brand_500">#7d6494</color>   <!-- primario -->
-    <color name="brand_600">#664980</color>   <!-- texto/acciones sobre fondo claro -->
-    <color name="brand_700">#53336f</color>
-    <color name="brand_800">#3e195c</color>
+    <color name="brand_500">#664980</color>   <!-- primario -->
+    <color name="brand_600">#53336f</color>   <!-- texto/acciones sobre fondo claro -->
+    <color name="brand_700">#45285e</color>
+    <color name="brand_800">#341a4f</color>
     <color name="brand_900">#280049</color>   <!-- extremo oscuro dado -->
 
     <!-- ── Secundario: celeste llevado hacia la familia nueva ──
@@ -48,6 +48,44 @@
     <color name="accent_600">#4c68b5</color>
     <color name="accent_700">#3a4d91</color>
 
+    <!-- ══ FAMILIAS DE SECCIÓN ═══════════════════════════════════
+         El violeta solo alcanzaba para que todo se pareciera a todo. Cada
+         zona de la app tiene ahora su familia, y el color pasa a ser
+         información: mirando el tono ya sabés en qué estás.
+
+             violeta  medicación (la marca)
+             celeste  citas médicas
+             menta    progreso y logros
+             ámbar    stock y avisos
+             coral    lo que se perdió
+
+         No son adornos sueltos: cada una tiene su _50 (fondo), _500
+         (relleno/ícono) y _700 (texto sobre el _50), y todas mantienen
+         4.5:1 o más en su combinación de uso.                        -->
+
+    <color name="menta_50">#e4f4ee</color>
+    <color name="menta_100">#c3e8da</color>
+    <color name="menta_500">#0c6b53</color>
+    <color name="menta_700">#0a4f3e</color>
+
+    <color name="coral_50">#fdece7</color>
+    <color name="coral_100">#f9d3c8</color>
+    <color name="coral_500">#a8452e</color>
+    <color name="coral_700">#7d2f1f</color>
+
+    <color name="ambar_50">#fdf1dc</color>
+    <color name="ambar_100">#f8ddad</color>
+    <color name="ambar_500">#855609</color>
+    <color name="ambar_700">#6b440a</color>
+
+    <!-- Rellenos con contenido BLANCO encima (círculos de ícono).
+         Sin versión oscura a propósito: el blanco no cambia entre modos,
+         así que el fondo tampoco puede. Con el _500 aclarándose de noche,
+         un ícono blanco encima caía a 2.31 de contraste. -->
+    <color name="menta_solido">#0c6b53</color>
+    <color name="coral_solido">#a8452e</color>
+    <color name="ambar_solido">#855609</color>
+
     <!-- Alias legacy (código que todavía dice "turquesa") -->
     <color name="turquesa">#7d6494</color>
     <color name="turquesa_dark">#664980</color>
@@ -57,38 +95,38 @@
     <!-- ── Neutrales fríos (ink) ──────────────────────────── -->
     <color name="ink">#21222d</color>         <!-- texto principal -->
     <color name="ink_2">#34353f</color>
-    <color name="ink_3">#55565f</color>
-    <color name="ink_4">#7b7c86</color>
-    <color name="ink_5">#9c9da6</color>
-    <color name="ink_6">#c4c5ce</color>
-    <color name="ink_7">#dbdbe5</color>       <!-- bordes / divisores -->
+    <color name="ink_3">#4f505a</color>
+    <color name="ink_4">#565760</color>
+    <color name="ink_5">#6a6b74</color>
+    <color name="ink_6">#8a8b95</color>
+    <color name="ink_7">#a8a9b3</color>       <!-- bordes / divisores -->
     <color name="ink_8">#ededf2</color>
     <color name="paper">#fbf9fc</color>       <!-- fondo de pantalla -->
     <color name="paper_2">#ffffff</color>     <!-- cards -->
 
     <!-- Alias legacy -->
     <color name="gris_fondo">#fbf9fc</color>
-    <color name="gris_borde">#dbdbe5</color>
-    <color name="gris_texto">#7b7c86</color>
+    <color name="gris_borde">#a8a9b3</color>
+    <color name="gris_texto">#565760</color>
 
     <!-- ── Semánticos (estados) ───────────────────────────── -->
-    <color name="success">#15803d</color>
+    <color name="success">#0d5a2c</color>
     <color name="success_bg">#dcfce7</color>
-    <color name="warn">#b45309</color>
+    <color name="warn">#7d3905</color>
     <color name="warn_bg">#fef3c7</color>
     <color name="warn_border">#f4cf7d</color>
-    <color name="danger">#b91c1c</color>
+    <color name="danger">#8f1414</color>
     <color name="danger_bg">#fee2e2</color>
     <color name="info">#1d4ed8</color>
     <color name="info_bg">#dbeafe</color>
 
     <!-- ── Colores de pastillas (fondo de círculo, texto blanco) -->
-    <color name="pill_rojo">#c0392b</color>
-    <color name="pill_azul">#3b7dd8</color>
-    <color name="pill_amarillo">#c77700</color>
-    <color name="pill_verde">#1e8e5a</color>
-    <color name="pill_morado">#7d6494</color>
-    <color name="pill_gris">#7b7c86</color>
+    <color name="pill_rojo">#a52f23</color>
+    <color name="pill_azul">#2c62ab</color>
+    <color name="pill_amarillo">#8a5300</color>
+    <color name="pill_verde">#16704a</color>
+    <color name="pill_morado">#664980</color>
+    <color name="pill_gris">#5c5d66</color>
 
     <!-- ── Texto ──────────────────────────────────────────── -->
     <color name="texto_principal">#21222d</color>

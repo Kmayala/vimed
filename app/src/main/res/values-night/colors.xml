@@ -34,9 +34,9 @@
     <color name="brand_50">#241539</color>    <!-- fondo suave / ripple -->
     <color name="brand_100">#302047</color>   <!-- círculos de ícono, chips -->
     <color name="brand_200">#c2b6d2</color>   <!-- texto sobre superficie oscura -->
-    <color name="brand_300">#a999bc</color>
+    <color name="brand_300">#d2c7de</color>
     <color name="brand_400">#947fa9</color>
-    <color name="brand_500">#7d6494</color>   <!-- primario (sin cambios) -->
+    <color name="brand_500">#664980</color>   <!-- primario (sin cambios) -->
     <color name="brand_600">#c3b2d6</color>   <!-- texto/íconos sobre fondo -->
     <color name="brand_700">#d5c8e3</color>   <!-- texto sobre brand_100 -->
     <color name="brand_800">#e2d9ec</color>
@@ -50,6 +50,27 @@
     <color name="accent_600">#9fb3e8</color>
     <color name="accent_700">#b6c5ef</color>
 
+    <!-- ══ FAMILIAS DE SECCIÓN ═══════════════════════════════════
+         Mismo rol que en claro, invertido igual que el resto: el _50 es
+         un fondo apenas mas claro que la pagina y el _700 pasa a ser el
+         tono luminoso que va como texto o ícono encima. El _500 se aclara
+         para no perderse contra el fondo oscuro.                       -->
+
+    <color name="menta_50">#123528</color>
+    <color name="menta_100">#194a38</color>
+    <color name="menta_500">#3fbf95</color>
+    <color name="menta_700">#5fd1ac</color>
+
+    <color name="coral_50">#3a1d15</color>
+    <color name="coral_100">#4e281d</color>
+    <color name="coral_500">#e07a60</color>
+    <color name="coral_700">#f4a692</color>
+
+    <color name="ambar_50">#3a2a10</color>
+    <color name="ambar_100">#4e3915</color>
+    <color name="ambar_500">#d69f45</color>
+    <color name="ambar_700">#e8b25c</color>
+
     <!-- Alias legacy -->
     <color name="turquesa">#7d6494</color>
     <color name="turquesa_dark">#c3b2d6</color>
@@ -62,18 +83,24 @@
     <color name="ink">#f1ecf7</color>         <!-- texto principal -->
     <color name="ink_2">#ded7e8</color>
     <color name="ink_3">#b9b2c4</color>
-    <color name="ink_4">#948da1</color>
-    <color name="ink_5">#736c80</color>
-    <color name="ink_6">#4b4359</color>
-    <color name="ink_7">#362a48</color>       <!-- bordes / divisores -->
-    <color name="ink_8">#2a1e3d</color>
-    <color name="paper">#150a26</color>       <!-- fondo de pantalla -->
-    <color name="paper_2">#1f1233</color>     <!-- cards -->
+    <color name="ink_4">#aaa3b8</color>
+    <color name="ink_5">#8e879c</color>
+    <color name="ink_6">#6f6482</color>
+    <!-- El borde de las tarjetas sube bastante: en oscuro es lo único que
+         separa una tarjeta del fondo, porque dos superficies oscuras
+         nunca se van a distinguir por su relleno. Con el valor anterior
+         apenas se veía y todo se leía como una mancha plana. -->
+    <color name="ink_7">#3f2f59</color>       <!-- bordes / divisores -->
+    <color name="ink_8">#2c1e45</color>
+    <!-- Fondo más profundo y tarjeta más clara que antes: separarlos es
+         lo que da sensación de capas. -->
+    <color name="paper">#0d0518</color>       <!-- fondo de pantalla -->
+    <color name="paper_2">#221336</color>     <!-- cards -->
 
     <!-- Alias legacy -->
     <color name="gris_fondo">#150a26</color>
-    <color name="gris_borde">#362a48</color>
-    <color name="gris_texto">#948da1</color>
+    <color name="gris_borde">#3f2f59</color>
+    <color name="gris_texto">#aaa3b8</color>
 
     <!-- ── Semánticos ─────────────────────────────────────────
          El color plano (success, warn…) se usa como TEXTO, así que
@@ -83,19 +110,15 @@
     <color name="warn">#fbbf5c</color>
     <color name="warn_bg">#3a2a10</color>
     <color name="warn_border">#5c451c</color>
-    <color name="danger">#f8908d</color>
+    <color name="danger">#faa8a5</color>
     <color name="danger_bg">#3d1b1b</color>
     <color name="info">#93b4fb</color>
     <color name="info_bg">#152744</color>
 
-    <!-- ── Pastillas: se aclaran para no perderse en el fondo,
-         pero siguen llevando texto blanco encima.               -->
-    <color name="pill_rojo">#d4574a</color>
-    <color name="pill_azul">#5590e0</color>
-    <color name="pill_amarillo">#d18a1a</color>
-    <color name="pill_verde">#2ba46e</color>
-    <color name="pill_morado">#8a70a1</color>
-    <color name="pill_gris">#8b8494</color>
+    <!-- Los pill_* NO se redefinen acá: llevan la inicial del
+         medicamento en BLANCO encima, y ese blanco no cambia de modo.
+         Aclararlos "para que no se pierdan en el fondo" rompía justamente
+         el único par que importaba (daban 2.4 contra el blanco). -->
 
     <!-- ── Texto ──────────────────────────────────────────── -->
     <color name="texto_principal">#f1ecf7</color>
