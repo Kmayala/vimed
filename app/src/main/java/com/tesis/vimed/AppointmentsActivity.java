@@ -15,7 +15,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.tesis.vimed.api.VimedRepo;
+import android.graphics.drawable.GradientDrawable;
+
 import com.tesis.vimed.models.CitaMedica;
+import com.tesis.vimed.models.Especialidad;
 import com.tesis.vimed.utils.ModoPaciente;
 import com.tesis.vimed.utils.NavInferior;
 
@@ -232,6 +235,33 @@ public class AppointmentsActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Círculo con el ícono de la especialidad, del mismo enum que usa la
+     * grilla al crear la cita.
+     *
+     * Si el texto no se reconoce —citas cargadas a mano antes de que
+     * existiera la lista— cae al ícono genérico en el violeta de la
+     * marca: nunca se deja la tarjeta sin ícono ni se oculta la cita por
+     * no poder clasificarla.
+     */
+    private void pintarIconoEspecialidad(View item, String texto) {
+        ImageView icono = item.findViewById(R.id.iv_appt_especialidad);
+        View fondo = item.findViewById(R.id.appt_icono_fondo);
+        if (icono == null || fondo == null) return;
+
+        Especialidad e = Especialidad.desdeNombre(texto);
+        int dibujo = e != null ? e.icono : R.drawable.ic_esp_cruz;
+        int color  = e != null ? e.color  : R.color.brand_500;
+
+        icono.setImageResource(dibujo);
+        icono.setColorFilter(ContextCompat.getColor(this, R.color.white));
+
+        GradientDrawable circulo = new GradientDrawable();
+        circulo.setShape(GradientDrawable.OVAL);
+        circulo.setColor(ContextCompat.getColor(this, color));
+        fondo.setBackground(circulo);
+    }
+
     private void bindCard(View item, CitaMedica cita, boolean mostrarFecha) {
         TextView tvEsp    = item.findViewById(R.id.tv_appt_especialidad);
         TextView tvDoctor = item.findViewById(R.id.tv_appt_doctor);
@@ -242,6 +272,7 @@ public class AppointmentsActivity extends AppCompatActivity {
 
         String esp = cita.getEspecialidad();
         tvEsp.setText(esp != null && !esp.isEmpty() ? esp : "Consulta médica");
+        pintarIconoEspecialidad(item, esp);
         tvDoctor.setText(cita.getMedico() != null ? cita.getMedico() : "");
         tvLugar.setText(cita.getLugar() != null ? cita.getLugar() : "Sin lugar");
         tvTime.setText(cita.horaHM() + " hs");

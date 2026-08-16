@@ -150,6 +150,7 @@
                         android:layout_width="0dp"
                         android:layout_weight="1.3"
                         android:layout_marginEnd="10dp"
+                        android:id="@+id/til_fecha"
                         android:hint="Fecha"
                         app:startIconDrawable="@drawable/ic_nav_calendar"
                         app:startIconTint="@color/brand_600">
@@ -159,6 +160,8 @@
                             android:layout_width="match_parent"
                             android:layout_height="60dp"
                             android:focusable="false"
+                            android:clickable="true"
+                            android:longClickable="false"
                             android:cursorVisible="false"
                             android:textSize="17sp"
                             android:textColor="@color/ink" />
@@ -168,6 +171,7 @@
                         style="@style/CampoForm"
                         android:layout_width="0dp"
                         android:layout_weight="1"
+                        android:id="@+id/til_hora"
                         android:hint="Hora"
                         app:startIconDrawable="@drawable/ic_alarma_reloj"
                         app:startIconTint="@color/brand_600">
@@ -177,6 +181,8 @@
                             android:layout_width="match_parent"
                             android:layout_height="60dp"
                             android:focusable="false"
+                            android:clickable="true"
+                            android:longClickable="false"
                             android:cursorVisible="false"
                             android:textSize="17sp"
                             android:textColor="@color/ink" />

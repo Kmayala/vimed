@@ -27,6 +27,23 @@
     </FrameLayout>
 
     <!-- Especialidad · médico · lugar -->
+    <!-- Ícono de la especialidad. El color y el dibujo salen del enum
+         Especialidad, el mismo que usa la grilla al crear la cita: así
+         la cita se reconoce por su forma antes de leer el texto. -->
+    <FrameLayout
+        android:id="@+id/appt_icono_fondo"
+        android:layout_width="46dp"
+        android:layout_height="46dp"
+        android:layout_marginEnd="14dp">
+
+        <ImageView
+            android:id="@+id/iv_appt_especialidad"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            android:contentDescription="Especialidad" />
+    </FrameLayout>
+
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"

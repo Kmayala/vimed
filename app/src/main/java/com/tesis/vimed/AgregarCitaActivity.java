@@ -179,10 +179,20 @@ public class AgregarCitaActivity extends AppCompatActivity {
 
         armarGrillaDeEspecialidades();
 
-        etFecha.setOnClickListener(v -> mostrarDatePicker());
-        etFecha.setOnFocusChangeListener((v, hasFocus) -> { if (hasFocus) mostrarDatePicker(); });
-        etHora.setOnClickListener(v -> mostrarTimePicker());
-        etHora.setOnFocusChangeListener((v, hasFocus) -> { if (hasFocus) mostrarTimePicker(); });
+        // El toque se escucha en el campo Y en su caja: los campos no
+        // son enfocables (abren un selector, no el teclado), así que el
+        // listener de foco nunca dispara, y si el dedo cae en el borde o
+        // en el ícono el evento no llega al EditText.
+        View.OnClickListener abrirFecha = v -> mostrarDatePicker();
+        View.OnClickListener abrirHora  = v -> mostrarTimePicker();
+        etFecha.setOnClickListener(abrirFecha);
+        etHora.setOnClickListener(abrirHora);
+        findViewById(R.id.til_fecha).setOnClickListener(abrirFecha);
+        findViewById(R.id.til_hora).setOnClickListener(abrirHora);
+
+        // La hora arranca con la actual para que nunca quede vacía; la
+        // fecha no, porque elegirla es obligatorio y hay que notarlo.
+        etHora.setText(String.format(Locale.getDefault(), "%02d:%02d", selHour, selMinute));
 
         findViewById(R.id.btn_back).setOnClickListener(v -> finish());
         findViewById(R.id.btn_save).setOnClickListener(v -> guardarCita());
