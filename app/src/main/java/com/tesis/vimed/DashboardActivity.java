@@ -13,7 +13,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
-import com.google.android.material.progressindicator.CircularProgressIndicator;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.tesis.vimed.adherencia.EstadisticasProgreso;
 import com.tesis.vimed.adherencia.ResumenAdherencia;
 import com.tesis.vimed.api.VimedRepo;
@@ -179,14 +179,14 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     private void pintarResumen(EstadisticasProgreso.Progreso p) {
-        CircularProgressIndicator anillo = findViewById(R.id.progress_semana);
+        LinearProgressIndicator barra = findViewById(R.id.progress_semana);
         TextView tvPct = findViewById(R.id.tv_adherence_pct);
         TextView tvAnimo = findViewById(R.id.tv_animo);
         TextView tvResumen = findViewById(R.id.tv_resumen_semana);
 
         int pct = p.porcentaje();
-        anillo.setProgress(Math.max(pct, 0), true);
-        anillo.setIndicatorColor(ContextCompat.getColor(this, colorDeNivel(pct)));
+        barra.setProgress(Math.max(pct, 0), true);
+        barra.setIndicatorColor(ContextCompat.getColor(this, colorDeNivel(pct)));
         tvPct.setText(pct < 0 ? "—" : pct + "%");
 
         if (!p.hayDatos()) {
@@ -365,7 +365,7 @@ public class DashboardActivity extends AppCompatActivity {
         if (pct < 0)  return R.color.ink_6;
         if (pct >= 80) return R.color.verde_500;
         if (pct >= 50) return R.color.amarillo_500;
-        return R.color.naranja_500;
+        return R.color.danger;
     }
 
     /**

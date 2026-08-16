@@ -129,26 +129,17 @@
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/til_nombre"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/hint_nombre_med"
+                    style="@style/CampoForm"
+                                        android:hint="@string/hint_nombre_med"
                     app:endIconMode="dropdown_menu"
                     app:endIconTint="@color/ink_3"
-                    app:boxCornerRadiusTopStart="16dp"
-                    app:boxCornerRadiusTopEnd="16dp"
-                    app:boxCornerRadiusBottomStart="16dp"
-                    app:boxCornerRadiusBottomEnd="16dp"
-                    app:boxStrokeColor="@color/brand_500"
-                    app:hintTextColor="@color/ink_3"
-                    android:textColorHint="@color/ink_4"
                     android:layout_marginBottom="12dp">
 
                     <com.google.android.material.textfield.MaterialAutoCompleteTextView
                         android:id="@+id/et_nombre"
                         android:layout_width="match_parent"
-                        android:layout_height="64dp"
-                        android:textSize="19sp"
+                        android:layout_height="60dp"
+                        android:textSize="17sp"
                         android:textColor="@color/ink"
                         android:paddingTop="18dp"
                         android:paddingBottom="18dp"
@@ -332,17 +323,8 @@
                 <!-- Campo manual (oculto por defecto) -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/til_dosis_manual"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/hint_dosis_manual"
-                    app:boxCornerRadiusTopStart="16dp"
-                    app:boxCornerRadiusTopEnd="16dp"
-                    app:boxCornerRadiusBottomStart="16dp"
-                    app:boxCornerRadiusBottomEnd="16dp"
-                    app:boxStrokeColor="@color/brand_500"
-                    app:hintTextColor="@color/ink_3"
-                    android:textColorHint="@color/ink_4"
+                    style="@style/CampoForm"
+                                        android:hint="@string/hint_dosis_manual"
                     android:layout_marginBottom="14dp"
                     android:visibility="gone">
 
@@ -1082,17 +1064,8 @@
                     android:layout_marginBottom="24dp" />
 
                 <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/hint_stock"
-                    app:boxCornerRadiusTopStart="16dp"
-                    app:boxCornerRadiusTopEnd="16dp"
-                    app:boxCornerRadiusBottomStart="16dp"
-                    app:boxCornerRadiusBottomEnd="16dp"
-                    app:boxStrokeColor="@color/brand_500"
-                    app:hintTextColor="@color/ink_3"
-                    android:textColorHint="@color/ink_4"
+                    style="@style/CampoForm"
+                                        android:hint="@string/hint_stock"
                     android:layout_marginBottom="18dp">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -1108,19 +1081,10 @@
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/hint_stock_minimo"
+                    style="@style/CampoForm"
+                                        android:hint="@string/hint_stock_minimo"
                     app:helperText="Cuando llegue a este número te avisamos"
                     app:helperTextTextColor="@color/ink_4"
-                    app:boxCornerRadiusTopStart="16dp"
-                    app:boxCornerRadiusTopEnd="16dp"
-                    app:boxCornerRadiusBottomStart="16dp"
-                    app:boxCornerRadiusBottomEnd="16dp"
-                    app:boxStrokeColor="@color/brand_500"
-                    app:hintTextColor="@color/ink_3"
-                    android:textColorHint="@color/ink_4"
                     android:layout_marginBottom="24dp">
 
                     <com.google.android.material.textfield.TextInputEditText

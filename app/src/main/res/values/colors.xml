@@ -51,30 +51,30 @@
     <color name="azul_600">#0a377f</color>
     <color name="azul_700">#092c66</color>
 
-    <color name="naranja_50">#faefeb</color>
-    <color name="naranja_100">#f1d3c9</color>
-    <color name="naranja_500">#be360b</color>
-    <color name="naranja_700">#8a2710</color>
+    <color name="naranja_50">#f4eef8</color>
+    <color name="naranja_100">#e2cfee</color>
+    <color name="naranja_500">#5e2585</color>
+    <color name="naranja_700">#2b0f3d</color>
 
-    <color name="verde_50">#edf2ed</color>
-    <color name="verde_100">#cddcce</color>
-    <color name="verde_500">#1b5e1f</color>
-    <color name="verde_700">#18431e</color>
+    <color name="verde_50">#e9eff8</color>
+    <color name="verde_100">#c3d3ea</color>
+    <color name="verde_500">#0b3f91</color>
+    <color name="verde_700">#092c66</color>
 
 
 
-    <color name="rosa_50">#f5ecf1</color>
-    <color name="rosa_100">#e5cad8</color>
-    <color name="rosa_500">#870e4f</color>
-    <color name="rosa_700">#640b3f</color>
+    <color name="rosa_50">#f2eefb</color>
+    <color name="rosa_100">#d3c2ee</color>
+    <color name="rosa_500">#8e5cb8</color>
+    <color name="rosa_700">#471b64</color>
 
     <!-- El _500 es el amarillo vivo, para rellenos con texto oscuro.
          El _700 es el tono que se usa cuando el amarillo tiene que ser
          texto sobre un fondo claro. -->
-    <color name="amarillo_50">#fff8ee</color>
-    <color name="amarillo_100">#feeccf</color>
-    <color name="amarillo_500">#f9a825</color>
-    <color name="amarillo_700">#6b4a00</color>
+    <color name="amarillo_50">#f2eefb</color>
+    <color name="amarillo_100">#e7e0f7</color>
+    <color name="amarillo_500">#8e5cb8</color>
+    <color name="amarillo_700">#5e2585</color>
 
     <!-- Texto que va ENCIMA del amarillo vivo. Fijo en los dos modos:
          en oscuro, ink es casi blanco y sobre #F9A825 daba 1.73. -->
@@ -85,11 +85,11 @@
          así que el fondo tampoco puede. Con un _500 que se aclara de
          noche, un ícono blanco encima caía a 2.31 de contraste.
          El amarillo no está acá: no admite blanco encima. -->
-    <color name="verde_solido">#1b5e1f</color>
-    <color name="naranja_solido">#be360b</color>
-    <color name="amarillo_solido">#7a5600</color>
+    <color name="verde_solido">#0b3f91</color>
+    <color name="naranja_solido">#5e2585</color>
+    <color name="amarillo_solido">#8e5cb8</color>
     <color name="azul_solido">#0b3f91</color>
-    <color name="rosa_solido">#870e4f</color>
+    <color name="rosa_solido">#8e5cb8</color>
 
     <!-- Alias legacy (código que todavía dice "turquesa") -->
     <color name="turquesa">#5e2585</color>
@@ -115,29 +115,32 @@
     <color name="gris_texto">#565760</color>
 
     <!-- ── Semánticos (estados) ───────────────────────────── -->
-    <color name="success">#0d5a2c</color>
-    <color name="success_bg">#dcfce7</color>
-    <color name="warn">#7d3905</color>
-    <color name="warn_bg">#fef3c7</color>
-    <color name="warn_border">#f4cf7d</color>
-    <color name="danger">#8f1414</color>
-    <color name="danger_bg">#fee2e2</color>
-    <color name="info">#1d4ed8</color>
-    <color name="info_bg">#dbeafe</color>
+    <color name="success">#0b3f91</color>
+    <color name="success_bg">#e9eff8</color>
+    <color name="warn">#5e2585</color>
+    <color name="warn_bg">#f2eefb</color>
+    <color name="warn_border">#d3c2ee</color>
+    <!-- El único color fuera de la paleta, y a propósito: una toma que
+         no se tomó tiene que saltar a la vista. En la escala violeta se
+         confundía con "pospuesta" y en una app de medicación eso importa. -->
+    <color name="danger">#9b1c1c</color>
+    <color name="danger_bg">#fbe5e5</color>
+    <color name="info">#0b3f91</color>
+    <color name="info_bg">#e9eff8</color>
 
     <!-- ── Colores de pastillas (fondo de círculo, texto blanco) -->
-    <color name="pill_rojo">#be360b</color>
+    <color name="pill_rojo">#0b3f91</color>
     <color name="pill_azul">#0b3f91</color>
-    <color name="pill_amarillo">#7a5600</color>
-    <color name="pill_verde">#1b5e1f</color>
+    <color name="pill_amarillo">#8e5cb8</color>
+    <color name="pill_verde">#471b64</color>
     <color name="pill_morado">#5e2585</color>
-    <color name="pill_gris">#870e4f</color>
+    <color name="pill_gris">#5d5470</color>
 
     <!-- ── Texto ──────────────────────────────────────────── -->
     <color name="texto_principal">#1f1a2e</color>
     <color name="white">#ffffff</color>
     <color name="black">#000000</color>
-    <color name="rojo_error">#b91c1c</color>
+    <color name="rojo_error">#9b1c1c</color>
 
     <!-- ── Pantalla de alarma ─────────────────────────────────
          Verde del botón "Ya tomé": más oscuro que el verde puro para que
@@ -156,7 +159,7 @@
          texto tiene que ser claro siempre. -->
     <color name="sobre_superficie_oscura">#d3c2ee</color>
 
-    <color name="alarma_verde">#16a34a</color>
+    <color name="alarma_verde">#0b3f91</color>
     <color name="alarma_verde_ripple">#3315803d</color>
 
     <!-- ── Superficie oscura (tarjeta destacada de próxima cita y

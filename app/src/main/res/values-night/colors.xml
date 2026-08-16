@@ -59,26 +59,26 @@
     <color name="azul_600">#7dbcff</color>
     <color name="azul_700">#a3cdff</color>
 
-    <color name="verde_50">#0a1f14</color>
-    <color name="verde_100">#0f3220</color>
-    <color name="verde_500">#3ddc84</color>
-    <color name="verde_700">#66e6a0</color>
+    <color name="verde_50">#0a1520</color>
+    <color name="verde_100">#102336</color>
+    <color name="verde_500">#5aa9ff</color>
+    <color name="verde_700">#8bc2ff</color>
 
-    <color name="naranja_50">#241009</color>
-    <color name="naranja_100">#361a0f</color>
-    <color name="naranja_500">#ff7847</color>
-    <color name="naranja_700">#ff9670</color>
+    <color name="naranja_50">#1c0d26</color>
+    <color name="naranja_100">#2a143a</color>
+    <color name="naranja_500">#cd88ff</color>
+    <color name="naranja_700">#daa6ff</color>
 
-    <color name="amarillo_50">#241d08</color>
-    <color name="amarillo_100">#372c0c</color>
-    <color name="amarillo_500">#ffc93c</color>
-    <color name="amarillo_700">#ffd76b</color>
+    <color name="amarillo_50">#1c1226</color>
+    <color name="amarillo_100">#2a1b38</color>
+    <color name="amarillo_500">#bd93e0</color>
+    <color name="amarillo_700">#d3b3ee</color>
 
 
-    <color name="rosa_50">#240a17</color>
-    <color name="rosa_100">#371022</color>
-    <color name="rosa_500">#ff6fb0</color>
-    <color name="rosa_700">#ff8ec3</color>
+    <color name="rosa_50">#1c1226</color>
+    <color name="rosa_100">#2a1b38</color>
+    <color name="rosa_500">#bd93e0</color>
+    <color name="rosa_700">#d3b3ee</color>
 
     <!-- Alias legacy -->
     <color name="turquesa">#5e2585</color>
@@ -110,15 +110,15 @@
     <!-- ── Semánticos ─────────────────────────────────────────
          El color plano se usa como TEXTO y va en neón; el _bg es
          fondo y se hunde.                                        -->
-    <color name="success">#3ddc84</color>
-    <color name="success_bg">#0a1f14</color>
-    <color name="warn">#ffc93c</color>
-    <color name="warn_bg">#241d08</color>
-    <color name="warn_border">#4a3a10</color>
-    <color name="danger">#ff8a8a</color>
-    <color name="danger_bg">#2a0f0f</color>
-    <color name="info">#4cc2ff</color>
-    <color name="info_bg">#0a1a24</color>
+    <color name="success">#5aa9ff</color>
+    <color name="success_bg">#0a1520</color>
+    <color name="warn">#bd93e0</color>
+    <color name="warn_bg">#1c1226</color>
+    <color name="warn_border">#3a2a4e</color>
+    <color name="danger">#ff8f8f</color>
+    <color name="danger_bg">#2e1010</color>
+    <color name="info">#5aa9ff</color>
+    <color name="info_bg">#0a1520</color>
 
     <!-- Los pill_* NO se redefinen acá: llevan la inicial del
          medicamento en BLANCO encima, y ese blanco no cambia de modo.

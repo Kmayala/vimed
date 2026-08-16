@@ -1,26 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Nueva cita.
+
+  Antes era una pila plana de campos con etiquetas sueltas: "Nombre del
+  médico", "Fecha", "Hora", "Lugar"… todo del mismo peso y sin ninguna
+  separación, así que llenarlo se sentía como un trámite y no se sabía
+  cuánto faltaba.
+
+  Ahora los campos van agrupados en tres tarjetas que responden una
+  pregunta cada una —con quién, cuándo y dónde—, con la misma tipografía
+  serif de los títulos del resto de la app. Fecha y hora van lado a
+  lado: son cortos y siempre se completan juntos.
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/paper">
+    android:background="@drawable/bg_welcome_gradient">
 
-    <!-- AppBar -->
+    <!-- ══ HEADER ══════════════════════════════════════════════ -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingLeft="16dp"
-        android:paddingRight="16dp"
+        android:paddingRight="20dp"
         android:paddingTop="14dp"
-        android:paddingBottom="10dp">
+        android:paddingBottom="8dp">
 
         <FrameLayout
             android:id="@+id/btn_back"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
             android:background="@drawable/shape_neutral_icon_container"
             android:clickable="true"
             android:focusable="true"
@@ -31,26 +44,28 @@
                 android:layout_height="20dp"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_arrow_back"
+                android:tint="@color/ink_2"
                 android:contentDescription="Volver" />
         </FrameLayout>
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="Nueva cita"
-            android:textSize="22sp"
-            android:fontFamily="sans-serif"
-            android:textStyle="bold"
+            android:textSize="28sp"
+            android:fontFamily="serif"
             android:textColor="@color/ink"
-            android:letterSpacing="-0.015" />
+            android:letterSpacing="-0.02" />
 
     </LinearLayout>
 
-    <!-- Formulario -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:scrollbars="none">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -58,155 +73,170 @@
             android:orientation="vertical"
             android:paddingLeft="20dp"
             android:paddingRight="20dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="24dp">
+            android:paddingTop="6dp"
+            android:paddingBottom="28dp">
 
-            <!-- Médico -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Nombre del médico"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_marginBottom="16dp">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_medico"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:inputType="textPersonName"
-                    android:textSize="16sp" />
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- ─── Especialidad ───
-                 Grilla en vez de campo libre: escrito a mano, la misma
-                 consulta quedaba guardada como "cardiologo", "Cardiología"
-                 o vacía, y no habia forma de agrupar nada. Las filas se
-                 arman en código desde el enum Especialidad. -->
+            <!-- ═══ 1. Con quién ═══ -->
             <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Especialidad"
-                android:textSize="16sp"
-                android:textColor="@color/ink_3"
-                android:layout_marginBottom="10dp" />
+                style="@style/TituloSeccionForm"
+                android:text="¿Con quién es la cita?" />
 
-            <LinearLayout
-                android:id="@+id/especialidades_grid"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginBottom="16dp" />
+            <LinearLayout style="@style/TarjetaForm">
 
-            <!-- Solo aparece al elegir "Otra". -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/til_especialidad"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="¿Cuál especialidad?"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_marginBottom="16dp"
-                android:visibility="gone">
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/CampoForm"
+                    android:hint="Nombre del médico">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_especialidad"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:inputType="textCapSentences"
-                    android:textSize="16sp" />
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_medico"
+                        android:layout_width="match_parent"
+                        android:layout_height="60dp"
+                        android:inputType="textCapWords"
+                        android:textSize="17sp"
+                        android:textColor="@color/ink" />
+                </com.google.android.material.textfield.TextInputLayout>
 
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- Fecha -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Fecha"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                app:endIconMode="none"
-                android:layout_marginBottom="16dp">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_fecha"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:focusable="false"
-                    android:focusableInTouchMode="false"
-                    android:inputType="none"
-                    android:textSize="16sp"
-                    android:clickable="true"
-                    android:cursorVisible="false" />
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- Hora -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Hora"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                app:endIconMode="none"
-                android:layout_marginBottom="16dp">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_hora"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:focusable="false"
-                    android:focusableInTouchMode="false"
-                    android:inputType="none"
-                    android:textSize="16sp"
-                    android:clickable="true"
-                    android:cursorVisible="false" />
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- Lugar -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Lugar / consultorio"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_marginBottom="16dp">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_lugar"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:inputType="text"
-                    android:textSize="16sp" />
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- Notas -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Notas (opcional)"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_marginBottom="24dp">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_notas"
+                <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:minHeight="80dp"
-                    android:gravity="top"
-                    android:inputType="textMultiLine"
-                    android:textSize="16sp" />
+                    android:text="Especialidad"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/ink_3"
+                    android:layout_marginTop="18dp"
+                    android:layout_marginBottom="10dp" />
 
-            </com.google.android.material.textfield.TextInputLayout>
+                <!-- Las filas se arman en código desde el enum Especialidad. -->
+                <LinearLayout
+                    android:id="@+id/especialidades_grid"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
 
-            <!-- Botón guardar -->
+                <!-- Solo aparece al elegir "Otra". -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_especialidad"
+                    style="@style/CampoForm"
+                    android:hint="¿Cuál especialidad?"
+                    android:layout_marginTop="6dp"
+                    android:visibility="gone">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_especialidad"
+                        android:layout_width="match_parent"
+                        android:layout_height="60dp"
+                        android:inputType="textCapSentences"
+                        android:textSize="17sp"
+                        android:textColor="@color/ink" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+
+            <!-- ═══ 2. Cuándo ═══ -->
+            <TextView
+                style="@style/TituloSeccionForm"
+                android:text="¿Cuándo?" />
+
+            <LinearLayout style="@style/TarjetaForm">
+
+                <!-- Lado a lado: son cortos y se completan juntos. -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:baselineAligned="false">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/CampoForm"
+                        android:layout_width="0dp"
+                        android:layout_weight="1.3"
+                        android:layout_marginEnd="10dp"
+                        android:hint="Fecha"
+                        app:startIconDrawable="@drawable/ic_nav_calendar"
+                        app:startIconTint="@color/brand_600">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/et_fecha"
+                            android:layout_width="match_parent"
+                            android:layout_height="60dp"
+                            android:focusable="false"
+                            android:cursorVisible="false"
+                            android:textSize="17sp"
+                            android:textColor="@color/ink" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/CampoForm"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:hint="Hora"
+                        app:startIconDrawable="@drawable/ic_alarma_reloj"
+                        app:startIconTint="@color/brand_600">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/et_hora"
+                            android:layout_width="match_parent"
+                            android:layout_height="60dp"
+                            android:focusable="false"
+                            android:cursorVisible="false"
+                            android:textSize="17sp"
+                            android:textColor="@color/ink" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- ═══ 3. Dónde ═══ -->
+            <TextView
+                style="@style/TituloSeccionForm"
+                android:text="¿Dónde?" />
+
+            <LinearLayout style="@style/TarjetaForm">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/CampoForm"
+                    android:hint="Lugar o consultorio"
+                    app:startIconDrawable="@drawable/ic_map_pin"
+                    app:startIconTint="@color/brand_600">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_lugar"
+                        android:layout_width="match_parent"
+                        android:layout_height="60dp"
+                        android:inputType="textCapSentences"
+                        android:textSize="17sp"
+                        android:textColor="@color/ink" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/CampoForm"
+                    android:hint="Notas (opcional)"
+                    android:layout_marginTop="14dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_notas"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="88dp"
+                        android:gravity="top"
+                        android:inputType="textMultiLine|textCapSentences"
+                        android:textSize="17sp"
+                        android:textColor="@color/ink"
+                        android:paddingTop="16dp" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_save"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
+                android:layout_height="64dp"
                 android:text="Guardar cita"
-                android:textSize="16sp"
+                android:textSize="19sp"
                 android:textStyle="bold"
-                android:backgroundTint="@color/brand_500"
-                app:cornerRadius="16dp" />
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                app:backgroundTint="@color/brand_500"
+                app:cornerRadius="18dp"
+                app:elevation="2dp"
+                android:layout_marginTop="30dp" />
 
         </LinearLayout>
     </ScrollView>
