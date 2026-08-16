@@ -152,36 +152,8 @@ public final class InteraccionChecker {
             });
     }
 
-    /**
-     * Match case-insensitive: el nombre del usuario contiene el nombre_comercial
-     * del catálogo, o viceversa, o coincide con el principio_activo.
-     * Prioriza matches más específicos (nombre_comercial > principio_activo).
-     */
+    /** Ver {@link CatalogoMatcher}: la heurística la comparte con el chequeo de dosis. */
     private static Integer matchearNombre(String tipeado, List<CatalogoMedicamento> catalogo) {
-        if (tipeado == null) return null;
-        String norm = tipeado.trim().toLowerCase(Locale.ROOT);
-        if (norm.isEmpty()) return null;
-
-        Integer matchComercial = null;
-        Integer matchPrincipio = null;
-
-        for (CatalogoMedicamento m : catalogo) {
-            String nc = m.getNombreComercial() != null
-                ? m.getNombreComercial().toLowerCase(Locale.ROOT) : "";
-            String pa = m.getPrincipioActivo() != null
-                ? m.getPrincipioActivo().toLowerCase(Locale.ROOT) : "";
-
-            // Nombre comercial: match si uno contiene al otro
-            if (!nc.isEmpty() && (norm.contains(nc) || nc.contains(norm))) {
-                matchComercial = m.getIdCatalogo();
-                break; // el primer match comercial gana
-            }
-            // Principio activo: match si el nombre del usuario contiene el principio
-            if (matchPrincipio == null && !pa.isEmpty()
-                    && (norm.contains(pa) || pa.contains(norm))) {
-                matchPrincipio = m.getIdCatalogo();
-            }
-        }
-        return matchComercial != null ? matchComercial : matchPrincipio;
+        return CatalogoMatcher.buscarId(tipeado, catalogo);
     }
 }

@@ -289,6 +289,21 @@
 
                 </LinearLayout>
 
+                <!-- Aviso de dosis fuera de lo habitual. Lo pinta
+                     AgregarMedicamentoActivity comparando contra el catálogo;
+                     avisa, no bloquea. -->
+                <TextView
+                    android:id="@+id/tv_aviso_dosis"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/shape_warn_alert"
+                    android:padding="14dp"
+                    android:textSize="15sp"
+                    android:textColor="@color/warn"
+                    android:lineSpacingMultiplier="1.3"
+                    android:layout_marginBottom="12dp"
+                    android:visibility="gone" />
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_otra_dosis"
                     style="@style/Widget.Material3.Button.TextButton"

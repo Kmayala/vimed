@@ -18,6 +18,7 @@ import androidx.core.content.ContextCompat;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.tesis.vimed.api.DosisChecker;
 import com.tesis.vimed.api.InteraccionChecker;
 import com.tesis.vimed.api.SupabaseClient;
 import com.tesis.vimed.api.VimedRepo;
@@ -322,23 +323,21 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
             android.R.layout.simple_list_item_1, unidades));
         spUnidad.setText(unidades[0], false);   // false = no filtrar la lista
 
-        // Presets rápidos — navegan directo al paso 3
+        // Presets rápidos — navegan directo al paso 3, salvo que la dosis
+        // no se parezca a la del catálogo: ahí primero avisamos.
         pasos[1].findViewById(R.id.btn_500).setOnClickListener(v -> {
-            dosis = 500; unidad = "mg"; mostrarPaso(2);
+            dosis = 500; unidad = "mg"; avisarSiLaDosisEsRara(() -> mostrarPaso(2));
         });
         pasos[1].findViewById(R.id.btn_850).setOnClickListener(v -> {
-            dosis = 850; unidad = "mg"; mostrarPaso(2);
+            dosis = 850; unidad = "mg"; avisarSiLaDosisEsRara(() -> mostrarPaso(2));
         });
         pasos[1].findViewById(R.id.btn_1000).setOnClickListener(v -> {
-            dosis = 1000; unidad = "mg"; mostrarPaso(2);
+            dosis = 1000; unidad = "mg"; avisarSiLaDosisEsRara(() -> mostrarPaso(2));
         });
 
         // Mostrar campo manual
-        pasos[1].findViewById(R.id.btn_otra_dosis).setOnClickListener(v -> {
-            tilDosis.setVisibility(View.VISIBLE);
-            tilUnidad.setVisibility(View.VISIBLE);
-            btnSiguiente2.setVisibility(View.VISIBLE);
-        });
+        pasos[1].findViewById(R.id.btn_otra_dosis).setOnClickListener(v ->
+            mostrarCampoDosisManual());
 
         // Confirmar dosis manual
         btnSiguiente2.setOnClickListener(v -> {
@@ -352,7 +351,7 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
                 dosis = Float.parseFloat(dosisStr);
                 String u = spUnidad.getText().toString().trim();
                 if (!u.isEmpty()) unidad = u;
-                mostrarPaso(2);
+                avisarSiLaDosisEsRara(() -> mostrarPaso(2));
             } catch (NumberFormatException e) {
                 etDosis.setError("Número inválido");
             }
@@ -459,8 +458,73 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
                 etStock.setError("Número inválido");
                 return;
             }
-            chequearInteraccionesYGuardar();
+            chequearDosisYSeguir();
         });
+    }
+
+    // ── Chequeo de dosis contra el catálogo ────────────────────
+
+    /**
+     * Última red de seguridad antes de guardar. El aviso normalmente ya
+     * salió en el paso 2, pero el catálogo puede haber llegado tarde (viene
+     * por red) y en ese momento no había con qué comparar.
+     *
+     * Solo interrumpe con el nivel ALTO —una dosis cinco veces fuera de lo
+     * habitual, que casi siempre es un cero de más—. Una diferencia menor
+     * ya se avisó y no justifica un segundo cartel.
+     */
+    private void chequearDosisYSeguir() {
+        DosisChecker.Aviso aviso = DosisChecker.revisar(nombre, catalogo, dosis, unidad);
+
+        if (aviso.nivel != DosisChecker.Nivel.ALTO) {
+            chequearInteraccionesYGuardar();
+            return;
+        }
+
+        new AlertDialog.Builder(this)
+            .setTitle("Revisá la dosis")
+            .setMessage(aviso.texto)
+            .setNegativeButton("Corregir", (d, w) -> mostrarPaso(1))
+            .setPositiveButton("Está bien así", (d, w) -> chequearInteraccionesYGuardar())
+            .show();
+    }
+
+    /**
+     * Muestra el aviso de dosis apenas se elige, que es cuando la persona
+     * todavía tiene la caja o la receta en la mano.
+     *
+     * Avisa, no bloquea: una dosis alta puede estar perfectamente indicada
+     * por el médico, y la app no tiene el rango terapéutico como para
+     * afirmar lo contrario (ver DosisChecker).
+     */
+    private void avisarSiLaDosisEsRara(Runnable continuar) {
+        DosisChecker.Aviso aviso = DosisChecker.revisar(nombre, catalogo, dosis, unidad);
+
+        TextView tvAviso = pasos[1].findViewById(R.id.tv_aviso_dosis);
+        if (tvAviso != null) {
+            tvAviso.setText(aviso.hayAlgoQueDecir() ? aviso.texto : "");
+            tvAviso.setVisibility(aviso.hayAlgoQueDecir() ? View.VISIBLE : View.GONE);
+        }
+
+        if (!aviso.hayAlgoQueDecir()) {
+            continuar.run();
+            return;
+        }
+
+        new AlertDialog.Builder(this)
+            .setTitle(aviso.nivel == DosisChecker.Nivel.ALTO
+                ? "Revisá la dosis" : "Dosis distinta a la habitual")
+            .setMessage(aviso.texto)
+            .setNegativeButton("Corregir", (d, w) -> mostrarCampoDosisManual())
+            .setPositiveButton("Continuar", (d, w) -> continuar.run())
+            .show();
+    }
+
+    /** Abre el campo de dosis a mano, para corregir sin salir del paso. */
+    private void mostrarCampoDosisManual() {
+        pasos[1].findViewById(R.id.til_dosis_manual).setVisibility(View.VISIBLE);
+        pasos[1].findViewById(R.id.til_unidad).setVisibility(View.VISIBLE);
+        pasos[1].findViewById(R.id.btn_siguiente_2).setVisibility(View.VISIBLE);
     }
 
     // ── Chequeo de interacciones antes de guardar ──────────────
