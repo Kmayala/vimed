@@ -31,8 +31,6 @@
              cada llamada, así ninguna pantalla puede olvidarse. -->
         <item name="alertDialogTheme">@style/Theme.Vimed.Dialogo</item>
         <item name="materialAlertDialogTheme">@style/Theme.Vimed.Dialogo</item>
-        <item name="android:datePickerDialogTheme">@style/Theme.Vimed.Picker</item>
-        <item name="android:timePickerDialogTheme">@style/Theme.Vimed.Picker</item>
 
         <!-- ── Barras del sistema ──────────────────────────────
              Desde Android 15 (targetSdk 35+) el sistema fuerza
@@ -70,13 +68,6 @@
         <item name="android:textStyle">bold</item>
     </style>
 
-    <!-- Los pickers de fecha y hora son del framework, no de Material:
-         necesitan un tema propio con el acento de la app. -->
-    <style name="Theme.Vimed.Picker" parent="android:Theme.Material.Light.Dialog">
-        <item name="android:colorAccent">@color/brand_500</item>
-        <item name="android:textColorPrimary">@color/ink</item>
-        <item name="android:windowBackground">@drawable/shape_dialog</item>
-    </style>
 
     <!-- Alarma a pantalla completa: el header violeta tiene que llegar hasta
          el borde superior, por detrás de la barra de estado. Por eso acá

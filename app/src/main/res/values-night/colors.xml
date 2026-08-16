@@ -112,9 +112,9 @@
          fondo y se hunde.                                        -->
     <color name="success">#5aa9ff</color>
     <color name="success_bg">#0a1520</color>
-    <color name="warn">#bd93e0</color>
-    <color name="warn_bg">#1c1226</color>
-    <color name="warn_border">#3a2a4e</color>
+    <color name="warn">#ffc93c</color>
+    <color name="warn_bg">#241d08</color>
+    <color name="warn_border">#4a3a10</color>
     <color name="danger">#ff8f8f</color>
     <color name="danger_bg">#2e1010</color>
     <color name="info">#5aa9ff</color>

@@ -26,8 +26,6 @@
 
         <item name="alertDialogTheme">@style/Theme.Vimed.Dialogo</item>
         <item name="materialAlertDialogTheme">@style/Theme.Vimed.Dialogo</item>
-        <item name="android:datePickerDialogTheme">@style/Theme.Vimed.Picker</item>
-        <item name="android:timePickerDialogTheme">@style/Theme.Vimed.Picker</item>
 
         <item name="android:fitsSystemWindows">true</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
@@ -39,13 +37,6 @@
 
     <style name="Theme.Vimed" parent="Base.Theme.Vimed.Night" />
 
-    <!-- El picker de fecha y hora es del framework: en oscuro tiene que
-         partir del tema oscuro del sistema o nace con fondo blanco. -->
-    <style name="Theme.Vimed.Picker" parent="android:Theme.Material.Dialog">
-        <item name="android:colorAccent">@color/brand_600</item>
-        <item name="android:textColorPrimary">@color/ink</item>
-        <item name="android:windowBackground">@drawable/shape_dialog</item>
-    </style>
 
     <!-- La pantalla de alarma dibuja su propio header a sangre, así que
          apaga fitsSystemWindows igual que en claro. -->

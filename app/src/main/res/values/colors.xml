@@ -117,9 +117,12 @@
     <!-- ── Semánticos (estados) ───────────────────────────── -->
     <color name="success">#0b3f91</color>
     <color name="success_bg">#e9eff8</color>
-    <color name="warn">#5e2585</color>
-    <color name="warn_bg">#f2eefb</color>
-    <color name="warn_border">#d3c2ee</color>
+    <!-- Las alertas (stock bajo, permisos de la alarma) vuelven al
+         ámbar. Es el color con el que la gente ya lee "atención" y
+         meterlo en la escala violeta les sacaba justamente eso. -->
+    <color name="warn">#6f3304</color>
+    <color name="warn_bg">#fef3c7</color>
+    <color name="warn_border">#f4cf7d</color>
     <!-- El único color fuera de la paleta, y a propósito: una toma que
          no se tomó tiene que saltar a la vista. En la escala violeta se
          confundía con "pospuesta" y en una app de medicación eso importa. -->
