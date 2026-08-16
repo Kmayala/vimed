@@ -54,6 +54,27 @@ public final class AuthPayloads {
         }
     }
 
+    /**
+     * POST /token?grant_type=id_token — canje del token de Google.
+     *
+     * En el login nativo la app le pide el id_token a Google con
+     * Credential Manager y se lo manda acá. Supabase valida la firma y el
+     * destinatario del token contra los Client IDs configurados en el
+     * proveedor; por eso no hace falta client secret.
+     */
+    public static class IdTokenRequest {
+        public String provider;
+        @SerializedName("id_token") public String idToken;
+        /** Lo generó la app y viajó dentro del token: Supabase compara. */
+        public String nonce;
+
+        public IdTokenRequest(String idToken, String nonce) {
+            this.provider = "google";
+            this.idToken = idToken;
+            this.nonce = nonce;
+        }
+    }
+
     /** PUT /user — cambiar contraseña del usuario autenticado. */
     public static class UpdateUserRequest {
         public String password;

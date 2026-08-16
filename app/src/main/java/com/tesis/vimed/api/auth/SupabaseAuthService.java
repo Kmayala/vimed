@@ -26,6 +26,10 @@ public interface SupabaseAuthService {
     @POST("token?grant_type=password")
     Call<AuthPayloads.AuthResponse> signIn(@Body AuthPayloads.SignInRequest body);
 
+    /** Login con Google: se canjea el id_token por una sesión de Supabase. */
+    @POST("token?grant_type=id_token")
+    Call<AuthPayloads.AuthResponse> signInConIdToken(@Body AuthPayloads.IdTokenRequest body);
+
     /** Renovar tokens cuando el access_token venció. */
     @POST("token?grant_type=refresh_token")
     Call<AuthPayloads.AuthResponse> refresh(@Body AuthPayloads.RefreshRequest body);
