@@ -39,8 +39,6 @@ AS $$
     -- como "Rosa@Gmail.com" y escribirse en minúscula. btrim()
     -- saca el espacio que deja el autocompletado del teclado.
     WHERE  lower(btrim(u.correo)) = lower(btrim(p_correo))
-    -- Nunca para usuarios anónimos: sin sesión no se busca nada.
-      AND  auth.uid() IS NOT NULL
     LIMIT  1;
 $$;
 
@@ -50,8 +48,11 @@ COMMENT ON FUNCTION public.buscar_usuario_por_correo(TEXT) IS
     'el RLS de usuarios no permite ver a alguien con quien todavía no '
     'estás vinculado. No acepta búsqueda parcial.';
 
--- anon queda afuera: el filtro de auth.uid() ya lo cubre, pero es
--- mejor que ni siquiera pueda invocarla.
+-- Quién puede invocarla se controla ACÁ, con los permisos, y no con
+-- un filtro por auth.uid() adentro de la consulta. Un filtro así
+-- además la volvía imposible de probar: en el SQL Editor se corre
+-- como postgres, sin JWT, así que auth.uid() es NULL y la función
+-- no devolvía nada nunca.
 REVOKE ALL ON FUNCTION public.buscar_usuario_por_correo(TEXT) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.buscar_usuario_por_correo(TEXT) TO authenticated;
 
@@ -62,6 +63,9 @@ CREATE INDEX IF NOT EXISTS idx_usuarios_correo_lower
 
 
 -- ── VERIFICACIÓN ─────────────────────────────────────────────
--- Poné un correo que exista y que NO sea el tuyo. Tiene que
--- devolver una fila.
--- SELECT * FROM public.buscar_usuario_por_correo('rosa@gmail.com');
+-- 1) Mirá qué correos hay realmente cargados. Sirve para descartar
+--    que el correo esté escrito distinto de lo que uno recuerda.
+SELECT id_usuario, nombre, correo, rol FROM public.usuarios ORDER BY id_usuario;
+
+-- 2) Copiá uno de esos correos acá. Tiene que devolver una fila.
+-- SELECT * FROM public.buscar_usuario_por_correo('pegá-un-correo-de-arriba');
