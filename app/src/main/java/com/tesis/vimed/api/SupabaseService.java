@@ -200,9 +200,20 @@ public interface SupabaseService {
     );
 
     // ── VINCULACIÓN FAMILIAR ──────────────────────────────────
-    /** Busca un perfil por correo (para vincular por email). */
-    @GET("usuarios")
-    Call<List<UsuarioSupabase>> getPerfilPorCorreo(@Query("correo") String correoEq);
+    /**
+     * Busca un perfil por correo (para vincular por email).
+     *
+     * Va por RPC y no por la tabla a propósito: el RLS de usuarios
+     * solo deja ver tu propia fila y la de los pacientes que YA
+     * cuidás, asi que consultar la tabla para vincular devolvia
+     * siempre vacio. La funcion es SECURITY DEFINER y acepta una
+     * unica coincidencia exacta. Ver supabase_buscar_por_correo.sql.
+     *
+     * @param cuerpo mapa con la clave "p_correo".
+     */
+    @POST("rpc/buscar_usuario_por_correo")
+    Call<List<UsuarioSupabase>> buscarUsuarioPorCorreo(
+        @Body java.util.Map<String, String> cuerpo);
 
     /** Busca un perfil por su id_usuario. */
     @GET("usuarios")

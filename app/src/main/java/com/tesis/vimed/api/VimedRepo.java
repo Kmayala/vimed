@@ -320,12 +320,17 @@ public final class VimedRepo {
 
     public static void buscarPerfilPorCorreo(String correo,
                                              Cb<com.tesis.vimed.models.UsuarioSupabase> cb) {
-        // ilike y no eq: Postgres distingue mayúsculas, así que un correo
-        // guardado como "Rosa@Gmail.com" no lo encontraba nadie que lo
-        // escribiera en minúscula. Se recorta también el espacio que deja
-        // el teclado de Android al autocompletar.
+        // Se busca por RPC y no consultando la tabla usuarios. El RLS
+        // de esa tabla solo deja ver tu propia fila y la de los
+        // pacientes que YA cuidás, así que para vincular a alguien
+        // nuevo devolvía siempre vacío y la pantalla lo mostraba como
+        // "no existe ninguna cuenta con ese correo". La función
+        // compara en minúsculas y recortada, así que acá alcanza con
+        // mandar lo que escribió la persona.
         String buscado = correo == null ? "" : correo.trim();
-        SupabaseClient.getService().getPerfilPorCorreo("ilike." + buscado)
+        java.util.Map<String, String> cuerpo = new java.util.HashMap<>();
+        cuerpo.put("p_correo", buscado);
+        SupabaseClient.getService().buscarUsuarioPorCorreo(cuerpo)
             .enqueue(new Callback<List<com.tesis.vimed.models.UsuarioSupabase>>() {
                 @Override
                 public void onResponse(Call<List<com.tesis.vimed.models.UsuarioSupabase>> c,
@@ -334,6 +339,12 @@ public final class VimedRepo {
                         cb.onOk(r.body().get(0));
                     } else if (r.isSuccessful()) {
                         cb.onOk(null);   // no existe — el llamador decide qué mostrar
+                    } else if (r.code() == 404) {
+                        // PGRST202: la función no existe en la base. Pasa si
+                        // no se corrió supabase_buscar_por_correo.sql. Sin
+                        // este aviso el error se lee como un problema de red.
+                        cb.onError("Falta crear la búsqueda por correo en la "
+                            + "base de datos (supabase_buscar_por_correo.sql)");
                     } else {
                         cb.onError("Error del servidor (código " + r.code() + ")");
                     }
