@@ -110,20 +110,38 @@ public final class TomaManager {
     /** Igual que confirmar(), pero bloqueante. Solo desde hilo de fondo. */
     public static void confirmarSync(Context ctx, int idMedicamento, int idRegistro,
                                      int idHorario, String horaHHMM) {
-        Medicamento med = VimedRepo.buscarMedicamentoSync(idMedicamento);
-        if (med == null) return;
-
         String ahora = SDF_TS.format(new Date());
 
+        // LO PRIMERO es dejar registrada la toma. Antes esto empezaba
+        // pidiendo el medicamento a la red y hacía `return` si no venía:
+        // a la hora de una toma el celular puede estar sin datos, y en ese
+        // caso la persona tocaba "Ya tomé", la alarma se callaba y no se
+        // guardaba nada. El dato de que se tomó no puede depender de una
+        // consulta que solo hace falta para descontar el stock.
         if (idRegistro > 0) {
             VimedRepo.actualizarEstadoTomaSync(idRegistro, "confirmada", ahora);
         } else if (idHorario > 0) {
-            RegistroToma r = new RegistroToma(idHorario, med.getIdUsuario(),
-                fechaHoyCon(horaHHMM));
-            r.setEstado("confirmada");
-            r.setFechaHoraConfirmacion(ahora);
-            VimedRepo.crearTomaSync(r);
+            // Sin fila previa hay que crearla, y para eso se necesita el
+            // id_usuario. Se toma de la caché local, que existe justamente
+            // para que la alarma funcione sin conexión.
+            int idUsuario = MedCache.idUsuario(ctx, idMedicamento);
+            if (idUsuario <= 0) {
+                Medicamento m = VimedRepo.buscarMedicamentoSync(idMedicamento);
+                if (m != null) idUsuario = m.getIdUsuario();
+            }
+            if (idUsuario > 0) {
+                RegistroToma r = new RegistroToma(idHorario, idUsuario,
+                    fechaHoyCon(horaHHMM));
+                r.setEstado("confirmada");
+                r.setFechaHoraConfirmacion(ahora);
+                VimedRepo.crearTomaSync(r);
+            }
         }
+
+        // De acá para abajo es todo secundario: descontar stock y avisar.
+        // Si falla, la toma ya quedó registrada igual.
+        Medicamento med = VimedRepo.buscarMedicamentoSync(idMedicamento);
+        if (med == null) return;
 
         int nuevoStock = Math.max(0, med.getStockActual() - 1);
         VimedRepo.actualizarStockSync(med.getId(), nuevoStock);

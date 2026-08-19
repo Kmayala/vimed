@@ -338,16 +338,23 @@ public class MainActivity extends AppCompatActivity {
      */
     private RegistroToma registroDeToma(int idHorario, String horaHHMM,
                                         List<RegistroToma> registros) {
+        RegistroToma encontrado = null;
         for (RegistroToma r : registros) {
             if (r.getIdHorario() != idHorario) continue;
             String prog = r.getFechaHoraProgramada();
             if (prog == null) continue;
             // formato "yyyy-MM-dd HH:mm:ss" — comparamos posiciones 11..15
             if (prog.length() >= 16 && prog.substring(11, 16).equals(horaHHMM)) {
-                return r;
+                // Puede haber MÁS DE UNA fila para la misma toma: la alarma
+                // crea una como "omitida" al sonar, y si al confirmar no
+                // llegó a conocer su id, se crea otra ya confirmada. Ante
+                // varias, gana la confirmada — si la persona dijo que la
+                // tomó, mostrarle "omitida" es lo peor que puede pasar acá.
+                if ("confirmada".equals(r.getEstado())) return r;
+                if (encontrado == null) encontrado = r;
             }
         }
-        return null;
+        return encontrado;
     }
 
     /** Diálogo al tocar una toma: confirmar, o deshacer si ya estaba confirmada. */
