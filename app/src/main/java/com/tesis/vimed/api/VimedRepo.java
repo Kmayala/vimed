@@ -320,7 +320,12 @@ public final class VimedRepo {
 
     public static void buscarPerfilPorCorreo(String correo,
                                              Cb<com.tesis.vimed.models.UsuarioSupabase> cb) {
-        SupabaseClient.getService().getPerfilPorCorreo("eq." + correo)
+        // ilike y no eq: Postgres distingue mayúsculas, así que un correo
+        // guardado como "Rosa@Gmail.com" no lo encontraba nadie que lo
+        // escribiera en minúscula. Se recorta también el espacio que deja
+        // el teclado de Android al autocompletar.
+        String buscado = correo == null ? "" : correo.trim();
+        SupabaseClient.getService().getPerfilPorCorreo("ilike." + buscado)
             .enqueue(new Callback<List<com.tesis.vimed.models.UsuarioSupabase>>() {
                 @Override
                 public void onResponse(Call<List<com.tesis.vimed.models.UsuarioSupabase>> c,
