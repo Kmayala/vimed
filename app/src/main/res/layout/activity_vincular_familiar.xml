@@ -35,6 +35,7 @@
         </FrameLayout>
 
         <TextView
+            android:id="@+id/tv_toolbar_titulo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Vincular familiar"
@@ -63,6 +64,7 @@
             <!-- Título e intro -->
             <TextView
                 android:layout_width="wrap_content"
+                android:id="@+id/tv_titulo"
                 android:layout_height="wrap_content"
                 android:text="Invite a un cuidador"
                 android:textSize="30sp"
@@ -74,6 +76,7 @@
 
             <TextView
                 android:layout_width="match_parent"
+                android:id="@+id/tv_subtitulo"
                 android:layout_height="wrap_content"
                 android:text="Recibirá avisos de olvidos, stock bajo y citas próximas. Usted decide qué comparte."
                 android:textSize="15sp"
@@ -83,6 +86,7 @@
 
             <!-- Tarjeta del código -->
             <LinearLayout
+                android:id="@+id/card_codigo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
@@ -158,6 +162,7 @@
 
                 <TextView
                     android:layout_width="wrap_content"
+                    android:id="@+id/tv_seccion_correo"
                     android:layout_height="wrap_content"
                     android:text="O AGREGAR POR CORREO"
                     android:textSize="11sp"
@@ -206,6 +211,7 @@
             <!-- Sección FAMILIA VINCULADA -->
             <TextView
                 android:layout_width="match_parent"
+                android:id="@+id/tv_seccion_lista"
                 android:layout_height="wrap_content"
                 android:text="FAMILIA VINCULADA"
                 android:textSize="11sp"
@@ -227,6 +233,7 @@
 
                 <TextView
                     android:layout_width="wrap_content"
+                    android:id="@+id/tv_vacio_titulo"
                     android:layout_height="wrap_content"
                     android:text="Sin familiares vinculados"
                     android:textSize="15sp"
@@ -235,6 +242,7 @@
 
                 <TextView
                     android:layout_width="wrap_content"
+                    android:id="@+id/tv_vacio_detalle"
                     android:layout_height="wrap_content"
                     android:text="Comparta el código o agregue por correo"
                     android:textSize="13sp"

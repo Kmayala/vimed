@@ -76,6 +76,8 @@
             android:paddingRight="20dp"
             android:paddingBottom="28dp">
 
+            <include layout="@layout/include_banner_solicitudes" />
+
             <!-- ═══ Sin paciente vinculado ═══ -->
             <LinearLayout
                 android:id="@+id/empty_paciente"
@@ -118,12 +120,25 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Pedile a tu familiar que te vincule desde su app: en su perfil, opción «Vincular familiar», con tu correo."
+                    android:text="Agregá a tu paciente con el correo de su cuenta de Vimed. También puede vincularte él desde su app."
                     android:textSize="16sp"
                     android:textColor="@color/ink_3"
                     android:gravity="center"
                     android:lineSpacingMultiplier="1.4"
                     android:layout_marginTop="8dp" />
+
+                <!-- El camino a vincular estaba solo en el menú del perfil,
+                     detrás de un ícono. Desde una pantalla que dice "no
+                     cuidás a nadie", la acción para arreglarlo tiene que
+                     estar acá. -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_vincular_paciente"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="Agregar paciente"
+                    android:textSize="16sp"
+                    app:cornerRadius="16dp"
+                    android:layout_marginTop="24dp" />
 
             </LinearLayout>
 

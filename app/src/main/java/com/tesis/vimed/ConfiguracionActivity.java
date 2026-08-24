@@ -1,15 +1,21 @@
 package com.tesis.vimed;
 
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import com.tesis.vimed.api.VimedRepo;
+import com.tesis.vimed.models.PerfilClinico;
 import com.tesis.vimed.utils.PermisosAlarma;
 import com.tesis.vimed.utils.TemaManager;
 
@@ -31,6 +37,11 @@ public class ConfiguracionActivity extends AppCompatActivity {
 
         findViewById(R.id.btn_back).setOnClickListener(v -> finish());
 
+        findViewById(R.id.opt_peso).setOnClickListener(v -> pedirPeso());
+        findViewById(R.id.opt_edad).setOnClickListener(v -> pedirEdad());
+        pintarDatosClinicos();
+        cargarDatosClinicos();
+
         findViewById(R.id.opt_sistema).setOnClickListener(v -> elegir(TemaManager.SISTEMA));
         findViewById(R.id.opt_claro).setOnClickListener(v   -> elegir(TemaManager.CLARO));
         findViewById(R.id.opt_oscuro).setOnClickListener(v  -> elegir(TemaManager.OSCURO));
@@ -50,6 +61,158 @@ public class ConfiguracionActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         pintarRevisionDeAlarma();
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  Datos del paciente (peso y edad)
+    // ═══════════════════════════════════════════════════════════
+
+    /**
+     * Pinta lo que hay guardado localmente. Corre antes de la consulta de
+     * red para que la pantalla nunca aparezca en blanco: si el celular está
+     * sin datos, se muestra lo último que sabemos en vez de nada.
+     */
+    private void pintarDatosClinicos() {
+        PerfilClinico p = new SessionManager(this).getPerfilClinico();
+
+        ((TextView) findViewById(R.id.tv_peso_valor)).setText(
+            p.tienePeso() ? formatearPeso(p.getPesoKg()) + " kg" : "Tocá para cargarlo");
+
+        ((TextView) findViewById(R.id.tv_edad_valor)).setText(
+            p.tieneEdad() ? p.edad() + " años" : "Tocá para cargarla");
+    }
+
+    private void cargarDatosClinicos() {
+        VimedRepo.cargarDatosClinicos(this, -1,
+            new VimedRepo.Cb<com.tesis.vimed.models.UsuarioSupabase>() {
+                @Override public void onOk(com.tesis.vimed.models.UsuarioSupabase perfil) {
+                    pintarDatosClinicos();   // cargarDatosClinicos ya refrescó la sesión
+                }
+                @Override public void onError(String msg) {
+                    // Sin red nos quedamos con lo local; no vale un cartel.
+                }
+            });
+    }
+
+    private void pedirPeso() {
+        PerfilClinico actual = new SessionManager(this).getPerfilClinico();
+
+        final EditText input = campoNumerico(
+            actual.tienePeso() ? formatearPeso(actual.getPesoKg()) : "");
+        // decimal: hay pesos como 62,5 y redondear a mano es una fricción
+        // innecesaria en un dato que después se multiplica.
+        input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        input.setHint("Kilos");
+
+        new AlertDialog.Builder(this)
+            .setTitle("¿Cuánto pesás?")
+            .setMessage("Sirve para revisar si las dosis que cargás son las"
+                + " habituales para tu peso. Podés dejarlo vacío.")
+            .setView(input)
+            .setNegativeButton("Cancelar", null)
+            .setPositiveButton("Guardar", (d, w) -> {
+                String txt = input.getText().toString().trim().replace(',', '.');
+                if (txt.isEmpty()) { guardar(0f, actual.getAnioNacimiento()); return; }
+
+                float peso;
+                try {
+                    peso = Float.parseFloat(txt);
+                } catch (NumberFormatException e) {
+                    avisar("Ese peso no se entiende. Escribí solo el número.");
+                    return;
+                }
+                // El rango ataja el error de tipeo más común —el punto
+                // decimal de más, "625" en vez de "62,5"— antes de que ese
+                // número entre en una cuenta de dosis.
+                if (peso < PerfilClinico.PESO_MIN || peso > PerfilClinico.PESO_MAX) {
+                    avisar("El peso tiene que estar entre "
+                        + (int) PerfilClinico.PESO_MIN + " y "
+                        + (int) PerfilClinico.PESO_MAX + " kg. Revisá lo que escribiste.");
+                    return;
+                }
+                guardar(peso, actual.getAnioNacimiento());
+            })
+            .show();
+    }
+
+    private void pedirEdad() {
+        PerfilClinico actual = new SessionManager(this).getPerfilClinico();
+
+        final EditText input = campoNumerico(
+            actual.tieneEdad() ? String.valueOf(actual.edad()) : "");
+        input.setHint("Años");
+
+        new AlertDialog.Builder(this)
+            .setTitle("¿Cuántos años tenés?")
+            .setMessage("Algunos medicamentos se indican en dosis más bajas"
+                + " después de los " + PerfilClinico.EDAD_MAYOR
+                + ". Podés dejarlo vacío.")
+            .setView(input)
+            .setNegativeButton("Cancelar", null)
+            .setPositiveButton("Guardar", (d, w) -> {
+                String txt = input.getText().toString().trim();
+                if (txt.isEmpty()) { guardar(actual.getPesoKg(), 0); return; }
+
+                int edad;
+                try {
+                    edad = Integer.parseInt(txt);
+                } catch (NumberFormatException e) {
+                    avisar("Esa edad no se entiende. Escribí solo el número.");
+                    return;
+                }
+                if (edad < 0 || edad > 120) {
+                    avisar("Revisá la edad: tiene que estar entre 0 y 120.");
+                    return;
+                }
+                // Se guarda el AÑO DE NACIMIENTO, no la edad: una edad
+                // guardada como número queda mal al año siguiente y nadie
+                // la corrige. Escribir la edad es más fácil; convertirla es
+                // trabajo nuestro.
+                guardar(actual.getPesoKg(), PerfilClinico.anioParaEdad(edad));
+            })
+            .show();
+    }
+
+    private void guardar(float pesoKg, int anioNacimiento) {
+        VimedRepo.guardarDatosClinicos(this, -1, pesoKg, anioNacimiento,
+            new VimedRepo.Cb<Void>() {
+                @Override public void onOk(Void v) {
+                    pintarDatosClinicos();
+                    Toast.makeText(ConfiguracionActivity.this,
+                        "Guardado ✓", Toast.LENGTH_SHORT).show();
+                }
+                @Override public void onError(String msg) {
+                    // No se pinta nada: la sesión local solo se actualiza
+                    // cuando el servidor confirma, así que mostrar el valor
+                    // nuevo acá sería mentirle a la persona.
+                    Toast.makeText(ConfiguracionActivity.this,
+                        "No se pudo guardar: " + msg, Toast.LENGTH_LONG).show();
+                }
+            });
+    }
+
+    private EditText campoNumerico(String valorInicial) {
+        EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        input.setText(valorInicial);
+        input.setSelection(valorInicial.length());
+        input.setTextSize(19);
+        int pad = (int) (20 * getResources().getDisplayMetrics().density);
+        input.setPadding(pad, pad, pad, pad);
+        return input;
+    }
+
+    private void avisar(String mensaje) {
+        new AlertDialog.Builder(this)
+            .setMessage(mensaje)
+            .setPositiveButton("Entendido", null)
+            .show();
+    }
+
+    /** "62" en vez de "62.0"; "62,5" cuando el decimal importa. */
+    private String formatearPeso(float kg) {
+        if (kg == Math.round(kg)) return String.valueOf(Math.round(kg));
+        return String.format(java.util.Locale.getDefault(), "%.1f", kg);
     }
 
     private void pintarRevisionDeAlarma() {

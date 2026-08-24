@@ -199,13 +199,34 @@ public class AgregarCitaActivity extends AppCompatActivity {
     }
 
     private void mostrarDatePicker() {
-        new DatePickerDialog(this, (view, year, month, day) -> {
+        DatePickerDialog dlg = new DatePickerDialog(this, (view, year, month, day) -> {
             selYear = year;
             selMonth = month;
             selDay = day;
             fechaSeleccionada = true;
             etFecha.setText(String.format(Locale.getDefault(), "%02d/%02d/%d", day, month + 1, year));
-        }, selYear, selMonth, selDay).show();
+
+            // Si eligió hoy y la hora que ya venía puesta pasó, se avisa acá
+            // en vez de esperar a que toque "Guardar" y no entienda por qué
+            // se lo rechaza.
+            if (esHoy() && yaPaso()) {
+                Toast.makeText(this,
+                    "Las " + horaTexto() + " ya pasaron. Elegí una hora más tarde.",
+                    Toast.LENGTH_LONG).show();
+            }
+        }, selYear, selMonth, selDay);
+
+        // El calendario no deja ni tocar los días anteriores a hoy: una cita
+        // en el pasado no tiene sentido y no habría nada que recordar. Se
+        // resta un segundo porque setMinDate, recibiendo exactamente la
+        // medianoche, en algunos equipos redondea al día siguiente.
+        Calendar hoy = Calendar.getInstance();
+        hoy.set(Calendar.HOUR_OF_DAY, 0);
+        hoy.set(Calendar.MINUTE, 0);
+        hoy.set(Calendar.SECOND, 0);
+        hoy.set(Calendar.MILLISECOND, 0);
+        dlg.getDatePicker().setMinDate(hoy.getTimeInMillis() - 1000);
+        dlg.show();
     }
 
     private void mostrarTimePicker() {
@@ -213,7 +234,39 @@ public class AgregarCitaActivity extends AppCompatActivity {
             selHour = hour;
             selMinute = minute;
             etHora.setText(String.format(Locale.getDefault(), "%02d:%02d", hour, minute));
+
+            if (fechaSeleccionada && esHoy() && yaPaso()) {
+                Toast.makeText(this,
+                    "Esa hora ya pasó. Elegí una hora más tarde.",
+                    Toast.LENGTH_LONG).show();
+            }
         }, selHour, selMinute, true).show();
+    }
+
+    // ═══ Fecha y hora elegidas ═════════════════════════════════
+
+    /** Fecha + hora seleccionadas, con los segundos en cero. */
+    private Calendar momentoElegido() {
+        Calendar c = Calendar.getInstance();
+        c.set(selYear, selMonth, selDay, selHour, selMinute, 0);
+        c.set(Calendar.MILLISECOND, 0);
+        return c;
+    }
+
+    private boolean esHoy() {
+        Calendar hoy = Calendar.getInstance();
+        return hoy.get(Calendar.YEAR) == selYear
+            && hoy.get(Calendar.MONTH) == selMonth
+            && hoy.get(Calendar.DAY_OF_MONTH) == selDay;
+    }
+
+    /** True si el momento elegido ya quedó atrás. */
+    private boolean yaPaso() {
+        return momentoElegido().getTimeInMillis() <= System.currentTimeMillis();
+    }
+
+    private String horaTexto() {
+        return String.format(Locale.getDefault(), "%02d:%02d", selHour, selMinute);
     }
 
     private void guardarCita() {
@@ -241,6 +294,18 @@ public class AgregarCitaActivity extends AppCompatActivity {
             return;
         }
 
+        // Segunda barrera además del setMinDate del calendario: la hora se
+        // elige aparte, así que "hoy a las 08:00" a las 10 de la mañana pasa
+        // el filtro del día pero sigue siendo pasado. Y si la pantalla quedó
+        // abierta cruzando la medianoche, la fecha elegida ayer ya venció.
+        if (yaPaso()) {
+            Toast.makeText(this,
+                "No se puede agendar una cita en el pasado. "
+                    + "Elegí una fecha y hora futuras.",
+                Toast.LENGTH_LONG).show();
+            return;
+        }
+
         // Formato estándar para el DB: "yyyy-MM-dd HH:mm"
         String fechaHora = String.format(Locale.getDefault(), "%d-%02d-%02d %s",
             selYear, selMonth + 1, selDay, hora.isEmpty() ? "00:00" : hora);
@@ -252,6 +317,15 @@ public class AgregarCitaActivity extends AppCompatActivity {
         com.tesis.vimed.api.VimedRepo.Cb<CitaMedica> alGuardar =
             new com.tesis.vimed.api.VimedRepo.Cb<CitaMedica>() {
                 @Override public void onOk(CitaMedica creada) {
+                    // Los avisos (un día antes y dos horas antes) van en el
+                    // celular de quien tiene la cita. Si el cuidador la agenda
+                    // para otra persona, no se programan acá: el teléfono del
+                    // adulto mayor los levanta solo, vía AlarmaSync.
+                    if (idUsuarioDestino <= 0) {
+                        com.tesis.vimed.utils.RecordatorioCita
+                            .programar(AgregarCitaActivity.this, creada);
+                    }
+
                     Toast.makeText(AgregarCitaActivity.this,
                         idUsuarioDestino > 0
                             ? "Cita agendada para " + nombreDestino

@@ -6,6 +6,7 @@ import android.content.Intent;
 
 import com.tesis.vimed.api.NotificacionSync;
 import com.tesis.vimed.api.VimedRepo;
+import com.tesis.vimed.models.CitaMedica;
 import com.tesis.vimed.models.Horario;
 import com.tesis.vimed.models.Medicamento;
 import com.tesis.vimed.models.Notificacion;
@@ -23,6 +24,7 @@ import java.util.concurrent.Executors;
  *   - ACTION_FIRE    → hora de tomar: registra, notifica y reagenda.
  *   - ACTION_CONFIRM → "Confirmar toma" en la notificación.
  *   - ACTION_SNOOZE  → "Posponer 15 min".
+ *   - ACTION_CITA    → recordatorio de cita médica (un día / dos horas antes).
  *   - BOOT_COMPLETED → el celular arrancó: re-agendar todas las alarmas.
  *
  * Los datos viven en Supabase, así que todo el trabajo va a un hilo de
@@ -51,6 +53,13 @@ public class AlarmaReceiver extends BroadcastReceiver {
         final String hora       = intent.getStringExtra(NotificationHelper.EXTRA_HORA);
         final int indice        = intent.getIntExtra(NotificationHelper.EXTRA_INDICE, 0);
 
+        // Extras propios del recordatorio de cita.
+        final int idCita        = intent.getIntExtra(RecordatorioCita.EXTRA_ID_CITA, -1);
+        final int antelacion    = intent.getIntExtra(RecordatorioCita.EXTRA_ANTELACION,
+                                                     RecordatorioCita.ANTES_DOS_HORAS);
+        final String citaTitulo = intent.getStringExtra(RecordatorioCita.EXTRA_TITULO);
+        final String citaTexto  = intent.getStringExtra(RecordatorioCita.EXTRA_TEXTO);
+
         // El sonido se corta ACÁ, en el hilo principal y antes de tocar la
         // red: si esperara al trabajo de fondo, la alarma seguiría sonando
         // los segundos que tarde Supabase en responder.
@@ -72,6 +81,9 @@ public class AlarmaReceiver extends BroadcastReceiver {
                     case NotificationHelper.ACTION_SNOOZE:
                         onSnooze(appCtx, idMedicamento, idHorario, idRegistro, hora, indice);
                         break;
+                    case RecordatorioCita.ACTION_CITA:
+                        onCita(appCtx, idCita, antelacion, citaTitulo, citaTexto);
+                        break;
                     case Intent.ACTION_BOOT_COMPLETED:
                     case Intent.ACTION_LOCKED_BOOT_COMPLETED:
                         onBoot(appCtx);
@@ -92,8 +104,11 @@ public class AlarmaReceiver extends BroadcastReceiver {
         //    setExactAndAllowWhileIdle dispara una sola vez, así que la alarma
         //    de mañana nace acá. Si esto quedara al final, cualquier fallo de
         //    red más arriba se llevaba puesto el recordatorio PARA SIEMPRE.
-        long enUnDia = System.currentTimeMillis() + 24L * 60 * 60 * 1000;
-        NotificationHelper.reagendarEn(ctx, idMedicamento, idHorario, hora, indice, enUnDia);
+        //    La de mañana va a la MISMA hora del horario, no 24h después de
+        //    este disparo: si hoy se pospuso, mañana tiene que volver a su
+        //    hora, no quedarse con el corrimiento (ver proximaOcurrencia).
+        NotificationHelper.reagendarEn(ctx, idMedicamento, idHorario, hora, indice,
+            NotificationHelper.proximaOcurrencia(hora));
 
         // 2) SONAR, con lo que tengamos guardado localmente.
         //    Nada de esto toca la red: a la hora de la toma el celular puede
@@ -104,6 +119,27 @@ public class AlarmaReceiver extends BroadcastReceiver {
         if (nombre == null) nombre = "Tu medicamento";   // primera vez sin caché
 
         String mensaje = dosisTxt.isEmpty() ? nombre : nombre + " — " + dosisTxt;
+
+        // Sin stock no hay nada que tomar: la alarma no suena. Despertar a
+        // alguien para un frasco vacío no ayuda, lo entrena a ignorarla.
+        // En su lugar va un aviso silencioso de que hay que reponer.
+        // La alarma queda agendada igual (paso 1): en cuanto repongan el
+        // stock, mañana vuelve a sonar sola.
+        if (MedCache.sinStock(ctx, idMedicamento)) {
+            // Acá SÍ vale consultar la red antes de decidir, al revés que en
+            // el camino normal: no estamos por despertar a nadie, así que la
+            // demora no cuesta nada, y la caché puede estar vieja si
+            // repusieron el stock desde el teléfono del cuidador. Si no hay
+            // conexión nos quedamos con lo que sabemos.
+            Medicamento fresco = VimedRepo.buscarMedicamentoSync(idMedicamento);
+            if (fresco != null) MedCache.guardar(ctx, fresco);
+
+            if (fresco == null || fresco.getStockActual() <= 0) {
+                avisarSinStock(ctx, idMedicamento, nombre, hora);
+                return;
+            }
+            // Repusieron: sigue de largo y suena como siempre.
+        }
 
         // El tono lo pone AlarmaService, no el canal de notificación: así
         // suena como despertador aunque la pantalla completa no llegue a
@@ -152,6 +188,24 @@ public class AlarmaReceiver extends BroadcastReceiver {
             "Recordatorio enviado: " + mensaje + " (" + hora + ")", false);
     }
 
+    /**
+     * Reemplaza la alarma cuando el medicamento se acabó: notificación común,
+     * sin tono de despertador ni pantalla completa.
+     *
+     * No registra la toma como omitida —no se omitió nada, no había qué
+     * tomar— pero sí avisa al cuidador: que el frasco esté vacío a la hora
+     * de la dosis es exactamente lo que tiene que saber.
+     */
+    private void avisarSinStock(Context ctx, int idMedicamento, String nombre, String hora) {
+        String msg = "Se terminó " + nombre + " y tocaba la toma de las "
+            + (hora != null ? hora : "hoy") + ". Hay que reponerlo.";
+
+        NotificationHelper.mostrarNotificacion(ctx,
+            "Sin stock — " + nombre, msg, idMedicamento + 20_000);
+
+        NotificacionSync.registrar(ctx, Notificacion.TIPO_STOCK, msg, true);
+    }
+
     // ═══ Botón "Confirmar toma" ════════════════════════════════
     private void onConfirm(Context ctx, int idMedicamento, int idHorario,
                            int idRegistro, String hora, int indice) {
@@ -186,6 +240,24 @@ public class AlarmaReceiver extends BroadcastReceiver {
                 + (hora != null ? " de las " + hora : "") + ".", true);
     }
 
+    // ═══ Recordatorio de cita médica ═══════════════════════════
+    private void onCita(Context ctx, int idCita, int antelacion,
+                        String titulo, String texto) {
+        if (idCita == -1 || texto == null) return;
+        if (titulo == null || titulo.isEmpty()) titulo = "Cita médica";
+
+        // Primero mostrar, después la red: el aviso tiene que aparecer aunque
+        // el celular esté sin datos.
+        RecordatorioCita.mostrar(ctx, idCita, antelacion, titulo, texto);
+
+        // Al cuidador le interesa el aviso de las 2 horas —es cuando hay que
+        // salir—; el de la víspera solo queda en el historial, para no
+        // mandarle dos push por la misma cita.
+        boolean pushAlCuidador = antelacion == RecordatorioCita.ANTES_DOS_HORAS;
+        NotificacionSync.registrar(ctx, Notificacion.TIPO_CITA,
+            titulo + ": " + texto, pushAlCuidador);
+    }
+
     // ═══ Reboot — re-agendar todo ══════════════════════════════
     private void onBoot(Context ctx) {
         List<Medicamento> meds = VimedRepo.listarMedicamentosSync(ctx);
@@ -195,6 +267,11 @@ public class AlarmaReceiver extends BroadcastReceiver {
                 NotificationHelper.programarAlarmas(ctx,
                     m.getId(), h.getId(), h.getHoraInicio(), h.getIntervaloHoras());
             }
+        }
+
+        // Las alarmas de las citas también se pierden en el reinicio.
+        for (CitaMedica c : VimedRepo.listarCitasSync(ctx)) {
+            RecordatorioCita.programar(ctx, c);
         }
     }
 }

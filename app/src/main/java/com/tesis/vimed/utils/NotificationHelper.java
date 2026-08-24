@@ -39,6 +39,13 @@ public class NotificationHelper {
     public static final String ALARM_CHANNEL_ID   = "vimed_alarma_channel_v2";
     public static final String ALARM_CHANNEL_NAME = "Alarma de medicación";
 
+    // Canal de los recordatorios de cita médica. Aparte del general para que
+    // se puedan silenciar las citas sin perder los avisos de medicación (y al
+    // revés). Suena como notificación, no como alarma: una cita es de mañana
+    // o de dentro de dos horas, no es para despertar a nadie.
+    public static final String CITA_CHANNEL_ID   = "vimed_citas_v1";
+    public static final String CITA_CHANNEL_NAME = "Recordatorios de citas";
+
     /** Id del canal mudo original, solo para poder borrarlo. */
     private static final String ALARM_CHANNEL_ID_VIEJO = "vimed_alarma_channel";
 
@@ -80,6 +87,13 @@ public class NotificationHelper {
                 CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
             channel.setDescription("Recordatorios de medicación Vimed");
             manager.createNotificationChannel(channel);
+
+            // Canal de las citas médicas (un día antes y dos horas antes).
+            NotificationChannel citas = new NotificationChannel(
+                CITA_CHANNEL_ID, CITA_CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
+            citas.setDescription("Avisos previos a tus citas médicas");
+            citas.enableVibration(true);
+            manager.createNotificationChannel(citas);
 
             // Canal de la alarma. El sonido lo pone EL CANAL, no la Activity:
             // con el celular bloqueado el sistema puede no dejar abrir la
@@ -217,6 +231,46 @@ public class NotificationHelper {
             agendarUna(context, am, idMedicamento, idHorario,
                 horaFormato(cal), i, cal.getTimeInMillis());
         }
+    }
+
+    /**
+     * El próximo momento en que el reloj marca {@code horaHHMM}: hoy si
+     * todavía no llegó, mañana si ya pasó.
+     *
+     * Es lo que usa el reagendado diario. Antes se sumaban 24 horas al
+     * momento del disparo, y eso hacía que el recordatorio se CORRIERA SOLO:
+     * si la alarma de las 17:00 se posponía 15 minutos, sonaba 17:15, y la
+     * del día siguiente nacía 24h después de ESE disparo — 17:15. Al otro
+     * día 17:30. En una semana el recordatorio estaba una hora corrido de la
+     * hora recetada, que en la lista de medicamentos seguía diciendo 17:00
+     * porque en el servidor nunca cambió nada.
+     *
+     * Anclando a la hora del horario, posponer afecta un solo día.
+     */
+    public static long proximaOcurrencia(String horaHHMM) {
+        int hora = 0, minuto = 0;
+        if (horaHHMM != null && horaHHMM.length() >= 5) {
+            try {
+                hora = Integer.parseInt(horaHHMM.substring(0, 2));
+                minuto = Integer.parseInt(horaHHMM.substring(3, 5));
+            } catch (NumberFormatException ignored) {
+                // Hora ilegible: cae en 00:00 de mañana. Raro, pero no se
+                // pierde el recordatorio.
+            }
+        }
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, hora);
+        cal.set(Calendar.MINUTE, minuto);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+
+        // Un minuto de margen: onFire corre justo en la hora del disparo, y
+        // sin esto "hoy a las 17:00" todavía figura como futuro por unos
+        // milisegundos y la alarma se reagendaría para dentro de un instante.
+        if (cal.getTimeInMillis() <= System.currentTimeMillis() + 60_000L) {
+            cal.add(Calendar.DAY_OF_YEAR, 1);
+        }
+        return cal.getTimeInMillis();
     }
 
     /** Reagenda una alarma específica para X ms desde ahora (usado por SNOOZE). */

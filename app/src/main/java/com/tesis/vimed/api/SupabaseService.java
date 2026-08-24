@@ -231,6 +231,13 @@ public interface SupabaseService {
     @DELETE("vinculacion_familiar")
     Call<Void> eliminarVinculo(@Query("id_vinculo") String idEq);
 
+    /** Aceptar o rechazar una solicitud. @param cambios DTO con solo `estado`. */
+    @PATCH("vinculacion_familiar")
+    Call<List<Vinculacion>> actualizarVinculo(
+        @Query("id_vinculo") String idEq,
+        @Body Object cambios
+    );
+
     // ── DISPOSITIVOS (tokens de push FCM) ─────────────────────
 
     /**

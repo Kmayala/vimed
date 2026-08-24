@@ -18,6 +18,7 @@ import androidx.core.content.ContextCompat;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.tesis.vimed.api.CatalogoMatcher;
 import com.tesis.vimed.api.DosisChecker;
 import com.tesis.vimed.api.InteraccionChecker;
 import com.tesis.vimed.api.SupabaseClient;
@@ -114,6 +115,15 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
                 + nombreSeguroDestino() + ". Le va a aparecer en su app con la alarma.");
             avisoDestino.setVisibility(View.VISIBLE);
         }
+
+        // Refresca peso y edad en la sesión mientras la persona recorre los
+        // pasos. El chequeo del final los lee de ahí, y si el cuidador cargó
+        // el peso desde su teléfono este es el momento de enterarse. Sin red
+        // se usa lo último que teníamos.
+        VimedRepo.cargarDatosClinicos(this, -1,
+            new VimedRepo.Cb<com.tesis.vimed.models.UsuarioSupabase>() {
+                @Override public void onOk(com.tesis.vimed.models.UsuarioSupabase p) {}
+            });
 
         tvTituloPaso  = findViewById(R.id.tv_titulo_paso);
         tvContadorPaso = findViewById(R.id.tv_contador_paso);
@@ -487,19 +497,40 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
      * ya se avisó y no justifica un segundo cartel.
      */
     private void chequearDosisYSeguir() {
-        DosisChecker.Aviso aviso = DosisChecker.revisar(nombre, catalogo, dosis, unidad);
+        // Acá SÍ se puede usar el peso: la frecuencia ya está elegida, y sin
+        // ella no se sabe cuánto se toma por día — 50 mg pueden ser 50 o 200.
+        // En el aviso del paso 2 todavía no se conoce.
+        DosisChecker.Aviso aviso = DosisChecker.revisar(
+            CatalogoMatcher.buscar(nombre, catalogo), dosis, unidad,
+            new SessionManager(this).getPerfilClinico(), tomasPorDia());
 
-        if (aviso.nivel != DosisChecker.Nivel.ALTO) {
+        // ALTO interrumpe siempre. Un REVISAR común ya se mostró en el paso
+        // de la dosis y un segundo cartel igual solo enseña a saltearlos;
+        // pero el que sale del peso o la edad es la PRIMERA vez que aparece
+        // —antes no se conocía la frecuencia—, así que ese sí se muestra.
+        boolean valeLaPena = aviso.nivel == DosisChecker.Nivel.ALTO
+            || (aviso.hayAlgoQueDecir() && aviso.usaPerfil);
+
+        if (!valeLaPena) {
             chequearInteraccionesYGuardar();
             return;
         }
 
         new AlertDialog.Builder(this)
-            .setTitle("Revisá la dosis")
+            .setTitle(aviso.nivel == DosisChecker.Nivel.ALTO
+                ? "Revisá la dosis" : "Sobre tu dosis diaria")
             .setMessage(aviso.texto)
             .setNegativeButton("Corregir", (d, w) -> mostrarPaso(1))
             .setPositiveButton("Está bien así", (d, w) -> chequearInteraccionesYGuardar())
             .show();
+    }
+
+    /**
+     * Cuántas veces al día se toma, según la frecuencia elegida.
+     * Misma cuenta que usa el programador de alarmas.
+     */
+    private int tomasPorDia() {
+        return (intervaloHoras > 0 && intervaloHoras <= 24) ? 24 / intervaloHoras : 1;
     }
 
     /**

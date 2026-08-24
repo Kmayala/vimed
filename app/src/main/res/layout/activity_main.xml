@@ -113,6 +113,8 @@
             android:paddingRight="20dp"
             android:paddingBottom="28dp">
 
+            <include layout="@layout/include_banner_solicitudes" />
+
             <!-- ─── Alerta de interacción (warn) ─── -->
             <LinearLayout
                 android:id="@+id/alert_interaction"

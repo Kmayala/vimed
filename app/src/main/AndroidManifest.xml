@@ -112,7 +112,7 @@
             </intent-filter>
         </service>
 
-        <!-- Receptor de alarmas para recordatorios de medicación -->
+        <!-- Receptor de alarmas: recordatorios de medicación y de citas -->
         <receiver
             android:name=".utils.AlarmaReceiver"
             android:exported="true"
@@ -123,6 +123,7 @@
                 <action android:name="com.tesis.vimed.FIRE" />
                 <action android:name="com.tesis.vimed.CONFIRM" />
                 <action android:name="com.tesis.vimed.SNOOZE" />
+                <action android:name="com.tesis.vimed.CITA" />
             </intent-filter>
         </receiver>
 

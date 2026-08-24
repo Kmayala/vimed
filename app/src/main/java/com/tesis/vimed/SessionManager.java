@@ -3,6 +3,8 @@ package com.tesis.vimed;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.tesis.vimed.models.PerfilClinico;
+
 public class SessionManager {
 
     private static final String PREF_NAME = "VimedsSession";
@@ -19,6 +21,10 @@ public class SessionManager {
     private static final String KEY_TOKEN_EXPIRES   = "token_expires_at"; // epoch seconds
     /** id_usuario de public.usuarios en Supabase — NO es el mismo que KEY_ID (SQLite local). */
     private static final String KEY_SUPABASE_ID     = "supabase_id_usuario";
+
+    // Datos clínicos — copia local de public.usuarios
+    private static final String KEY_PESO            = "peso_kg";
+    private static final String KEY_ANIO_NACIMIENTO = "anio_nacimiento";
 
     private final SharedPreferences prefs;
     private final SharedPreferences.Editor editor;
@@ -89,6 +95,27 @@ public class SessionManager {
     }
 
     public boolean esAdultoMayor() { return "adulto_mayor".equals(getRol()); }
+
+    // ═══ Datos clínicos del paciente ═══════════════════════════
+    //
+    // Copia local de lo que hay en public.usuarios. La fuente de verdad es
+    // Supabase —el cuidador tiene que poder verlos y corregirlos—, pero el
+    // chequeo de dosis corre mientras la persona carga un medicamento y no
+    // puede quedarse esperando una consulta de red para decidir si muestra
+    // un aviso.
+
+    public void guardarDatosClinicos(float pesoKg, int anioNacimiento) {
+        editor.putFloat(KEY_PESO, pesoKg);
+        editor.putInt(KEY_ANIO_NACIMIENTO, anioNacimiento);
+        editor.apply();
+    }
+
+    /** Perfil clínico cacheado. Devuelve uno vacío si nunca se cargó. */
+    public PerfilClinico getPerfilClinico() {
+        return new PerfilClinico(
+            prefs.getFloat(KEY_PESO, 0f),
+            prefs.getInt(KEY_ANIO_NACIMIENTO, 0));
+    }
 
     public void logout() {
         editor.clear();

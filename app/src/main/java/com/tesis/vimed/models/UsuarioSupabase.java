@@ -21,6 +21,17 @@ public class UsuarioSupabase {
     private String correo;
     private String rol;
 
+    // ── Datos clínicos ────────────────────────────────────────
+    // Float/Integer y no primitivos: Gson omite los null al serializar,
+    // así que un perfil sin peso no pisa la columna con un 0 que después
+    // se leería como "pesa cero kilos".
+
+    @SerializedName("peso_kg")
+    private Float pesoKg;
+
+    @SerializedName("anio_nacimiento")
+    private Integer anioNacimiento;
+
     public UsuarioSupabase() {}
 
     /** Constructor para INSERT: sin id_usuario (lo genera Postgres). */
@@ -42,4 +53,17 @@ public class UsuarioSupabase {
     public void setNombre(String v)      { this.nombre = v; }
     public void setCorreo(String v)      { this.correo = v; }
     public void setRol(String v)         { this.rol = v; }
+
+    public Float   getPesoKg()         { return pesoKg; }
+    public Integer getAnioNacimiento() { return anioNacimiento; }
+
+    public void setPesoKg(Float v)         { this.pesoKg = v; }
+    public void setAnioNacimiento(Integer v) { this.anioNacimiento = v; }
+
+    /** Peso y edad como los usa el chequeo de dosis. Nunca devuelve null. */
+    public PerfilClinico perfilClinico() {
+        return new PerfilClinico(
+            pesoKg != null ? pesoKg : 0f,
+            anioNacimiento != null ? anioNacimiento : 0);
+    }
 }

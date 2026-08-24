@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import com.tesis.vimed.models.CatalogoMedicamento;
+import com.tesis.vimed.models.PerfilClinico;
 
 import org.junit.Test;
 
@@ -122,6 +123,131 @@ public class DosisCheckerTest {
     public void elTextoMuestraNumerosLegibles() {
         assertEquals("500", DosisChecker.formatear(500f));
         assertEquals("2,5", DosisChecker.formatear(2.5f).replace('.', ','));
+    }
+
+    // ═══ Chequeo con peso y edad ═══════════════════════════════
+    //
+    // Lo que más importa acá es el silencio: casi todo el catálogo NO tiene
+    // cargada la referencia por kilo, y en ese estado la app tiene que
+    // comportarse exactamente como antes.
+
+    /**
+     * 10 a 20 mg/kg/día, con techo de 3000 mg.
+     *
+     * Va SIN dosis_comun a propósito: con una presentación de referencia
+     * cargada, el chequeo de siempre saltaría primero y estas pruebas
+     * pasarían sin llegar a ejercitar la cuenta por peso.
+     */
+    private static CatalogoMedicamento conReferenciaPorPeso() {
+        CatalogoMedicamento m = entrada(9, "Ejemplina", "ejemplina", 0f, "mg");
+        m.setDosisMgKgDiaMin(10f);
+        m.setDosisMgKgDiaMax(20f);
+        m.setDosisMaxDia(3000f);
+        return m;
+    }
+
+    private static final PerfilClinico DE_70_KG = new PerfilClinico(70f, 0);
+
+    @Test
+    public void noDiceNadaDelPesoSiElCatalogoNoTieneLaReferencia() {
+        // Metformina no tiene mg/kg cargado: con o sin peso, mismo resultado.
+        CatalogoMedicamento sinReferencia = CatalogoMatcher.buscar("metformina", CATALOGO);
+        assertEquals(DosisChecker.Nivel.NINGUNO,
+            DosisChecker.revisar(sinReferencia, 850f, "mg", DE_70_KG, 3).nivel);
+    }
+
+    @Test
+    public void noDiceNadaDelPesoSiElPerfilEstaVacio() {
+        assertEquals(DosisChecker.Nivel.NINGUNO,
+            DosisChecker.revisar(conReferenciaPorPeso(), 500f, "mg",
+                PerfilClinico.vacio(), 3).nivel);
+    }
+
+    @Test
+    public void noDiceNadaSinSaberLaFrecuencia() {
+        // Sin cuántas veces al día, 500 mg pueden ser 500 o 2000 por día.
+        assertEquals(DosisChecker.Nivel.NINGUNO,
+            DosisChecker.revisar(conReferenciaPorPeso(), 500f, "mg", DE_70_KG, 0).nivel);
+    }
+
+    @Test
+    public void noAvisaCuandoLaDosisDiariaCaeDentroDelRango() {
+        // 70 kg → 700 a 1400 mg/día. 400 mg × 3 = 1200: adentro.
+        assertEquals(DosisChecker.Nivel.NINGUNO,
+            DosisChecker.revisar(conReferenciaPorPeso(), 400f, "mg", DE_70_KG, 3).nivel);
+    }
+
+    @Test
+    public void avisaCuandoLaDosisDiariaPasaElRango() {
+        DosisChecker.Aviso a =
+            DosisChecker.revisar(conReferenciaPorPeso(), 800f, "mg", DE_70_KG, 3);
+        assertEquals(DosisChecker.Nivel.REVISAR, a.nivel);
+        assertTrue(a.usaPerfil);
+        assertTrue(a.texto.contains("2400"));   // 800 × 3
+    }
+
+    @Test
+    public void avisaFuerteCuandoLaDiariaEsMuchasVecesElTecho() {
+        // 70 kg → techo 1400. 2500 × 3 = 7500, más de 5 veces.
+        assertEquals(DosisChecker.Nivel.ALTO,
+            DosisChecker.revisar(conReferenciaPorPeso(), 2500f, "mg", DE_70_KG, 3).nivel);
+    }
+
+    @Test
+    public void elTechoDiarioRecortaElRangoEnPersonasPesadas() {
+        // 200 kg × 20 mg/kg = 4000, pero el máximo del producto es 3000.
+        // Con 1100 × 3 = 3300 hay que avisar; sin el techo no se avisaría.
+        PerfilClinico pesado = new PerfilClinico(200f, 0);
+        assertEquals(DosisChecker.Nivel.REVISAR,
+            DosisChecker.revisar(conReferenciaPorPeso(), 1100f, "mg", pesado, 3).nivel);
+    }
+
+    @Test
+    public void elChequeoDeSiempreTienePrioridadSobreElDelPeso() {
+        // 5000 mg contra una presentación de 500: eso es un cero de más, y
+        // ese aviso es el que hay que dar. Uno solo, no dos.
+        CatalogoMedicamento conAmbas = conReferenciaPorPeso();
+        conAmbas.setDosisComun(500f);
+
+        DosisChecker.Aviso a =
+            DosisChecker.revisar(conAmbas, 5000f, "mg", DE_70_KG, 3);
+        assertEquals(DosisChecker.Nivel.ALTO, a.nivel);
+        assertFalse(a.usaPerfil);
+        assertTrue(a.texto.contains("cero"));
+    }
+
+    @Test
+    public void avisaPorEdadSoloSiElMedicamentoEstaMarcado() {
+        CatalogoMedicamento m = entrada(10, "Mayorina", "mayorina", 50f, "mg");
+        PerfilClinico mayor = new PerfilClinico(0f, PerfilClinico.anioParaEdad(80));
+
+        assertEquals(DosisChecker.Nivel.NINGUNO,
+            DosisChecker.revisar(m, 50f, "mg", mayor, 1).nivel);
+
+        m.setAjustarEnMayores(true);
+        DosisChecker.Aviso a = DosisChecker.revisar(m, 50f, "mg", mayor, 1);
+        assertEquals(DosisChecker.Nivel.REVISAR, a.nivel);
+        assertTrue(a.usaPerfil);
+    }
+
+    @Test
+    public void noAvisaPorEdadAAlguienQueNoEsAdultoMayor() {
+        CatalogoMedicamento m = entrada(10, "Mayorina", "mayorina", 50f, "mg");
+        m.setAjustarEnMayores(true);
+        PerfilClinico joven = new PerfilClinico(0f, PerfilClinico.anioParaEdad(40));
+
+        assertEquals(DosisChecker.Nivel.NINGUNO,
+            DosisChecker.revisar(m, 50f, "mg", joven, 1).nivel);
+    }
+
+    @Test
+    public void noComparaPorPesoCuandoLaUnidadNoEsMg() {
+        // El rango del catálogo está en mg/kg; contra ml no significa nada.
+        CatalogoMedicamento jarabe = entrada(11, "Jarabe X", "jarabe x", 10f, "ml");
+        jarabe.setDosisMgKgDiaMin(10f);
+        jarabe.setDosisMgKgDiaMax(20f);
+        assertEquals(DosisChecker.Nivel.NINGUNO,
+            DosisChecker.revisar(jarabe, 10f, "ml", DE_70_KG, 3).nivel);
     }
 
     // ═══ Helpers ═══════════════════════════════════════════════

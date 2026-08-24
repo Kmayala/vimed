@@ -121,6 +121,10 @@ public class MainActivity extends AppCompatActivity {
         // Toma las alarmas de los medicamentos que haya cargado el cuidador
         // desde su propio teléfono (AlarmManager es local a cada aparato).
         com.tesis.vimed.utils.AlarmaSync.sincronizar(this);
+        // Un cuidador que pide seguir tu medicación tiene que pasar por acá:
+        // es tu decisión, y la pantalla para responder está escondida en el
+        // menú de perfil.
+        com.tesis.vimed.utils.BannerSolicitudes.revisar(this);
     }
 
     private void setupGreeting() {

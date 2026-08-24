@@ -23,6 +23,24 @@ public class CatalogoMedicamento {
     private boolean requiereReceta;
     private boolean activo;
 
+    // ── Referencia de dosificación por peso ───────────────────
+    // Nacen en 0 / false porque la columna es NULL para casi todo el
+    // catálogo: cargarlas necesita una ficha técnica. Mientras valgan 0,
+    // DosisChecker no dice nada sobre el peso, que es lo correcto.
+
+    /** Rango habitual en mg por kilo y por día. 0 = sin dato. */
+    private float dosisMgKgDiaMin;
+    private float dosisMgKgDiaMax;
+
+    /** Techo diario absoluto, independiente del peso. 0 = sin dato. */
+    private float dosisMaxDia;
+
+    /** El medicamento suele indicarse a dosis menores en adultos mayores. */
+    private boolean ajustarEnMayores;
+
+    /** Frase para mostrarle al paciente cuando aplica lo anterior. */
+    private String notaMayores;
+
     public CatalogoMedicamento() {}
 
     public int     getIdCatalogo()       { return idCatalogo; }
@@ -46,6 +64,23 @@ public class CatalogoMedicamento {
     public void setInstrucciones(String v){ this.instrucciones = v; }
     public void setRequiereReceta(boolean v) { this.requiereReceta = v; }
     public void setActivo(boolean v)      { this.activo = v; }
+
+    public float   getDosisMgKgDiaMin()  { return dosisMgKgDiaMin; }
+    public float   getDosisMgKgDiaMax()  { return dosisMgKgDiaMax; }
+    public float   getDosisMaxDia()      { return dosisMaxDia; }
+    public boolean isAjustarEnMayores()  { return ajustarEnMayores; }
+    public String  getNotaMayores()      { return notaMayores; }
+
+    public void setDosisMgKgDiaMin(float v)  { this.dosisMgKgDiaMin = v; }
+    public void setDosisMgKgDiaMax(float v)  { this.dosisMgKgDiaMax = v; }
+    public void setDosisMaxDia(float v)      { this.dosisMaxDia = v; }
+    public void setAjustarEnMayores(boolean v) { this.ajustarEnMayores = v; }
+    public void setNotaMayores(String v)     { this.notaMayores = v; }
+
+    /** True si esta entrada tiene con qué calcular una referencia por peso. */
+    public boolean tieneReferenciaPorPeso() {
+        return dosisMgKgDiaMin > 0 && dosisMgKgDiaMax > 0;
+    }
 
     @Override
     public String toString() {

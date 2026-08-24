@@ -44,7 +44,35 @@ public final class MedCache {
             .putString(clave(med.getId(), "nombre"), med.getNombre())
             .putString(clave(med.getId(), "dosis"), dosisLegible(med))
             .putInt(clave(med.getId(), "usuario"), med.getIdUsuario())
+            .putInt(clave(med.getId(), "stock"), med.getStockActual())
             .apply();
+    }
+
+    /**
+     * Deja el stock al día sin tocar el resto. Lo llama la confirmación de
+     * toma después de descontar la unidad: la alarma de mañana decide si
+     * suena mirando ESTE número, y si la caché quedara vieja seguiría
+     * despertando a alguien por un frasco vacío.
+     */
+    public static void guardarStock(Context ctx, int idMedicamento, int stock) {
+        if (idMedicamento <= 0) return;
+        prefs(ctx).edit().putInt(clave(idMedicamento, "stock"), stock).apply();
+    }
+
+    /**
+     * Stock conocido, o -1 si nunca se cacheó.
+     *
+     * El -1 no es "cero": significa "no sé". Ante la duda la alarma tiene
+     * que sonar — dejar de avisar una medicación por un dato que no
+     * tenemos es mucho peor que avisar de más.
+     */
+    public static int stock(Context ctx, int idMedicamento) {
+        return prefs(ctx).getInt(clave(idMedicamento, "stock"), -1);
+    }
+
+    /** True solo si sabemos con certeza que no queda nada. */
+    public static boolean sinStock(Context ctx, int idMedicamento) {
+        return stock(ctx, idMedicamento) == 0;
     }
 
     /** @return nombre guardado, o null si nunca se cacheó. */
@@ -66,6 +94,7 @@ public final class MedCache {
             .remove(clave(idMedicamento, "nombre"))
             .remove(clave(idMedicamento, "dosis"))
             .remove(clave(idMedicamento, "usuario"))
+            .remove(clave(idMedicamento, "stock"))
             .apply();
     }
 

@@ -18,12 +18,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.tesis.vimed.api.VimedRepo;
 import com.tesis.vimed.models.Horario;
 import com.tesis.vimed.models.Medicamento;
+import com.tesis.vimed.utils.MedCache;
 import com.tesis.vimed.utils.ModoPaciente;
 import com.tesis.vimed.utils.NavInferior;
 import com.tesis.vimed.utils.NotificationHelper;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 public class MedsListActivity extends AppCompatActivity {
 
@@ -144,14 +147,7 @@ public class MedsListActivity extends AppCompatActivity {
             public void onOk(List<Horario> horarios) {
                 horariosDelMed.clear();
                 horariosDelMed.addAll(horarios);
-                if (!horarios.isEmpty()) {
-                    Horario h = horarios.get(0);
-                    String intervalo = h.getIntervaloHoras() == 24
-                        ? "Una vez al día" : "Cada " + h.getIntervaloHoras() + "h";
-                    tvHorario.setText(h.getHoraInicio() + " · " + intervalo);
-                } else {
-                    tvHorario.setText("Sin horario configurado");
-                }
+                tvHorario.setText(textoDeHorarios(horarios));
             }
 
             @Override
@@ -184,6 +180,68 @@ public class MedsListActivity extends AppCompatActivity {
 
         // La tarjeta ahora responde al toque (antes la flecha no hacía nada)
         item.setOnClickListener(v -> mostrarOpciones(med, horariosDelMed));
+    }
+
+    /**
+     * Todas las horas del día en que toca ese medicamento, no solo la de
+     * inicio.
+     *
+     * Antes se mostraba únicamente {@code horarios.get(0).getHoraInicio()}:
+     * de un tratamiento cada 8 horas se veía "17:00 · Cada 8h" y las otras
+     * dos tomas quedaban invisibles, y si el medicamento tenía más de un
+     * horario cargado se veía uno solo —el primero que devolviera el
+     * servidor, sin orden garantizado—.
+     */
+    private String textoDeHorarios(List<Horario> horarios) {
+        if (horarios == null || horarios.isEmpty()) return "Sin horario configurado";
+
+        List<String> horas = new ArrayList<>();
+        int intervaloMasCorto = 24;
+
+        for (Horario h : horarios) {
+            int intervalo = h.getIntervaloHoras();
+            if (intervalo > 0 && intervalo < intervaloMasCorto) intervaloMasCorto = intervalo;
+
+            for (String hora : horasDelDia(h)) {
+                if (!horas.contains(hora)) horas.add(hora);
+            }
+        }
+
+        if (horas.isEmpty()) return "Sin horario configurado";
+        Collections.sort(horas);   // "HH:mm" ordena bien como texto
+
+        String intervaloTxt = intervaloMasCorto == 24
+            ? "Una vez al día" : "Cada " + intervaloMasCorto + "h";
+        return android.text.TextUtils.join(", ", horas) + " · " + intervaloTxt;
+    }
+
+    /**
+     * Expande un horario en las horas concretas del día, con la misma cuenta
+     * que usa {@link NotificationHelper#programarAlarmas} — así lo que se lee
+     * en la tarjeta es exactamente cuándo va a sonar.
+     */
+    private List<String> horasDelDia(Horario h) {
+        List<String> out = new ArrayList<>();
+        String inicio = h.getHoraInicio();
+        if (inicio == null || inicio.length() < 5) return out;
+
+        int intervalo = h.getIntervaloHoras();
+        int cantidad = (intervalo > 0 && intervalo <= 24) ? 24 / intervalo : 1;
+
+        int hora, minuto;
+        try {
+            hora   = Integer.parseInt(inicio.substring(0, 2));
+            minuto = Integer.parseInt(inicio.substring(3, 5));
+        } catch (NumberFormatException e) {
+            out.add(inicio);   // dato raro: se muestra tal cual antes que nada
+            return out;
+        }
+
+        for (int i = 0; i < cantidad; i++) {
+            int hh = (hora + intervalo * i) % 24;
+            out.add(String.format(Locale.getDefault(), "%02d:%02d", hh, minuto));
+        }
+        return out;
     }
 
     /** Menú de acciones sobre un medicamento. */
@@ -223,6 +281,10 @@ public class MedsListActivity extends AppCompatActivity {
                     VimedRepo.actualizarStock(med.getId(), med.getStockActual() + suma,
                         new VimedRepo.Cb<Void>() {
                             @Override public void onOk(Void v) {
+                                // Sin esto la alarma seguiría creyendo que el
+                                // frasco está vacío hasta el próximo AlarmaSync.
+                                MedCache.guardarStock(MedsListActivity.this,
+                                    med.getId(), med.getStockActual() + suma);
                                 recargar();
                                 Toast.makeText(MedsListActivity.this,
                                     "Stock actualizado ✓", Toast.LENGTH_SHORT).show();

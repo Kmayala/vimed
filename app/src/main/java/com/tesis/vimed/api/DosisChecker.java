@@ -1,6 +1,7 @@
 package com.tesis.vimed.api;
 
 import com.tesis.vimed.models.CatalogoMedicamento;
+import com.tesis.vimed.models.PerfilClinico;
 
 import java.util.List;
 import java.util.Locale;
@@ -51,10 +52,25 @@ public final class DosisChecker {
         /** Dosis habitual del catálogo, para mostrarla en el mensaje. */
         public final String dosisHabitual;
 
+        /**
+         * True si este aviso salió de mirar el peso o la edad.
+         *
+         * Lo necesita la pantalla de carga: el aviso común ya se mostró en
+         * el paso de la dosis, pero el del peso recién se puede calcular al
+         * final —cuando ya se eligió la frecuencia—, así que es la primera
+         * vez que la persona lo ve y hay que mostrarlo aunque no sea ALTO.
+         */
+        public final boolean usaPerfil;
+
         Aviso(Nivel nivel, String texto, String dosisHabitual) {
+            this(nivel, texto, dosisHabitual, false);
+        }
+
+        Aviso(Nivel nivel, String texto, String dosisHabitual, boolean usaPerfil) {
             this.nivel = nivel;
             this.texto = texto;
             this.dosisHabitual = dosisHabitual;
+            this.usaPerfil = usaPerfil;
         }
 
         public boolean hayAlgoQueDecir() { return nivel != Nivel.NINGUNO; }
@@ -66,6 +82,133 @@ public final class DosisChecker {
     public static Aviso revisar(String nombreTipeado, List<CatalogoMedicamento> catalogo,
                                 float dosis, String unidad) {
         return revisar(CatalogoMatcher.buscar(nombreTipeado, catalogo), dosis, unidad);
+    }
+
+    /**
+     * Igual que {@link #revisar(CatalogoMedicamento, float, String)} pero
+     * teniendo en cuenta el peso y la edad del paciente.
+     *
+     * QUÉ AGREGA EL PESO, Y QUÉ NO. Cuando la entrada del catálogo tiene
+     * cargado el rango en mg por kilo y por día, se puede calcular cuánto le
+     * correspondería a ESTA persona y comparar contra lo que cargó. Eso es
+     * bastante más específico que la comparación contra la presentación
+     * habitual, pero sigue siendo lo mismo en el fondo: una comparación
+     * contra una referencia, no una indicación. La app no receta.
+     *
+     * Cuando el catálogo NO tiene esos números —que hoy es el caso de casi
+     * todo el catálogo— este método se comporta exactamente igual que el de
+     * siempre. Es a propósito: sin fuente clínica no hay nada que calcular,
+     * y una cuenta inventada sobre un dato médico es peor que no decir nada.
+     *
+     * @param perfil      peso y edad; puede venir vacío.
+     * @param tomasPorDia cuántas veces al día se toma. Con 0 o menos no se
+     *                    revisa la dosis diaria: sin saber la frecuencia,
+     *                    50 mg pueden ser 50 o 200 por día.
+     */
+    public static Aviso revisar(CatalogoMedicamento referencia, float dosis,
+                                String unidad, PerfilClinico perfil, int tomasPorDia) {
+        // El chequeo de siempre manda: un cero de más o una unidad
+        // equivocada son errores más graves y más frecuentes que una dosis
+        // diaria fuera de rango, y hay que mostrar UN aviso, no dos.
+        Aviso base = revisar(referencia, dosis, unidad);
+        if (base.hayAlgoQueDecir()) return base;
+
+        if (referencia == null || perfil == null || dosis <= 0) return SIN_AVISO;
+
+        Aviso porPeso = revisarDosisDiaria(referencia, dosis, unidad, perfil, tomasPorDia);
+        if (porPeso.hayAlgoQueDecir()) return porPeso;
+
+        return revisarEdad(referencia, perfil);
+    }
+
+    /**
+     * Compara la dosis diaria contra el rango por kilo del catálogo.
+     * Devuelve SIN_AVISO si falta cualquiera de los datos que necesita.
+     */
+    private static Aviso revisarDosisDiaria(CatalogoMedicamento ref, float dosis,
+                                            String unidad, PerfilClinico perfil,
+                                            int tomasPorDia) {
+        if (!ref.tieneReferenciaPorPeso()) return SIN_AVISO;
+        if (!perfil.tienePeso()) return SIN_AVISO;
+        if (tomasPorDia <= 0) return SIN_AVISO;
+
+        // El rango del catálogo está en mg/kg. Comparar contra ml o UI no
+        // significaría nada.
+        if (!mismaUnidad(unidad, "mg") || !mismaUnidad(ref.getUnidad(), "mg")) {
+            return SIN_AVISO;
+        }
+
+        float peso = perfil.getPesoKg();
+        float diariaCargada = dosis * tomasPorDia;
+
+        float min = ref.getDosisMgKgDiaMin() * peso;
+        float max = ref.getDosisMgKgDiaMax() * peso;
+
+        // El techo absoluto recorta el rango: muchos medicamentos se
+        // dosifican por kilo HASTA un tope, y sin esto una persona de 110 kg
+        // recibiría una referencia por encima de la dosis máxima real.
+        float tope = ref.getDosisMaxDia();
+        if (tope > 0) {
+            if (max > tope) max = tope;
+            if (min > tope) min = tope;
+        }
+
+        String nombre = ref.getNombreComercial() != null
+            ? ref.getNombreComercial() : "este medicamento";
+        String rango = formatear(min) + " a " + formatear(max) + " mg por día";
+        String cargado = "Con " + formatear(dosis) + " mg " + vecesAlDia(tomasPorDia)
+            + " estarías tomando " + formatear(diariaCargada) + " mg por día. ";
+
+        if (diariaCargada > max) {
+            // Muy por encima del techo huele a error de carga; apenas por
+            // encima puede ser perfectamente lo que indicó el médico.
+            Nivel nivel = (max > 0 && diariaCargada / max >= FACTOR_ALTO)
+                ? Nivel.ALTO : Nivel.REVISAR;
+            return new Aviso(nivel,
+                cargado + "Para " + formatear(peso) + " kg, lo habitual de "
+                    + nombre + " es " + rango + ". Revisalo con tu médico"
+                    + (nivel == Nivel.ALTO ? " antes de tomarlo." : "."),
+                rango, true);
+        }
+
+        if (diariaCargada < min) {
+            return new Aviso(Nivel.REVISAR,
+                cargado + "Para " + formatear(peso) + " kg, lo habitual de "
+                    + nombre + " es " + rango + ". Puede estar bien si tu"
+                    + " médico lo indicó así; si no, revisá la receta.",
+                rango, true);
+        }
+
+        return SIN_AVISO;
+    }
+
+    /**
+     * Aviso de adulto mayor. No propone una dosis nueva: cuánto se reduce
+     * depende de la función renal de cada persona, y la app no la conoce.
+     * Lo único que puede hacer es marcar que este medicamento es de los que
+     * conviene conversar.
+     */
+    private static Aviso revisarEdad(CatalogoMedicamento ref, PerfilClinico perfil) {
+        if (!ref.isAjustarEnMayores() || !perfil.esAdultoMayor()) return SIN_AVISO;
+
+        String nota = ref.getNotaMayores();
+        String nombre = ref.getNombreComercial() != null
+            ? ref.getNombreComercial() : "Este medicamento";
+
+        return new Aviso(Nivel.REVISAR,
+            (nota != null && !nota.trim().isEmpty())
+                ? nota.trim()
+                : nombre + " suele indicarse en dosis más bajas después de los "
+                    + PerfilClinico.EDAD_MAYOR + " años. Preguntale a tu médico"
+                    + " si la tuya es la que te corresponde.",
+            null, true);
+    }
+
+    /** "una vez al día", "dos veces al día", "3 veces al día". */
+    private static String vecesAlDia(int tomas) {
+        if (tomas == 1) return "una vez al día";
+        if (tomas == 2) return "dos veces al día";
+        return tomas + " veces al día";
     }
 
     /**

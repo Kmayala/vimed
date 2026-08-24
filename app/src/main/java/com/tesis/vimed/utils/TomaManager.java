@@ -79,7 +79,11 @@ public final class TomaManager {
                 @Override public void onOk(Void v) {
                     VimedRepo.actualizarStock(med.getId(), med.getStockActual() + 1,
                         new VimedRepo.Cb<Void>() {
-                            @Override public void onOk(Void x) { cb.onOk(null); }
+                            @Override public void onOk(Void x) {
+                                MedCache.guardarStock(ctx, med.getId(),
+                                    med.getStockActual() + 1);
+                                cb.onOk(null);
+                            }
                             @Override public void onError(String msg) { cb.onError(msg); }
                         });
                 }
@@ -91,6 +95,9 @@ public final class TomaManager {
         int nuevoStock = Math.max(0, med.getStockActual() - 1);
         VimedRepo.actualizarStock(med.getId(), nuevoStock, new VimedRepo.Cb<Void>() {
             @Override public void onOk(Void v) {
+                // La alarma de mañana mira la caché para decidir si suena.
+                MedCache.guardarStock(ctx, med.getId(), nuevoStock);
+
                 if (nuevoStock <= med.getStockMinimo()) {
                     String msgStock = "Quedan " + nuevoStock + " unidades de "
                         + med.getNombre() + ". Acordate de comprar más.";
@@ -145,6 +152,7 @@ public final class TomaManager {
 
         int nuevoStock = Math.max(0, med.getStockActual() - 1);
         VimedRepo.actualizarStockSync(med.getId(), nuevoStock);
+        MedCache.guardarStock(ctx, med.getId(), nuevoStock);
 
         if (nuevoStock <= med.getStockMinimo()) {
             String msgStock = "Quedan " + nuevoStock + " unidades de "

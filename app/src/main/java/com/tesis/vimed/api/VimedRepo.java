@@ -6,7 +6,9 @@ import com.tesis.vimed.SessionManager;
 import com.tesis.vimed.models.CitaMedica;
 import com.tesis.vimed.models.Horario;
 import com.tesis.vimed.models.Medicamento;
+import com.tesis.vimed.models.PerfilClinico;
 import com.tesis.vimed.models.RegistroToma;
+import com.tesis.vimed.models.UsuarioSupabase;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -66,6 +68,10 @@ public final class VimedRepo {
     private static class HorarioPatch {
         @com.google.gson.annotations.SerializedName("hora_inicio")
         String horaInicio;
+    }
+
+    private static class VinculoPatch {
+        String estado;
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -256,6 +262,91 @@ public final class VimedRepo {
     }
 
     // ═══════════════════════════════════════════════════════════
+    //  DATOS CLÍNICOS DEL PACIENTE (peso y edad)
+    // ═══════════════════════════════════════════════════════════
+
+    /**
+     * Trae el perfil del paciente y, de paso, deja peso y edad cacheados en
+     * la sesión: el chequeo de dosis los necesita sin poder esperar la red.
+     *
+     * @param idUsuario a quién mirar; -1 para el usuario logueado.
+     */
+    public static void cargarDatosClinicos(Context ctx, int idUsuario,
+                                           Cb<UsuarioSupabase> cb) {
+        final int id = idUsuario > 0 ? idUsuario : idUsuario(ctx);
+        if (id == -1) { cb.onError("Sesión no sincronizada"); return; }
+
+        final boolean esElPropio = idUsuario <= 0;
+
+        SupabaseClient.getService().getPerfilPorId("eq." + id)
+            .enqueue(new Callback<List<UsuarioSupabase>>() {
+                @Override
+                public void onResponse(Call<List<UsuarioSupabase>> c,
+                                       Response<List<UsuarioSupabase>> r) {
+                    if (r.isSuccessful() && r.body() != null && !r.body().isEmpty()) {
+                        UsuarioSupabase perfil = r.body().get(0);
+                        // Solo se cachea el propio: el peso del paciente que
+                        // cuida el familiar no puede pisar el suyo.
+                        if (esElPropio) guardarEnSesion(ctx, perfil);
+                        cb.onOk(perfil);
+                    } else {
+                        cb.onError(mensajeDeError(r));
+                    }
+                }
+                @Override
+                public void onFailure(Call<List<UsuarioSupabase>> c, Throwable t) {
+                    cb.onError("Sin conexión: " + t.getMessage());
+                }
+            });
+    }
+
+    /**
+     * Guarda peso y año de nacimiento.
+     *
+     * @param pesoKg         0 para borrar el dato.
+     * @param anioNacimiento 0 para borrar el dato.
+     * @param idUsuario      a quién; -1 para el usuario logueado.
+     */
+    public static void guardarDatosClinicos(Context ctx, int idUsuario,
+                                            float pesoKg, int anioNacimiento,
+                                            Cb<Void> cb) {
+        final int id = idUsuario > 0 ? idUsuario : idUsuario(ctx);
+        if (id == -1) { cb.onError("Sesión no sincronizada"); return; }
+
+        final boolean esElPropio = idUsuario <= 0;
+
+        // Solo viajan estas dos columnas: Gson omite los null, así que el
+        // resto del perfil (nombre, correo, rol) queda intacto.
+        UsuarioSupabase cambios = new UsuarioSupabase();
+        cambios.setPesoKg(pesoKg > 0 ? pesoKg : null);
+        cambios.setAnioNacimiento(anioNacimiento > 0 ? anioNacimiento : null);
+
+        SupabaseClient.getService()
+            .actualizarPerfil("eq." + id, cambios)
+            .enqueue(new Callback<List<UsuarioSupabase>>() {
+                @Override
+                public void onResponse(Call<List<UsuarioSupabase>> c,
+                                       Response<List<UsuarioSupabase>> r) {
+                    if (!r.isSuccessful()) { cb.onError(mensajeDeError(r)); return; }
+                    if (esElPropio) {
+                        new SessionManager(ctx)
+                            .guardarDatosClinicos(pesoKg, anioNacimiento);
+                    }
+                    cb.onOk(null);
+                }
+                @Override
+                public void onFailure(Call<List<UsuarioSupabase>> c, Throwable t) {
+                    cb.onError("Sin conexión: " + t.getMessage());
+                }
+            });
+    }
+
+    private static void guardarEnSesion(Context ctx, UsuarioSupabase perfil) {
+        PerfilClinico p = perfil.perfilClinico();
+        new SessionManager(ctx).guardarDatosClinicos(p.getPesoKg(), p.getAnioNacimiento());
+    }
+
+    // ═══════════════════════════════════════════════════════════
     //  CITAS
     // ═══════════════════════════════════════════════════════════
 
@@ -265,6 +356,14 @@ public final class VimedRepo {
         SupabaseClient.getService()
             .getCitas("eq." + idUsuario, "fecha_hora.asc")
             .enqueue(lista(cb));
+    }
+
+    /** Versión bloqueante para AlarmaReceiver y AlarmaSync. */
+    public static List<CitaMedica> listarCitasSync(Context ctx) {
+        int idUsuario = idUsuario(ctx);
+        if (idUsuario == -1) return new ArrayList<>();
+        return ejecutar(SupabaseClient.getService()
+            .getCitas("eq." + idUsuario, "fecha_hora.asc"));
     }
 
     public static void crearCita(Context ctx, CitaMedica cita, Cb<CitaMedica> cb) {
@@ -392,13 +491,121 @@ public final class VimedRepo {
         SupabaseClient.getService().getVinculosDeFamiliar("eq." + id).enqueue(lista(cb));
     }
 
+    /**
+     * Solo los pacientes que ACEPTARON. Es lo que tiene que usar la pantalla
+     * del cuidador: un vínculo pendiente todavía no da acceso a nada, y
+     * mostrarlo como paciente dejaría la pantalla intentando cargar datos
+     * que el RLS no va a devolver.
+     */
+    public static void listarPacientesAceptados(
+            Context ctx, Cb<List<com.tesis.vimed.models.Vinculacion>> cb) {
+        listarMisPacientes(ctx, new Cb<List<com.tesis.vimed.models.Vinculacion>>() {
+            @Override public void onOk(List<com.tesis.vimed.models.Vinculacion> todos) {
+                List<com.tesis.vimed.models.Vinculacion> ok = new ArrayList<>();
+                for (com.tesis.vimed.models.Vinculacion v : todos) {
+                    if (v.estaAceptado()) ok.add(v);
+                }
+                cb.onOk(ok);
+            }
+            @Override public void onError(String msg) { cb.onError(msg); }
+        });
+    }
+
+    /**
+     * Vincula un CUIDADOR al usuario logueado, que es el adulto mayor.
+     *
+     * @param idFamiliar a quién le doy acceso a mi medicación.
+     */
     public static void crearVinculo(Context ctx, int idFamiliar, Cb<Void> cb) {
         int idAdulto = idUsuario(ctx);
         if (idAdulto == -1) { cb.onError("Sesión no sincronizada"); return; }
+        guardarVinculo(idAdulto, idFamiliar, idAdulto, cb);
+    }
+
+    /**
+     * Vincula un PACIENTE al usuario logueado, que es el cuidador.
+     *
+     * Es la misma tabla con las columnas al revés, y esa distinción es todo:
+     * una fila guardada del lado equivocado deja al cuidador buscándose a sí
+     * mismo en id_familiar y su pantalla aparece vacía.
+     *
+     * @param idAdulto a quién voy a cuidar.
+     */
+    public static void crearVinculoComoCuidador(Context ctx, int idAdulto, Cb<Void> cb) {
+        int idFamiliar = idUsuario(ctx);
+        if (idFamiliar == -1) { cb.onError("Sesión no sincronizada"); return; }
+        guardarVinculo(idAdulto, idFamiliar, idFamiliar, cb);
+    }
+
+    private static void guardarVinculo(int idAdulto, int idFamiliar,
+                                       int solicitadoPor, Cb<Void> cb) {
+        if (idAdulto == idFamiliar) {
+            cb.onError("No se puede vincular una cuenta consigo misma");
+            return;
+        }
+        // Nace pendiente; la otra punta tiene que aceptarlo. El RLS lo
+        // exige además de esto, así que un cliente modificado tampoco puede
+        // crear un vínculo ya aceptado.
         com.tesis.vimed.models.Vinculacion v =
-            new com.tesis.vimed.models.Vinculacion(idAdulto, idFamiliar);
+            new com.tesis.vimed.models.Vinculacion(idAdulto, idFamiliar, solicitadoPor);
         SupabaseClient.getService().crearVinculo(v)
             .enqueue(VimedRepo.<com.tesis.vimed.models.Vinculacion>voidCb(cb));
+    }
+
+    /** Acepta una solicitud de vínculo. Solo funciona si no la pediste vos. */
+    public static void aceptarVinculo(int idVinculo, Cb<Void> cb) {
+        responderVinculo(idVinculo, com.tesis.vimed.models.Vinculacion.ACEPTADO, cb);
+    }
+
+    /** Rechaza una solicitud. La fila queda como registro, sin dar acceso. */
+    public static void rechazarVinculo(int idVinculo, Cb<Void> cb) {
+        responderVinculo(idVinculo, com.tesis.vimed.models.Vinculacion.RECHAZADO, cb);
+    }
+
+    private static void responderVinculo(int idVinculo, String estado, Cb<Void> cb) {
+        VinculoPatch cambios = new VinculoPatch();
+        cambios.estado = estado;
+        SupabaseClient.getService()
+            .actualizarVinculo("eq." + idVinculo, cambios)
+            .enqueue(VimedRepo.<com.tesis.vimed.models.Vinculacion>voidCb(cb));
+    }
+
+    /**
+     * Solicitudes que esperan una respuesta MÍA, de los dos lados: puedo
+     * recibir un pedido tanto de alguien que quiere cuidarme como de alguien
+     * a quien me proponen cuidar.
+     */
+    public static void listarSolicitudesPendientes(
+            Context ctx, Cb<List<com.tesis.vimed.models.Vinculacion>> cb) {
+        final int yo = idUsuario(ctx);
+        if (yo == -1) { cb.onError("Sesión no sincronizada"); return; }
+
+        final List<com.tesis.vimed.models.Vinculacion> pendientes = new ArrayList<>();
+
+        // Dos consultas porque son dos columnas distintas; la segunda se
+        // encadena a la primera para no tener que coordinar dos callbacks.
+        listarMisCuidadores(ctx, new Cb<List<com.tesis.vimed.models.Vinculacion>>() {
+            @Override public void onOk(List<com.tesis.vimed.models.Vinculacion> mios) {
+                agregarLosQueEsperan(mios, yo, pendientes);
+                listarMisPacientes(ctx, new Cb<List<com.tesis.vimed.models.Vinculacion>>() {
+                    @Override public void onOk(List<com.tesis.vimed.models.Vinculacion> otros) {
+                        agregarLosQueEsperan(otros, yo, pendientes);
+                        cb.onOk(pendientes);
+                    }
+                    @Override public void onError(String msg) { cb.onOk(pendientes); }
+                });
+            }
+            @Override public void onError(String msg) { cb.onError(msg); }
+        });
+    }
+
+    private static void agregarLosQueEsperan(
+            List<com.tesis.vimed.models.Vinculacion> origen, int yo,
+            List<com.tesis.vimed.models.Vinculacion> destino) {
+        if (origen == null) return;
+        for (com.tesis.vimed.models.Vinculacion v : origen) {
+            if (v.esperaRespuestaDe(yo)) destino.add(v);
+        }
     }
 
     public static void eliminarVinculo(int idVinculo, Cb<Void> cb) {

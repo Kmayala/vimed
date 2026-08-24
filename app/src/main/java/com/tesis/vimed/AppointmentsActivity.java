@@ -21,6 +21,7 @@ import com.tesis.vimed.models.CitaMedica;
 import com.tesis.vimed.models.Especialidad;
 import com.tesis.vimed.utils.ModoPaciente;
 import com.tesis.vimed.utils.NavInferior;
+import com.tesis.vimed.utils.RecordatorioCita;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -141,6 +142,16 @@ public class AppointmentsActivity extends AppCompatActivity {
                 citas.addAll(data);
                 pintarLista();
                 pintarCalendario();
+
+                // Las alarmas son locales: cada vez que vemos la lista propia
+                // aprovechamos para dejarlas al día. Reprogramar una que ya
+                // existe la pisa, no la duplica. Cuando la lista es de otra
+                // persona no se toca nada: los avisos van en SU teléfono.
+                if (!modo.esDeOtro()) {
+                    for (CitaMedica c : data) {
+                        RecordatorioCita.programar(AppointmentsActivity.this, c);
+                    }
+                }
             }
 
             @Override
@@ -332,7 +343,14 @@ public class AppointmentsActivity extends AppCompatActivity {
 
     private void cambiarEstado(CitaMedica cita, String nuevo) {
         VimedRepo.actualizarEstadoCita(cita.getId(), nuevo, new VimedRepo.Cb<Void>() {
-            @Override public void onOk(Void v) { cargarCitas(); }
+            @Override public void onOk(Void v) {
+                // Una cita cancelada no tiene que seguir avisando; si vuelve a
+                // pendiente, cargarCitas() la reprograma.
+                if (CitaMedica.ESTADO_CANCELADA.equals(nuevo)) {
+                    RecordatorioCita.cancelar(AppointmentsActivity.this, cita.getId());
+                }
+                cargarCitas();
+            }
             @Override public void onError(String msg) {
                 Toast.makeText(AppointmentsActivity.this, msg, Toast.LENGTH_LONG).show();
             }
@@ -346,7 +364,11 @@ public class AppointmentsActivity extends AppCompatActivity {
             .setNegativeButton("Cancelar", null)
             .setPositiveButton("Eliminar", (d, w) ->
                 VimedRepo.eliminarCita(cita.getId(), new VimedRepo.Cb<Void>() {
-                    @Override public void onOk(Void v) { cargarCitas(); }
+                    @Override public void onOk(Void v) {
+                        // Sin esto seguiría avisando de una cita que ya no está.
+                        RecordatorioCita.cancelar(AppointmentsActivity.this, cita.getId());
+                        cargarCitas();
+                    }
                     @Override public void onError(String msg) {
                         Toast.makeText(AppointmentsActivity.this, msg, Toast.LENGTH_LONG).show();
                     }

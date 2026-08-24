@@ -71,6 +71,9 @@ public class CuidadorActivity extends AppCompatActivity {
 
         emptyPaciente      = findViewById(R.id.empty_paciente);
         contentPaciente    = findViewById(R.id.content_paciente);
+
+        findViewById(R.id.btn_vincular_paciente).setOnClickListener(v ->
+            startActivity(new Intent(this, VincularFamiliarActivity.class)));
         tomasContainer     = findViewById(R.id.tomas_container);
         actividadContainer = findViewById(R.id.actividad_container);
         medsContainer      = findViewById(R.id.meds_container);
@@ -113,12 +116,12 @@ public class CuidadorActivity extends AppCompatActivity {
     }
 
     private void menuPerfil() {
-        // "Vincular familiar" vive acá desde que la barra de abajo pasó a
+        // "Vincular paciente" vive acá desde que la barra de abajo pasó a
         // replicar la del adulto mayor: es una acción ocasional, no un
         // destino que merezca un lugar fijo en la navegación.
         new AlertDialog.Builder(this)
             .setTitle(sessionManager.getNombre())
-            .setItems(new String[]{"Actualizar", "Vincular familiar",
+            .setItems(new String[]{"Actualizar", "Vincular paciente",
                                    "Configuración", "Cerrar sesión"}, (d, w) -> {
                 if (w == 0) {
                     cargarVinculo();
@@ -139,7 +142,12 @@ public class CuidadorActivity extends AppCompatActivity {
     // ═══ Cargar el vínculo y después todo lo demás ═════════════
 
     private void cargarVinculo() {
-        VimedRepo.listarMisPacientes(this, new VimedRepo.Cb<List<Vinculacion>>() {
+        com.tesis.vimed.utils.BannerSolicitudes.revisar(this);
+
+        // Solo los aceptados: un vínculo pendiente todavía no da acceso, y
+        // tratarlo como paciente dejaría la pantalla pidiendo datos que el
+        // RLS no va a devolver.
+        VimedRepo.listarPacientesAceptados(this, new VimedRepo.Cb<List<Vinculacion>>() {
             @Override
             public void onOk(List<Vinculacion> vinculos) {
                 if (vinculos.isEmpty()) {
