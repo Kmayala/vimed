@@ -120,25 +120,23 @@ public class AlarmaReceiver extends BroadcastReceiver {
 
         String mensaje = dosisTxt.isEmpty() ? nombre : nombre + " — " + dosisTxt;
 
-        // Sin stock no hay nada que tomar: la alarma no suena. Despertar a
-        // alguien para un frasco vacío no ayuda, lo entrena a ignorarla.
-        // En su lugar va un aviso silencioso de que hay que reponer.
-        // La alarma queda agendada igual (paso 1): en cuanto repongan el
-        // stock, mañana vuelve a sonar sola.
-        if (MedCache.sinStock(ctx, idMedicamento)) {
-            // Acá SÍ vale consultar la red antes de decidir, al revés que en
-            // el camino normal: no estamos por despertar a nadie, así que la
-            // demora no cuesta nada, y la caché puede estar vieja si
-            // repusieron el stock desde el teléfono del cuidador. Si no hay
-            // conexión nos quedamos con lo que sabemos.
-            Medicamento fresco = VimedRepo.buscarMedicamentoSync(idMedicamento);
-            if (fresco != null) MedCache.guardar(ctx, fresco);
-
-            if (fresco == null || fresco.getStockActual() <= 0) {
-                avisarSinStock(ctx, idMedicamento, nombre, hora);
-                return;
-            }
-            // Repusieron: sigue de largo y suena como siempre.
+        // Si la app CREE que se terminó, la alarma suena igual y lo dice en
+        // el texto.
+        //
+        // El stock en cero no significa "no tiene el medicamento": significa
+        // que hace rato que nadie toca ese número. La persona confirma sus
+        // tomas, el contador baja solo hasta cero, compra una caja nueva y no
+        // entra a la app a avisarlo —nadie que cuida a alguien de 78 años
+        // piensa en eso—. Callar la alarma por ese dato sería dejar sin
+        // recordatorio a alguien que sí tiene qué tomar, que es exactamente
+        // el daño que esta app existe para evitar.
+        //
+        // Así que se avisa sin decidir por nadie: suena, y el texto dice lo
+        // que la app sabe y lo que hay que hacer si está equivocada.
+        boolean seTermino = MedCache.sinStock(ctx, idMedicamento);
+        if (seTermino) {
+            mensaje += " — Según la app se te terminó. Si todavía te queda,"
+                + " tomalo igual y actualizá el stock.";
         }
 
         // El tono lo pone AlarmaService, no el canal de notificación: así
@@ -186,24 +184,26 @@ public class AlarmaReceiver extends BroadcastReceiver {
 
         NotificacionSync.registrar(ctx, Notificacion.TIPO_TOMA,
             "Recordatorio enviado: " + mensaje + " (" + hora + ")", false);
+
+        // Que el frasco figure vacío justo a la hora de la dosis es de lo
+        // poco que el cuidador necesita saber el mismo día. Va acá abajo, ya
+        // con el dato de la red: si estamos sin conexión vale el de la caché.
+        boolean sigueVacio = med != null ? med.getStockActual() <= 0 : seTermino;
+        if (sigueVacio) avisarReposicion(ctx, nombre, hora);
     }
 
     /**
-     * Reemplaza la alarma cuando el medicamento se acabó: notificación común,
-     * sin tono de despertador ni pantalla completa.
+     * Le avisa al CUIDADOR que el frasco figura vacío a la hora de la toma.
      *
-     * No registra la toma como omitida —no se omitió nada, no había qué
-     * tomar— pero sí avisa al cuidador: que el frasco esté vacío a la hora
-     * de la dosis es exactamente lo que tiene que saber.
+     * No muestra nada en el celular del paciente: la alarma que acaba de
+     * sonar ya se lo dijo, y dos avisos por lo mismo en el mismo minuto
+     * enseñan a ignorar los dos.
      */
-    private void avisarSinStock(Context ctx, int idMedicamento, String nombre, String hora) {
-        String msg = "Se terminó " + nombre + " y tocaba la toma de las "
-            + (hora != null ? hora : "hoy") + ". Hay que reponerlo.";
-
-        NotificationHelper.mostrarNotificacion(ctx,
-            "Sin stock — " + nombre, msg, idMedicamento + 20_000);
-
-        NotificacionSync.registrar(ctx, Notificacion.TIPO_STOCK, msg, true);
+    private void avisarReposicion(Context ctx, String nombre, String hora) {
+        NotificacionSync.registrar(ctx, Notificacion.TIPO_STOCK,
+            "Según la app no queda " + nombre + " y tocaba la toma de las "
+                + (hora != null ? hora : "hoy") + ". Conviene revisar si hay"
+                + " que reponerlo.", true);
     }
 
     // ═══ Botón "Confirmar toma" ════════════════════════════════

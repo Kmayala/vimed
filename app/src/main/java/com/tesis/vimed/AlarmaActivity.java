@@ -30,6 +30,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.tesis.vimed.utils.AlarmaReceiver;
 import com.tesis.vimed.utils.AlarmaService;
+import com.tesis.vimed.utils.MedCache;
 import com.tesis.vimed.utils.NotificationHelper;
 
 import java.util.Locale;
@@ -189,6 +190,33 @@ public class AlarmaActivity extends AppCompatActivity {
         } else {
             tvDosis.setVisibility(View.GONE);
         }
+
+        pintarNotaDeStock();
+    }
+
+    /**
+     * Cartel de "figura sin stock". Se pregunta acá y no viaja en los extras
+     * porque {@link MedCache} es una lectura local: la misma que hizo
+     * AlarmaReceiver hace un segundo, sin sumarle un parámetro a la cadena de
+     * intents que va del receiver al servicio y de ahí a esta pantalla.
+     *
+     * El texto NO dice "no tomes": dice lo que la app sabe y admite que puede
+     * estar equivocada. El contador baja solo con cada confirmación y nadie
+     * lo corrige al comprar una caja nueva, así que quien decide si hay o no
+     * hay es la persona que tiene el frasco en la mano.
+     */
+    private void pintarNotaDeStock() {
+        TextView tvNota = findViewById(R.id.alarma_nota);
+        if (tvNota == null) return;
+
+        if (idMedicamento <= 0 || !MedCache.sinStock(this, idMedicamento)) {
+            tvNota.setVisibility(View.GONE);
+            return;
+        }
+
+        tvNota.setText("Según la app se te terminó. Si todavía te queda,"
+            + " tomalo igual y actualizá el stock.");
+        tvNota.setVisibility(View.VISIBLE);
     }
 
     // ═══ Arranque de la alarma ═════════════════════════════════
