@@ -66,7 +66,24 @@ public class MedsListActivity extends AppCompatActivity {
         loadMeds();
     }
 
+    /**
+     * Los textos del XML tutean al adulto mayor. Cuando la pantalla la abre
+     * el cuidador hablan de él, que no toma nada: "Aún no tenés
+     * medicamentos" leído por la hija dice que los medicamentos faltantes
+     * son suyos.
+     */
+    private void adaptarTextosAlPaciente() {
+        if (!modo.esDeOtro()) return;
+
+        TextView vacio = findViewById(R.id.tv_meds_vacio);
+        if (vacio != null) {
+            vacio.setText(modo.frase("todavía no tiene medicamentos"));
+        }
+    }
+
     private void mostrarCartelDePaciente() {
+        adaptarTextosAlPaciente();
+
         TextView cartel = findViewById(R.id.tv_cartel_paciente);
         if (cartel == null) return;
         if (!modo.esDeOtro()) { cartel.setVisibility(View.GONE); return; }
@@ -281,7 +298,8 @@ public class MedsListActivity extends AppCompatActivity {
 
         new AlertDialog.Builder(this)
             .setTitle("Reponer " + med.getNombre())
-            .setMessage("Tenés " + med.getStockActual() + " unidades. ¿Cuántas agregás?")
+            .setMessage(modo.frase("tiene " + med.getStockActual()
+                + " unidades.") + " ¿Cuántas agregás?")
             .setView(input)
             .setNegativeButton("Cancelar", null)
             .setPositiveButton("Agregar", (d, w) -> {

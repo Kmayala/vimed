@@ -3,7 +3,14 @@
     <!-- ═══════════════════════════════════════════════════════
          PALETA VIMED — MODO OSCURO
 
-         Negro real con acentos neón, no un violeta apagado.
+         Gris muy oscuro con acentos neón, no negro puro.
+
+         El fondo ES #151515 y no #000000. Sobre negro absoluto no hay
+         forma de que una tarjeta se distinga del fondo por su relleno
+         —todo queda a cargo del borde— y en pantallas OLED el texto
+         blanco sobre negro puro produce halo, que cansa justamente a
+         quien ya lee con dificultad. Con la página en #151515 y las
+         tarjetas en #232323 cada capa se ve sin depender del borde.
 
          La versión anterior teñía TODO de violeta, incluidos los
          fondos, con la idea de que se leyera como la misma app con la
@@ -12,9 +19,10 @@
          pareciéndose entre sí. Con el fondo en negro los colores
          recuperan saturación y se pueden usar brillantes.
 
-             fondo    #000000   negro
-             tarjeta  #121212   apenas levantada
-             bordes   #2F2F2F   lo que separa una capa de otra
+             fondo    #151515   la página
+             tarjeta  #232323   una capa por encima
+             elevada  #2D2D2D   lo que resalta sobre la tarjeta
+             bordes   #4A4A4A   lo que separa una capa de otra
 
          Mismos nombres que en values/colors.xml: ninguna pantalla sabe
          en qué modo está, solo pide @color/loquesea.
@@ -24,10 +32,10 @@
          es un fondo apenas más claro que la página; uno que en claro es
          texto tiene que volverse CLARO o desaparece.
 
-         Contrastes sobre la tarjeta #121212:
-           ink 18.7 · ink_3 9.4 · ink_4 7.4
-           verde 10.5 · azul 9.3 · amarillo 12.2 · naranja 7.2
-           violeta 7.3 · rosa 7.1 · blanco sobre brand_500 9.4
+         Contrastes sobre la tarjeta #232323:
+           ink 15.7 · ink_2 12.8 · ink_3 8.3 · ink_4 7.0
+           violeta 7.5 · azul 7.2 · amarillo 10.6 · rojo 7.9
+           blanco sobre brand_500 10.1 · oscuro sobre acento 8.9
          ═══════════════════════════════════════════════════════ -->
 
     <!-- ── Primario ───────────────────────────────────────────
@@ -38,12 +46,12 @@
          violeta neón.                                            -->
     <color name="brand_50">#171018</color>    <!-- fondo suave / ripple -->
     <color name="brand_100">#241a2e</color>   <!-- círculos de ícono, chips -->
-    <color name="brand_200">#cd88ff</color>   <!-- texto sobre superficie oscura -->
-    <color name="brand_300">#daa6ff</color>
+    <color name="brand_200">#d79bff</color>   <!-- texto sobre superficie oscura -->
+    <color name="brand_300">#e2b3ff</color>
     <color name="brand_400">#8e5cb8</color>
     <color name="brand_500">#5e2585</color>   <!-- primario (sin cambios) -->
-    <color name="brand_600">#cd88ff</color>   <!-- texto/íconos sobre fondo -->
-    <color name="brand_700">#daa6ff</color>   <!-- texto sobre brand_100 -->
+    <color name="brand_600">#d79bff</color>   <!-- texto/íconos sobre fondo -->
+    <color name="brand_700">#e2b3ff</color>   <!-- texto sobre brand_100 -->
     <color name="brand_800">#e6c4ff</color>
     <color name="brand_900">#f0dcff</color>
 
@@ -54,35 +62,35 @@
 
     <color name="azul_50">#0a1a24</color>
     <color name="azul_100">#0f2937</color>
-    <color name="azul_200">#5aa9ff</color>
-    <color name="azul_500">#5aa9ff</color>
-    <color name="azul_600">#7dbcff</color>
+    <color name="azul_200">#6fb4ff</color>
+    <color name="azul_500">#6fb4ff</color>
+    <color name="azul_600">#8dc4ff</color>
     <color name="azul_700">#a3cdff</color>
 
     <color name="verde_50">#0a1520</color>
     <color name="verde_100">#102336</color>
-    <color name="verde_500">#5aa9ff</color>
-    <color name="verde_700">#8bc2ff</color>
+    <color name="verde_500">#6fb4ff</color>
+    <color name="verde_700">#9ccbff</color>
 
     <color name="naranja_50">#1c0d26</color>
     <color name="naranja_100">#2a143a</color>
-    <color name="naranja_500">#cd88ff</color>
-    <color name="naranja_700">#daa6ff</color>
+    <color name="naranja_500">#d79bff</color>
+    <color name="naranja_700">#e2b3ff</color>
 
     <color name="amarillo_50">#1c1226</color>
     <color name="amarillo_100">#2a1b38</color>
-    <color name="amarillo_500">#bd93e0</color>
-    <color name="amarillo_700">#d3b3ee</color>
+    <color name="amarillo_500">#c9a4e8</color>
+    <color name="amarillo_700">#ddc2f4</color>
 
 
     <color name="rosa_50">#1c1226</color>
     <color name="rosa_100">#2a1b38</color>
-    <color name="rosa_500">#bd93e0</color>
-    <color name="rosa_700">#d3b3ee</color>
+    <color name="rosa_500">#c9a4e8</color>
+    <color name="rosa_700">#ddc2f4</color>
 
     <!-- Alias legacy -->
     <color name="turquesa">#5e2585</color>
-    <color name="turquesa_dark">#cd88ff</color>
+    <color name="turquesa_dark">#d79bff</color>
     <color name="turquesa_light">#171018</color>
     <color name="turquesa_border">#241a2e</color>
 
@@ -91,33 +99,34 @@
          vean neón. Un gris violáceo se los come.                 -->
     <color name="ink">#ffffff</color>         <!-- texto principal -->
     <color name="ink_2">#e8e8e8</color>
-    <color name="ink_3">#b8b8b8</color>
-    <color name="ink_4">#a3a3a3</color>
-    <color name="ink_5">#8a8a8a</color>
-    <color name="ink_6">#6b6b6b</color>
-    <!-- El borde es lo único que separa una tarjeta del fondo: dos
-         superficies oscuras nunca se van a distinguir por su relleno. -->
-    <color name="ink_7">#383838</color>       <!-- bordes / divisores -->
-    <color name="ink_8">#1c1c1c</color>
-    <color name="paper">#000000</color>       <!-- fondo de pantalla -->
-    <color name="paper_2">#121212</color>     <!-- cards -->
+    <color name="ink_3">#bcbcbc</color>
+    <color name="ink_4">#adadad</color>
+    <color name="ink_5">#949494</color>
+    <color name="ink_6">#787878</color>
+    <!-- El borde refuerza la separación entre capas. Ya no es lo ÚNICO
+         que las separa —#151515 y #232323 se distinguen por su relleno—
+         pero sigue haciendo falta donde dos capas se tocan. -->
+    <color name="ink_7">#4a4a4a</color>       <!-- bordes / divisores -->
+    <color name="ink_8">#2a2a2a</color>
+    <color name="paper">#151515</color>       <!-- fondo de pantalla -->
+    <color name="paper_2">#232323</color>     <!-- cards -->
 
     <!-- Alias legacy -->
-    <color name="gris_fondo">#000000</color>
-    <color name="gris_borde">#2f2f2f</color>
-    <color name="gris_texto">#a3a3a3</color>
+    <color name="gris_fondo">#151515</color>
+    <color name="gris_borde">#4a4a4a</color>
+    <color name="gris_texto">#adadad</color>
 
     <!-- ── Semánticos ─────────────────────────────────────────
          El color plano se usa como TEXTO y va en neón; el _bg es
          fondo y se hunde.                                        -->
-    <color name="success">#5aa9ff</color>
+    <color name="success">#6fb4ff</color>
     <color name="success_bg">#0a1520</color>
-    <color name="warn">#ffc93c</color>
+    <color name="warn">#ffce4f</color>
     <color name="warn_bg">#241d08</color>
     <color name="warn_border">#4a3a10</color>
-    <color name="danger">#ff8f8f</color>
+    <color name="danger">#ff9c9c</color>
     <color name="danger_bg">#2e1010</color>
-    <color name="info">#5aa9ff</color>
+    <color name="info">#6fb4ff</color>
     <color name="info_bg">#0a1520</color>
 
     <!-- Los pill_* NO se redefinen acá: llevan la inicial del
@@ -125,14 +134,18 @@
          Aclararlos "para que no se pierdan en el fondo" rompía justamente
          el único par que importaba (daban 2.4 contra el blanco). -->
 
+    <!-- Ver la nota en values/colors.xml: acá el acento es claro, así
+         que lo que va encima es el violeta más profundo (8.9). -->
+    <color name="sobre_acento">#1d0a29</color>
+
     <!-- ── Texto ──────────────────────────────────────────── -->
     <color name="texto_principal">#ffffff</color>
 
     <!-- ── Superficie destacada ───────────────────────────────
          En claro es la tarjeta violeta que resalta sobre la página.
-         Acá la página es negra, así que resaltar es LEVANTARSE: un
+         Acá la página ya es oscura, así que resaltar es LEVANTARSE: un
          gris un paso por encima de la tarjeta común, y que el color lo
-         pongan los acentos neón de adentro.                      -->
-    <color name="surface_dark">#1e1e1e</color>
-    <color name="surface_dark_2">#2a2a2a</color>
+         pongan los acentos de adentro.                      -->
+    <color name="surface_dark">#2d2d2d</color>
+    <color name="surface_dark_2">#3a3a3a</color>
 </resources>

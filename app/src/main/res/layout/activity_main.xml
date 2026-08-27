@@ -32,7 +32,7 @@
                 android:layout_height="wrap_content"
                 android:text="Buen día,"
                 android:textSize="32sp"
-                android:fontFamily="serif"
+                android:fontFamily="@font/atkinson"
                 android:textStyle="normal"
                 android:textColor="@color/ink"
                 android:letterSpacing="-0.02" />
@@ -42,7 +42,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="32sp"
-                android:fontFamily="serif"
+                android:fontFamily="@font/atkinson"
                 android:textStyle="normal"
                 android:textColor="@color/ink"
                 android:letterSpacing="-0.02" />
@@ -52,7 +52,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="16sp"
-                android:fontFamily="sans-serif"
+                android:fontFamily="@font/atkinson"
                 android:textColor="@color/ink_4"
                 android:layout_marginTop="4dp" />
 
@@ -282,7 +282,7 @@
 
                     <Button
                         android:id="@+id/btn_sugerencia_si"
-                        style="@style/Widget.Material3.Button"
+                        style="@style/Boton.Principal"
                         android:layout_width="0dp"
                         android:layout_height="52dp"
                         android:layout_weight="1"
@@ -432,7 +432,7 @@
                     android:layout_weight="1"
                     android:text="Hoy"
                     android:textSize="26sp"
-                    android:fontFamily="serif"
+                    android:fontFamily="@font/atkinson"
                     android:textColor="@color/ink"
                     android:letterSpacing="-0.02" />
 
@@ -652,7 +652,7 @@
                 android:layout_height="wrap_content"
                 android:text="Próxima cita"
                 android:textSize="26sp"
-                android:fontFamily="serif"
+                android:fontFamily="@font/atkinson"
                 android:textColor="@color/ink"
                 android:letterSpacing="-0.02"
                 android:layout_marginTop="28dp"
@@ -716,7 +716,7 @@
                         android:layout_height="wrap_content"
                         android:textSize="19sp"
                         android:textStyle="bold"
-                        android:fontFamily="sans-serif"
+                        android:fontFamily="@font/atkinson"
                         android:textColor="@color/ink" />
 
                     <TextView

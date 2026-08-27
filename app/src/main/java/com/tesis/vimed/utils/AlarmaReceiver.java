@@ -167,10 +167,15 @@ public class AlarmaReceiver extends BroadcastReceiver {
                                     : MedCache.idUsuario(ctx, idMedicamento);
 
         // Registrar la toma como "omitida": si nadie confirma, así queda.
+        //
+        // asegurar y no crear: esta alarma puede estar sonando por segunda
+        // vez —se pospuso 15 minutos y volvió— y la fila de esa dosis ya
+        // existe. Insertando siempre, la misma toma de las 06:19 quedaba dos
+        // veces en el historial, una "pospuesta" y otra "sin confirmar".
         if (idHorario > 0 && idUsuario > 0) {
             RegistroToma r = new RegistroToma(idHorario, idUsuario,
                 TomaManager.fechaHoyCon(hora));
-            RegistroToma creado = VimedRepo.crearTomaSync(r);
+            RegistroToma creado = VimedRepo.asegurarTomaSync(r);
             if (creado != null) {
                 // La notificación ya está en pantalla, pero sin el id de la
                 // fila. La repintamos con el id para que los botones sepan

@@ -70,6 +70,58 @@ public final class ModoPaciente {
             + (nombre.isEmpty() ? "tu familiar" : nombre);
     }
 
+    // ═══ Cómo hablar en pantalla ═══════════════════════════════
+    //
+    // Las pantallas compartidas están escritas tuteando al adulto mayor
+    // ("Tenés 3 unidades", "revisalo con tu médico"). Cuando las abre el
+    // cuidador esas frases quedan hablando de él, que no es quien toma
+    // nada: "tenés 3 unidades" leído por la hija dice que las unidades son
+    // suyas. Estos helpers eligen la forma correcta según de quién sean los
+    // datos, para no repetir el mismo ternario en cada cartel.
+
+    /** "tenés" hablándole al paciente, "tiene" hablándole al cuidador. */
+    public String tiene() {
+        return esDeOtro() ? "tiene" : "tenés";
+    }
+
+    /** "tu" / "su" — como en "tu médico" o "su médico". */
+    public String su() {
+        return esDeOtro() ? "su" : "tu";
+    }
+
+    /** Igual que {@link #su()} pero para arrancar una oración. */
+    public String Su() {
+        return esDeOtro() ? "Su" : "Tu";
+    }
+
+    /** "tus citas" / "las citas de Rosa". */
+    public String posesivoDe(String queCosa) {
+        return esDeOtro()
+            ? ("las " + queCosa + " de " + (nombre.isEmpty() ? "tu familiar" : primerNombre()))
+            : ("tus " + queCosa);
+    }
+
+    /**
+     * Quién es el sujeto de la frase: "Rosa" o vacío cuando se tutea.
+     * Pensado para armar "Rosa tiene 3 unidades" / "Tenés 3 unidades",
+     * ver {@link #frase(String)}.
+     */
+    public String sujeto() {
+        if (!esDeOtro()) return "";
+        return nombre.isEmpty() ? "Tu familiar" : primerNombre();
+    }
+
+    /**
+     * Antepone el sujeto cuando hace falta y deja la primera letra en
+     * mayúscula: frase("tiene 3 unidades") da "Tenés 3 unidades" para el
+     * propio dueño y "Rosa tiene 3 unidades" para el cuidador.
+     */
+    public String frase(String resto) {
+        if (resto == null || resto.isEmpty()) return "";
+        if (esDeOtro()) return sujeto() + " " + resto;
+        return Character.toUpperCase(resto.charAt(0)) + resto.substring(1);
+    }
+
     /**
      * Arma un Intent que arrastra el modo. Todo lo que se abre desde una
      * pantalla en modo cuidador tiene que seguir apuntando al mismo

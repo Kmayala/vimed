@@ -67,7 +67,7 @@
             android:layout_height="wrap_content"
             android:textSize="26sp"
             android:textStyle="bold"
-            android:fontFamily="sans-serif"
+            android:fontFamily="@font/atkinson"
             android:textColor="@color/ink"
             android:letterSpacing="-0.02"
             android:gravity="end" />

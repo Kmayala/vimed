@@ -139,6 +139,12 @@
     <color name="pill_morado">#5e2585</color>
     <color name="pill_gris">#5d5470</color>
 
+    <!-- Texto e íconos que van ENCIMA del color de acento (colorPrimary).
+         En claro el acento es el violeta oscuro, así que encima va blanco.
+         En oscuro el acento se aclara y encima tiene que ir oscuro: es el
+         par que hay que mover junto, o los botones se vuelven invisibles. -->
+    <color name="sobre_acento">#ffffff</color>
+
     <!-- ── Texto ──────────────────────────────────────────── -->
     <color name="texto_principal">#1f1a2e</color>
     <color name="white">#ffffff</color>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Atkinson Hyperlegible — Braille Institute of America, licencia SIL OFL 1.1
+  (el texto de la licencia está en OFL-Atkinson.txt, en la raíz del proyecto).
+
+  POR QUÉ ESTA Y NO OTRA. Está diseñada para gente con baja visión, que es
+  buena parte de quien usa Vimed. Separa deliberadamente los pares que el
+  resto de las tipografías confunde —I mayúscula, l minúscula y 1; O y 0;
+  b/d/p/q— dándole a cada letra una forma que no es el espejo de la otra.
+  En una app donde se leen dosis y horarios, confundir un 0 con una O o un
+  1 con una l no es un detalle estético.
+
+  Los cuatro archivos van EMPAQUETADOS en el APK (unos 215 KB en total) y
+  no descargados de Google Fonts. Descargarlas habría ahorrado ese peso,
+  pero depende de Play Services y de una primera conexión: en el celular de
+  un adulto mayor sin datos, la app abriría con otra tipografía justo la
+  primera vez, que es cuando peor cae.
+-->
+<font-family xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <font
+        app:fontStyle="normal"
+        app:fontWeight="400"
+        app:font="@font/atkinson_regular" />
+
+    <font
+        app:fontStyle="italic"
+        app:fontWeight="400"
+        app:font="@font/atkinson_italic" />
+
+    <font
+        app:fontStyle="normal"
+        app:fontWeight="700"
+        app:font="@font/atkinson_bold" />
+
+    <font
+        app:fontStyle="italic"
+        app:fontWeight="700"
+        app:font="@font/atkinson_bolditalic" />
+
+</font-family>

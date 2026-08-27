@@ -105,6 +105,21 @@ public interface SupabaseService {
         @Query("order")                String order
     );
 
+    /**
+     * La fila de UNA toma concreta: un horario en un momento programado.
+     *
+     * Es la consulta que evita los duplicados. Sin ella, cada camino que
+     * registra una toma —la alarma al sonar, el botón de la notificación,
+     * el "ya tomé" del panel— insertaba su propia fila, y una misma dosis
+     * terminaba apareciendo tres veces en el historial: pospuesta, sin
+     * confirmar y tomada, las tres a la misma hora.
+     */
+    @GET("registro_tomas")
+    Call<List<RegistroToma>> getRegistroDelSlot(
+        @Query("id_horario")            String idHorarioEq,   // "eq.12"
+        @Query("fecha_hora_programada") String fechaEq        // "eq.2026-08-27 07:50:00"
+    );
+
     @POST("registro_tomas")
     Call<List<RegistroToma>> crearRegistroToma(@Body RegistroToma nuevo);
 

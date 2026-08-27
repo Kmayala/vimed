@@ -68,7 +68,7 @@
                 android:layout_height="wrap_content"
                 android:text="Invite a un cuidador"
                 android:textSize="30sp"
-                android:fontFamily="serif"
+                android:fontFamily="@font/atkinson"
                 android:textStyle="normal"
                 android:textColor="@color/ink"
                 android:letterSpacing="-0.02"
@@ -113,7 +113,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="48sp"
-                    android:fontFamily="serif"
+                    android:fontFamily="@font/atkinson"
                     android:textStyle="normal"
                     android:textColor="@color/ink"
                     android:letterSpacing="0.08" />
@@ -199,6 +199,7 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.button.MaterialButton
+                style="@style/Boton.Principal"
                 android:id="@+id/btn_add_by_email"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"

@@ -56,12 +56,15 @@ public final class TomaManager {
         if (idRegistro > 0) {
             VimedRepo.actualizarEstadoToma(idRegistro, "confirmada", ahora, trasRegistrar);
         } else if (idHorario > 0) {
+            // Sin id de fila no significa que no exista: el panel arma su
+            // lista al abrirse, y la alarma pudo haber creado la fila
+            // después. Se busca antes de insertar.
             RegistroToma r = new RegistroToma(idHorario, med.getIdUsuario(),
                 fechaHoyCon(horaHHMM));
             r.setEstado("confirmada");
             r.setFechaHoraConfirmacion(ahora);
-            VimedRepo.crearTomaConfirmada(r, new VimedRepo.Cb<RegistroToma>() {
-                @Override public void onOk(RegistroToma creado) { trasRegistrar.onOk(null); }
+            VimedRepo.confirmarTomaDelSlot(r, ahora, new VimedRepo.Cb<Void>() {
+                @Override public void onOk(Void v) { trasRegistrar.onOk(null); }
                 @Override public void onError(String msg) { cb.onError(msg); }
             });
         } else {
@@ -137,11 +140,18 @@ public final class TomaManager {
                 if (m != null) idUsuario = m.getIdUsuario();
             }
             if (idUsuario > 0) {
+                // La alarma ya pudo haber creado la fila de esta dosis. Si
+                // existe se ACTUALIZA; insertar otra dejaba la misma toma
+                // dos veces, una sin confirmar y otra confirmada.
                 RegistroToma r = new RegistroToma(idHorario, idUsuario,
                     fechaHoyCon(horaHHMM));
                 r.setEstado("confirmada");
                 r.setFechaHoraConfirmacion(ahora);
-                VimedRepo.crearTomaSync(r);
+
+                RegistroToma fila = VimedRepo.asegurarTomaSync(r);
+                if (fila != null && !fila.estaConfirmada()) {
+                    VimedRepo.actualizarEstadoTomaSync(fila.getId(), "confirmada", ahora);
+                }
             }
         }
 

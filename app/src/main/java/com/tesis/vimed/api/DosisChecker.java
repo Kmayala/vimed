@@ -107,18 +107,37 @@ public final class DosisChecker {
      */
     public static Aviso revisar(CatalogoMedicamento referencia, float dosis,
                                 String unidad, PerfilClinico perfil, int tomasPorDia) {
+        return revisar(referencia, dosis, unidad, perfil, tomasPorDia, false);
+    }
+
+    /**
+     * @param paraOtraPersona true cuando quien está cargando el medicamento
+     *        es el cuidador y no quien lo toma. Cambia a tercera persona lo
+     *        que habla del paciente —"su médico", "estaría tomando"—, pero
+     *        NO lo que habla de quien carga: "cargaste 500 mg" sigue siendo
+     *        correcto, porque la que cargó es ella.
+     */
+    public static Aviso revisar(CatalogoMedicamento referencia, float dosis,
+                                String unidad, PerfilClinico perfil,
+                                int tomasPorDia, boolean paraOtraPersona) {
         // El chequeo de siempre manda: un cero de más o una unidad
         // equivocada son errores más graves y más frecuentes que una dosis
         // diaria fuera de rango, y hay que mostrar UN aviso, no dos.
-        Aviso base = revisar(referencia, dosis, unidad);
+        Aviso base = revisar(referencia, dosis, unidad, paraOtraPersona);
         if (base.hayAlgoQueDecir()) return base;
 
         if (referencia == null || perfil == null || dosis <= 0) return SIN_AVISO;
 
-        Aviso porPeso = revisarDosisDiaria(referencia, dosis, unidad, perfil, tomasPorDia);
+        Aviso porPeso = revisarDosisDiaria(referencia, dosis, unidad, perfil,
+            tomasPorDia, paraOtraPersona);
         if (porPeso.hayAlgoQueDecir()) return porPeso;
 
-        return revisarEdad(referencia, perfil);
+        return revisarEdad(referencia, perfil, paraOtraPersona);
+    }
+
+    /** "su médico" cuando la carga el cuidador, "tu médico" cuando es propia. */
+    private static String suMedico(boolean paraOtraPersona) {
+        return paraOtraPersona ? "su médico" : "tu médico";
     }
 
     /**
@@ -127,7 +146,7 @@ public final class DosisChecker {
      */
     private static Aviso revisarDosisDiaria(CatalogoMedicamento ref, float dosis,
                                             String unidad, PerfilClinico perfil,
-                                            int tomasPorDia) {
+                                            int tomasPorDia, boolean paraOtraPersona) {
         if (!ref.tieneReferenciaPorPeso()) return SIN_AVISO;
         if (!perfil.tienePeso()) return SIN_AVISO;
         if (tomasPorDia <= 0) return SIN_AVISO;
@@ -157,7 +176,8 @@ public final class DosisChecker {
             ? ref.getNombreComercial() : "este medicamento";
         String rango = formatear(min) + " a " + formatear(max) + " mg por día";
         String cargado = "Con " + formatear(dosis) + " mg " + vecesAlDia(tomasPorDia)
-            + " estarías tomando " + formatear(diariaCargada) + " mg por día. ";
+            + (paraOtraPersona ? " estaría tomando " : " estarías tomando ")
+            + formatear(diariaCargada) + " mg por día. ";
 
         if (diariaCargada > max) {
             // Muy por encima del techo huele a error de carga; apenas por
@@ -166,7 +186,8 @@ public final class DosisChecker {
                 ? Nivel.ALTO : Nivel.REVISAR;
             return new Aviso(nivel,
                 cargado + "Para " + formatear(peso) + " kg, lo habitual de "
-                    + nombre + " es " + rango + ". Revisalo con tu médico"
+                    + nombre + " es " + rango + ". Revisalo con "
+                    + suMedico(paraOtraPersona)
                     + (nivel == Nivel.ALTO ? " antes de tomarlo." : "."),
                 rango, true);
         }
@@ -174,8 +195,9 @@ public final class DosisChecker {
         if (diariaCargada < min) {
             return new Aviso(Nivel.REVISAR,
                 cargado + "Para " + formatear(peso) + " kg, lo habitual de "
-                    + nombre + " es " + rango + ". Puede estar bien si tu"
-                    + " médico lo indicó así; si no, revisá la receta.",
+                    + nombre + " es " + rango + ". Puede estar bien si "
+                    + suMedico(paraOtraPersona)
+                    + " lo indicó así; si no, revisá la receta.",
                 rango, true);
         }
 
@@ -188,7 +210,7 @@ public final class DosisChecker {
      * Lo único que puede hacer es marcar que este medicamento es de los que
      * conviene conversar.
      */
-    private static Aviso revisarEdad(CatalogoMedicamento ref, PerfilClinico perfil) {
+    private static Aviso revisarEdad(CatalogoMedicamento ref, PerfilClinico perfil, boolean paraOtraPersona) {
         if (!ref.isAjustarEnMayores() || !perfil.esAdultoMayor()) return SIN_AVISO;
 
         String nota = ref.getNotaMayores();
@@ -199,8 +221,11 @@ public final class DosisChecker {
             (nota != null && !nota.trim().isEmpty())
                 ? nota.trim()
                 : nombre + " suele indicarse en dosis más bajas después de los "
-                    + PerfilClinico.EDAD_MAYOR + " años. Preguntale a tu médico"
-                    + " si la tuya es la que te corresponde.",
+                    + PerfilClinico.EDAD_MAYOR + " años. Preguntale a "
+                    + suMedico(paraOtraPersona)
+                    + (paraOtraPersona
+                        ? " si la suya es la que le corresponde."
+                        : " si la tuya es la que te corresponde."),
             null, true);
     }
 
@@ -218,6 +243,11 @@ public final class DosisChecker {
      *        peor que ningún aviso.
      */
     public static Aviso revisar(CatalogoMedicamento referencia, float dosis, String unidad) {
+        return revisar(referencia, dosis, unidad, false);
+    }
+
+    private static Aviso revisar(CatalogoMedicamento referencia, float dosis,
+                                 String unidad, boolean paraOtraPersona) {
         if (referencia == null) return SIN_AVISO;
         if (dosis <= 0) return SIN_AVISO;
 
@@ -259,8 +289,8 @@ public final class DosisChecker {
             return new Aviso(Nivel.REVISAR,
                 "La dosis habitual de " + nombre + " es " + habitualTxt
                     + ". Cargaste " + formatear(dosis) + " " + unidad
-                    + ". Puede estar bien si tu médico lo indicó así; si no,"
-                    + " revisá la receta.",
+                    + ". Puede estar bien si " + suMedico(paraOtraPersona)
+                    + " lo indicó así; si no, revisá la receta.",
                 habitualTxt);
         }
 

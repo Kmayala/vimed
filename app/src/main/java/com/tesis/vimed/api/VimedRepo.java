@@ -245,6 +245,48 @@ public final class VimedRepo {
         listarTomasDelDia(ctx, desdeYMD, cb);
     }
 
+    /**
+     * La fila de esa toma si ya existe, o null.
+     *
+     * @param fechaProgramada "yyyy-MM-dd HH:mm:ss", igual que la escribe
+     *                        {@link com.tesis.vimed.utils.TomaManager#fechaHoyCon}.
+     */
+    public static RegistroToma buscarTomaDelSlotSync(int idHorario, String fechaProgramada) {
+        if (idHorario <= 0 || fechaProgramada == null) return null;
+        List<RegistroToma> res = ejecutar(SupabaseClient.getService()
+            .getRegistroDelSlot("eq." + idHorario, "eq." + fechaProgramada));
+        return res.isEmpty() ? null : res.get(0);
+    }
+
+    /**
+     * Devuelve la fila de esa toma, creándola solo si no existía.
+     *
+     * Todos los caminos que registran una toma pasan por acá. Antes cada
+     * uno insertaba lo suyo: la alarma creaba la fila "omitida" al sonar,
+     * el snooze la volvía a crear al re-disparar, y confirmar desde el
+     * panel —que no conocía el id de ninguna— insertaba una tercera ya
+     * confirmada. En el historial del cuidador la misma dosis de las 07:50
+     * aparecía dos y tres veces, con estados que se contradecían.
+     *
+     * Si el INSERT rebota por el índice único (dos caminos a la vez), se
+     * vuelve a buscar: la fila que ganó la carrera es la buena.
+     */
+    public static RegistroToma asegurarTomaSync(RegistroToma r) {
+        RegistroToma existente = buscarTomaDelSlotSync(
+            r.getIdHorario(), r.getFechaHoraProgramada());
+        if (existente != null) return existente;
+
+        List<RegistroToma> res = ejecutar(SupabaseClient.getService().crearRegistroToma(r));
+        if (!res.isEmpty()) return res.get(0);
+
+        return buscarTomaDelSlotSync(r.getIdHorario(), r.getFechaHoraProgramada());
+    }
+
+    /**
+     * @deprecated Inserta siempre, sin mirar si la toma ya estaba
+     *             registrada. Usar {@link #asegurarTomaSync(RegistroToma)}.
+     */
+    @Deprecated
     public static RegistroToma crearTomaSync(RegistroToma r) {
         List<RegistroToma> res = ejecutar(SupabaseClient.getService().crearRegistroToma(r));
         return res.isEmpty() ? null : res.get(0);
@@ -270,6 +312,46 @@ public final class VimedRepo {
     }
 
     /** Crea la fila de la toma si no existe todavía, y la deja confirmada. */
+    /**
+     * Marca la toma como confirmada actualizando su fila si ya existe, y
+     * creándola solo si no. Versión asíncrona de la misma idea que
+     * {@link #asegurarTomaSync(RegistroToma)}, para el panel.
+     *
+     * Este es el camino que más duplicaba: el panel arma la lista del día
+     * cuando se abre la pantalla, así que si la alarma sonó DESPUÉS, el
+     * botón "Ya tomé" no tiene el id de la fila que creó la alarma y
+     * terminaba insertando una segunda.
+     */
+    public static void confirmarTomaDelSlot(RegistroToma r, String fechaConfirmacion,
+                                            Cb<Void> cb) {
+        SupabaseClient.getService()
+            .getRegistroDelSlot("eq." + r.getIdHorario(),
+                                "eq." + r.getFechaHoraProgramada())
+            .enqueue(new Callback<List<RegistroToma>>() {
+                @Override
+                public void onResponse(Call<List<RegistroToma>> c,
+                                       Response<List<RegistroToma>> res) {
+                    List<RegistroToma> filas = res.isSuccessful() && res.body() != null
+                        ? res.body() : new ArrayList<>();
+
+                    if (filas.isEmpty()) {
+                        crearTomaConfirmada(r, new Cb<RegistroToma>() {
+                            @Override public void onOk(RegistroToma creado) { cb.onOk(null); }
+                            @Override public void onError(String msg) { cb.onError(msg); }
+                        });
+                        return;
+                    }
+                    actualizarEstadoToma(filas.get(0).getId(), "confirmada",
+                        fechaConfirmacion, cb);
+                }
+
+                @Override
+                public void onFailure(Call<List<RegistroToma>> c, Throwable t) {
+                    cb.onError("Sin conexión: " + t.getMessage());
+                }
+            });
+    }
+
     public static void crearTomaConfirmada(RegistroToma r, Cb<RegistroToma> cb) {
         SupabaseClient.getService().crearRegistroToma(r)
             .enqueue(new Callback<List<RegistroToma>>() {

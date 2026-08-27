@@ -69,7 +69,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/app_name"
                     android:textSize="26sp"
-                    android:fontFamily="serif"
+                    android:fontFamily="@font/atkinson"
                     android:textColor="@color/ink"
                     android:letterSpacing="-0.02"
                     android:layout_marginStart="12dp" />
@@ -81,7 +81,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/register_title"
                 android:textSize="38sp"
-                android:fontFamily="serif"
+                android:fontFamily="@font/atkinson"
                 android:textStyle="normal"
                 android:textColor="@color/ink"
                 android:letterSpacing="-0.02"

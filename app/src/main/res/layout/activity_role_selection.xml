@@ -49,7 +49,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/role_title"
                 android:textSize="34sp"
-                android:fontFamily="serif"
+                android:fontFamily="@font/atkinson"
                 android:textStyle="normal"
                 android:textColor="@color/ink"
                 android:letterSpacing="-0.02"

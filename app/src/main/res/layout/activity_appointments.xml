@@ -28,7 +28,7 @@
                 android:layout_height="wrap_content"
                 android:text="Citas médicas"
                 android:textSize="32sp"
-                android:fontFamily="serif"
+                android:fontFamily="@font/atkinson"
                 android:textColor="@color/ink"
                 android:letterSpacing="-0.02" />
 
@@ -220,6 +220,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:id="@+id/tv_tip_citas_titulo"
                             android:text="Gestioná tus citas fácilmente"
                             android:textSize="17sp"
                             android:textStyle="bold"
@@ -228,6 +229,7 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:id="@+id/tv_tip_citas_detalle"
                             android:text="Agregá, reprogramá o cancelá tus citas desde un solo lugar."
                             android:textSize="15sp"
                             android:textColor="@color/ink_3"
@@ -275,6 +277,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:id="@+id/tv_citas_vacio_titulo"
                         android:text="No tenés citas programadas"
                         android:textSize="20sp"
                         android:textStyle="bold"
@@ -284,6 +287,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:id="@+id/tv_citas_vacio_detalle"
                         android:text="Agregá tu próxima cita médica para tener todo organizado y recibir recordatorios."
                         android:textSize="16sp"
                         android:textColor="@color/ink_3"
@@ -315,7 +319,7 @@
                     android:layout_height="wrap_content"
                     android:text="Consejos para vos"
                     android:textSize="22sp"
-                    android:fontFamily="serif"
+                    android:fontFamily="@font/atkinson"
                     android:textColor="@color/ink"
                     android:letterSpacing="-0.02"
                     android:layout_marginTop="26dp"

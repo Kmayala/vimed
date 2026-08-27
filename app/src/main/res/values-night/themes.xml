@@ -10,8 +10,27 @@
       values-night/colors.xml, así que acá no se repite ni un tono.
     -->
     <style name="Base.Theme.Vimed.Night" parent="Theme.Material3.Dark.NoActionBar">
-        <item name="colorPrimary">@color/brand_500</item>
-        <item name="colorOnPrimary">@color/white</item>
+        <item name="android:fontFamily">@font/atkinson</item>
+        <item name="fontFamily">@font/atkinson</item>
+
+        <!-- ── El violeta de acento se aclara ─────────────────────
+             ACÁ ESTABA EL BUG DE LOS BOTONES INVISIBLES.
+
+             colorPrimary cumple dos papeles opuestos en Material: es el
+             RELLENO de un botón lleno y es el TEXTO de un botón de
+             contorno o de texto. Con brand_500 (#5e2585) los dos
+             funcionaban en claro, pero de noche ese violeta oscuro como
+             texto sobre una tarjeta #1e1e1e da 1.6 de contraste: el
+             botón está ahí, se puede tocar, y no se ve.
+
+             Se separan los papeles: el acento pasa al violeta claro
+             (contraste 8.4 sobre la tarjeta) y lo que va encima de un
+             relleno de ese violeta pasa a ser oscuro. Los botones que
+             traen su propio backgroundTint="brand_500" con texto blanco
+             escrito a mano en el layout no se enteran de este cambio y
+             siguen igual de legibles. -->
+        <item name="colorPrimary">@color/brand_600</item>
+        <item name="colorOnPrimary">@color/sobre_acento</item>
         <item name="colorPrimaryContainer">@color/brand_100</item>
         <item name="colorOnPrimaryContainer">@color/brand_800</item>
         <item name="colorSecondary">@color/brand_400</item>

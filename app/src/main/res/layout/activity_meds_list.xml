@@ -28,7 +28,7 @@
                 android:layout_height="wrap_content"
                 android:text="Medicamentos"
                 android:textSize="32sp"
-                android:fontFamily="serif"
+                android:fontFamily="@font/atkinson"
                 android:textStyle="normal"
                 android:textColor="@color/ink"
                 android:letterSpacing="-0.02" />
@@ -122,6 +122,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:id="@+id/tv_meds_vacio"
                     android:text="Aún no tenés medicamentos"
                     android:textSize="20sp"
                     android:textStyle="bold"

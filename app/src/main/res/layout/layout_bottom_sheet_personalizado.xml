@@ -85,7 +85,7 @@
 
         <Button
             android:id="@+id/btn_confirmar_personalizado"
-            style="@style/Widget.Material3.Button"
+            style="@style/Boton.Principal"
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:text="@string/btn_confirmar"

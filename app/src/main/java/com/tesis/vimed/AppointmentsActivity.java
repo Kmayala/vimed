@@ -110,7 +110,33 @@ public class AppointmentsActivity extends AppCompatActivity {
         setupBottomNav();
     }
 
+    /**
+     * Los textos del XML tutean al adulto mayor. Abiertos por el cuidador
+     * hablarían de él: "No tenés citas programadas" leído por la hija dice
+     * que las citas que faltan son suyas, no las de su madre.
+     */
+    private void adaptarTextosAlPaciente() {
+        if (!modo.esDeOtro()) return;
+
+        String citasDe = modo.posesivoDe("citas");
+
+        texto(R.id.tv_tip_citas_titulo,   "Gestioná " + citasDe);
+        texto(R.id.tv_tip_citas_detalle,
+            "Agregá, reprogramá o cancelá " + citasDe + " desde un solo lugar.");
+        texto(R.id.tv_citas_vacio_titulo, modo.frase("no tiene citas programadas"));
+        texto(R.id.tv_citas_vacio_detalle,
+            "Agregá su próxima cita médica para tener todo organizado y que"
+                + " reciba los recordatorios.");
+    }
+
+    private void texto(int id, String valor) {
+        TextView tv = findViewById(id);
+        if (tv != null) tv.setText(valor);
+    }
+
     private void mostrarCartelDePaciente() {
+        adaptarTextosAlPaciente();
+
         TextView cartel = findViewById(R.id.tv_cartel_paciente);
         if (cartel == null) return;
         if (!modo.esDeOtro()) { cartel.setVisibility(View.GONE); return; }
@@ -197,7 +223,7 @@ public class AppointmentsActivity extends AppCompatActivity {
         viewLista.setVisibility(calendario ? View.GONE : View.VISIBLE);
         viewCalendario.setVisibility(calendario ? View.VISIBLE : View.GONE);
         tvSubtitle.setText(calendario
-            ? "Gestioná y organizá todas tus citas"
+            ? "Gestioná y organizá " + modo.posesivoDe("citas")
             : "Próximas citas");
         pintarToggle();
     }

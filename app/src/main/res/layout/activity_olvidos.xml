@@ -40,7 +40,7 @@
                 android:layout_height="wrap_content"
                 android:text="Dosis olvidadas"
                 android:textSize="26sp"
-                android:fontFamily="serif"
+                android:fontFamily="@font/atkinson"
                 android:textColor="@color/ink"
                 android:letterSpacing="-0.02" />
 

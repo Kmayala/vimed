@@ -554,7 +554,8 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
         // En el aviso del paso 2 todavía no se conoce.
         DosisChecker.Aviso aviso = DosisChecker.revisar(
             CatalogoMatcher.buscar(nombre, catalogo), dosis, unidad,
-            new SessionManager(this).getPerfilClinico(), tomasPorDia());
+            new SessionManager(this).getPerfilClinico(), tomasPorDia(),
+            idUsuarioDestino > 0);
 
         // ALTO interrumpe siempre. Un REVISAR común ya se mostró en el paso
         // de la dosis y un segundo cartel igual solo enseña a saltearlos;
@@ -594,7 +595,11 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
      * afirmar lo contrario (ver DosisChecker).
      */
     private void avisarSiLaDosisEsRara(Runnable continuar) {
-        DosisChecker.Aviso aviso = DosisChecker.revisar(nombre, catalogo, dosis, unidad);
+        // Sin perfil ni frecuencia todavía; lo único que cambia acá es de
+        // quién es el médico del que habla el aviso.
+        DosisChecker.Aviso aviso = DosisChecker.revisar(
+            CatalogoMatcher.buscar(nombre, catalogo), dosis, unidad,
+            null, 0, idUsuarioDestino > 0);
 
         TextView tvAviso = pasos[1].findViewById(R.id.tv_aviso_dosis);
         if (tvAviso != null) {

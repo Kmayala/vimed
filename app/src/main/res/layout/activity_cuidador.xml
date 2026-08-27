@@ -28,7 +28,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="32sp"
-                android:fontFamily="serif"
+                android:fontFamily="@font/atkinson"
                 android:textColor="@color/ink"
                 android:letterSpacing="-0.02" />
 
@@ -132,6 +132,7 @@
                      cuidás a nadie", la acción para arreglarlo tiene que
                      estar acá. -->
                 <com.google.android.material.button.MaterialButton
+                    style="@style/Boton.Principal"
                     android:id="@+id/btn_vincular_paciente"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
@@ -358,6 +359,7 @@
                     android:layout_marginTop="14dp">
 
                     <com.google.android.material.button.MaterialButton
+                        style="@style/Boton.Principal"
                         android:id="@+id/btn_agregar_med_cuidador"
                         android:layout_width="0dp"
                         android:layout_height="56dp"
@@ -365,9 +367,7 @@
                         android:layout_marginEnd="6dp"
                         android:text="+ Medicamento"
                         android:textSize="15sp"
-                        android:textAllCaps="false"
-                        app:cornerRadius="16dp"
-                        app:backgroundTint="@color/brand_500" />
+                        app:cornerRadius="16dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_agregar_cita_cuidador"
@@ -393,7 +393,7 @@
                     android:layout_height="wrap_content"
                     android:text="Cómo viene el tratamiento"
                     android:textSize="26sp"
-                    android:fontFamily="serif"
+                    android:fontFamily="@font/atkinson"
                     android:textColor="@color/ink"
                     android:letterSpacing="-0.02"
                     android:layout_marginTop="26dp"
@@ -492,7 +492,7 @@
                     android:layout_height="wrap_content"
                     android:text="Tomas de hoy"
                     android:textSize="26sp"
-                    android:fontFamily="serif"
+                    android:fontFamily="@font/atkinson"
                     android:textColor="@color/ink"
                     android:letterSpacing="-0.02"
                     android:layout_marginTop="26dp"
@@ -523,7 +523,7 @@
                     android:layout_height="wrap_content"
                     android:text="Sus medicamentos"
                     android:textSize="26sp"
-                    android:fontFamily="serif"
+                    android:fontFamily="@font/atkinson"
                     android:textColor="@color/ink"
                     android:letterSpacing="-0.02"
                     android:layout_marginTop="26dp"
@@ -561,7 +561,7 @@
                     android:layout_height="wrap_content"
                     android:text="Próximas citas"
                     android:textSize="26sp"
-                    android:fontFamily="serif"
+                    android:fontFamily="@font/atkinson"
                     android:textColor="@color/ink"
                     android:letterSpacing="-0.02"
                     android:layout_marginTop="26dp"
@@ -591,7 +591,7 @@
                     android:layout_height="wrap_content"
                     android:text="Actividad reciente"
                     android:textSize="26sp"
-                    android:fontFamily="serif"
+                    android:fontFamily="@font/atkinson"
                     android:textColor="@color/ink"
                     android:letterSpacing="-0.02"
                     android:layout_marginTop="26dp"

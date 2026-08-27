@@ -55,7 +55,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/app_name"
                     android:textSize="30sp"
-                    android:fontFamily="serif"
+                    android:fontFamily="@font/atkinson"
                     android:textStyle="normal"
                     android:textColor="@color/ink"
                     android:letterSpacing="-0.02" />
@@ -78,7 +78,7 @@
             android:layout_height="wrap_content"
             android:text="@string/welcome_headline"
             android:textSize="38sp"
-            android:fontFamily="serif"
+            android:fontFamily="@font/atkinson"
             android:textStyle="normal"
             android:textColor="@color/ink"
             android:letterSpacing="-0.02"
