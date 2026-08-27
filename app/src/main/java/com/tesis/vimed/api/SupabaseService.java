@@ -207,6 +207,19 @@ public interface SupabaseService {
     @POST("usuarios")
     Call<List<UsuarioSupabase>> crearPerfil(@Body UsuarioSupabase nuevo);
 
+    /**
+     * Guarda peso y año de nacimiento, propios o de un paciente vinculado.
+     *
+     * Va por RPC y no por PATCH sobre la tabla porque el cuidador no tiene
+     * —ni debe tener— UPDATE sobre usuarios: el mismo permiso que le
+     * dejaría tocar el peso de su paciente le dejaría cambiarle el rol.
+     * Ver supabase_datos_clinicos_compartidos.sql.
+     *
+     * @param cuerpo claves p_id_usuario, p_peso_kg, p_anio_nacimiento.
+     */
+    @POST("rpc/guardar_datos_clinicos")
+    Call<Void> guardarDatosClinicos(@Body java.util.Map<String, Object> cuerpo);
+
     /** Actualiza el rol elegido en RoleSelection. */
     @PATCH("usuarios")
     Call<List<UsuarioSupabase>> actualizarPerfil(

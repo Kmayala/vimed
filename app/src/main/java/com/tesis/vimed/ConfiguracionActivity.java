@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat;
 
 import com.tesis.vimed.api.VimedRepo;
 import com.tesis.vimed.models.PerfilClinico;
+import com.tesis.vimed.utils.ModoPaciente;
 import com.tesis.vimed.utils.PermisosAlarma;
 import com.tesis.vimed.utils.TemaManager;
 
@@ -30,6 +31,21 @@ import java.util.List;
  */
 public class ConfiguracionActivity extends AppCompatActivity {
 
+    /**
+     * De quién son los datos clínicos de esta pantalla.
+     *
+     * El tema es una preferencia del aparato y siempre es de quien está
+     * usándolo. El peso y la edad NO: son de quien toma la medicación. Al
+     * cuidador se le preguntaba "¿cuánto pesás?" y se guardaban sus kilos
+     * en su propia fila, que no lee nadie —el chequeo de dosis usa los del
+     * paciente—, así que lo que cargaba uno no aparecía nunca del otro
+     * lado. Ahora los dos editan la MISMA fila.
+     */
+    private ModoPaciente modo = ModoPaciente.propio();
+
+    /** Perfil clínico de quien se está mirando, cuando no es el propio. */
+    private PerfilClinico delPaciente = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,8 +53,11 @@ public class ConfiguracionActivity extends AppCompatActivity {
 
         findViewById(R.id.btn_back).setOnClickListener(v -> finish());
 
+        modo = ModoPaciente.de(this);
+
         findViewById(R.id.opt_peso).setOnClickListener(v -> pedirPeso());
         findViewById(R.id.opt_edad).setOnClickListener(v -> pedirEdad());
+        adaptarSeccionClinica();
         pintarDatosClinicos();
         cargarDatosClinicos();
 
@@ -68,12 +87,54 @@ public class ConfiguracionActivity extends AppCompatActivity {
     // ═══════════════════════════════════════════════════════════
 
     /**
+     * Ajusta la sección a de quién son los datos.
+     *
+     * Sin paciente vinculado la sección desaparece: los datos clínicos del
+     * cuidador no los usa nadie, y pedirle el peso a alguien para no
+     * hacer nada con él es juntar información de salud porque sí.
+     */
+    private void adaptarSeccionClinica() {
+        View seccion = findViewById(R.id.seccion_clinicos);
+
+        if (!modo.esDeOtro()) {
+            if (esCuidador()) seccion.setVisibility(View.GONE);
+            return;
+        }
+
+        seccion.setVisibility(View.VISIBLE);
+        String quien = modo.primerNombre();
+
+        ((TextView) findViewById(R.id.tv_clinicos_titulo))
+            .setText("Datos de " + quien);
+        ((TextView) findViewById(R.id.tv_clinicos_subtitulo)).setText(
+            "Con el peso y la edad de " + quien + ", la app puede avisarte"
+                + " si una dosis que cargás se aleja de la habitual para"
+                + " alguien como " + quien + ".");
+        ((TextView) findViewById(R.id.tv_clinicos_nota)).setText(
+            "Vimed nunca indica ni cambia una dosis. Solo compara lo que"
+                + " cargaste contra la referencia del medicamento y te dice"
+                + " si conviene revisarlo con su médico.");
+    }
+
+    private boolean esCuidador() {
+        return !new SessionManager(this).esAdultoMayor();
+    }
+
+    /** El perfil que hay que mostrar y editar en esta pantalla. */
+    private PerfilClinico perfilEnPantalla() {
+        if (modo.esDeOtro()) {
+            return delPaciente != null ? delPaciente : PerfilClinico.vacio();
+        }
+        return new SessionManager(this).getPerfilClinico();
+    }
+
+    /**
      * Pinta lo que hay guardado localmente. Corre antes de la consulta de
      * red para que la pantalla nunca aparezca en blanco: si el celular está
      * sin datos, se muestra lo último que sabemos en vez de nada.
      */
     private void pintarDatosClinicos() {
-        PerfilClinico p = new SessionManager(this).getPerfilClinico();
+        PerfilClinico p = perfilEnPantalla();
 
         ((TextView) findViewById(R.id.tv_peso_valor)).setText(
             p.tienePeso() ? formatearPeso(p.getPesoKg()) + " kg" : "Tocá para cargarlo");
@@ -83,10 +144,16 @@ public class ConfiguracionActivity extends AppCompatActivity {
     }
 
     private void cargarDatosClinicos() {
-        VimedRepo.cargarDatosClinicos(this, -1,
+        VimedRepo.cargarDatosClinicos(this, modo.idUsuario,
             new VimedRepo.Cb<com.tesis.vimed.models.UsuarioSupabase>() {
                 @Override public void onOk(com.tesis.vimed.models.UsuarioSupabase perfil) {
-                    pintarDatosClinicos();   // cargarDatosClinicos ya refrescó la sesión
+                    // El propio ya lo dejó en la sesión el repositorio; el
+                    // del paciente NO se cachea —pisaría el del cuidador—,
+                    // así que se guarda solo mientras dure la pantalla.
+                    if (modo.esDeOtro() && perfil != null) {
+                        delPaciente = perfil.perfilClinico();
+                    }
+                    pintarDatosClinicos();
                 }
                 @Override public void onError(String msg) {
                     // Sin red nos quedamos con lo local; no vale un cartel.
@@ -95,7 +162,7 @@ public class ConfiguracionActivity extends AppCompatActivity {
     }
 
     private void pedirPeso() {
-        PerfilClinico actual = new SessionManager(this).getPerfilClinico();
+        PerfilClinico actual = perfilEnPantalla();
 
         final EditText input = campoNumerico(
             actual.tienePeso() ? formatearPeso(actual.getPesoKg()) : "");
@@ -105,9 +172,14 @@ public class ConfiguracionActivity extends AppCompatActivity {
         input.setHint("Kilos");
 
         new AlertDialog.Builder(this)
-            .setTitle("¿Cuánto pesás?")
-            .setMessage("Sirve para revisar si las dosis que cargás son las"
-                + " habituales para tu peso. Podés dejarlo vacío.")
+            .setTitle(modo.esDeOtro()
+                ? "¿Cuánto pesa " + modo.primerNombre() + "?"
+                : "¿Cuánto pesás?")
+            .setMessage(modo.esDeOtro()
+                ? "Sirve para revisar si las dosis que le cargás son las"
+                    + " habituales para su peso. Podés dejarlo vacío."
+                : "Sirve para revisar si las dosis que cargás son las"
+                    + " habituales para tu peso. Podés dejarlo vacío.")
             .setView(input)
             .setNegativeButton("Cancelar", null)
             .setPositiveButton("Guardar", (d, w) -> {
@@ -136,14 +208,16 @@ public class ConfiguracionActivity extends AppCompatActivity {
     }
 
     private void pedirEdad() {
-        PerfilClinico actual = new SessionManager(this).getPerfilClinico();
+        PerfilClinico actual = perfilEnPantalla();
 
         final EditText input = campoNumerico(
             actual.tieneEdad() ? String.valueOf(actual.edad()) : "");
         input.setHint("Años");
 
         new AlertDialog.Builder(this)
-            .setTitle("¿Cuántos años tenés?")
+            .setTitle(modo.esDeOtro()
+                ? "¿Cuántos años tiene " + modo.primerNombre() + "?"
+                : "¿Cuántos años tenés?")
             .setMessage("Algunos medicamentos se indican en dosis más bajas"
                 + " después de los " + PerfilClinico.EDAD_MAYOR
                 + ". Podés dejarlo vacío.")
@@ -174,9 +248,15 @@ public class ConfiguracionActivity extends AppCompatActivity {
     }
 
     private void guardar(float pesoKg, int anioNacimiento) {
-        VimedRepo.guardarDatosClinicos(this, -1, pesoKg, anioNacimiento,
+        VimedRepo.guardarDatosClinicos(this, modo.idUsuario, pesoKg, anioNacimiento,
             new VimedRepo.Cb<Void>() {
                 @Override public void onOk(Void v) {
+                    // El propio lo refresca el repositorio en la sesión; el
+                    // del paciente vive solo en esta pantalla, así que se
+                    // actualiza a mano para que el cambio se vea al toque.
+                    if (modo.esDeOtro()) {
+                        delPaciente = new PerfilClinico(pesoKg, anioNacimiento);
+                    }
                     pintarDatosClinicos();
                     Toast.makeText(ConfiguracionActivity.this,
                         "Guardado ✓", Toast.LENGTH_SHORT).show();

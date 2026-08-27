@@ -56,8 +56,21 @@
             <!-- ─── Datos del paciente ───
                  Van primero porque son los únicos ajustes que cambian lo
                  que la app le dice a la persona sobre su medicación; el
-                 tema es preferencia, esto es información clínica. -->
+                 tema es preferencia, esto es información clínica.
+
+                 La sección entera se puede ocultar: para un cuidador SIN
+                 paciente vinculado no hay datos clínicos que editar. Los
+                 suyos propios no los usa nadie —el chequeo de dosis mira
+                 los de quien la toma—, así que pedírselos sería juntar un
+                 dato de salud sin ninguna razón. -->
+            <LinearLayout
+                android:id="@+id/seccion_clinicos"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
             <TextView
+                android:id="@+id/tv_clinicos_titulo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Datos del paciente"
@@ -137,11 +150,14 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_info_note"
                 android:padding="14dp"
+                android:id="@+id/tv_clinicos_nota"
                 android:text="Vimed nunca indica ni cambia una dosis. Solo compara lo que cargaste contra la referencia del medicamento y te dice si conviene revisarlo con tu médico."
                 android:textSize="15sp"
                 android:textColor="@color/brand_700"
                 android:lineSpacingMultiplier="1.3"
                 android:layout_marginTop="8dp" />
+
+            </LinearLayout>
 
             <TextView
                 android:layout_width="match_parent"

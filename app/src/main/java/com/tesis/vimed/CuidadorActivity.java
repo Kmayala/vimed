@@ -136,7 +136,15 @@ public class CuidadorActivity extends AppCompatActivity {
                 } else if (w == 1) {
                     startActivity(new Intent(this, VincularFamiliarActivity.class));
                 } else if (w == 2) {
-                    startActivity(new Intent(this, ConfiguracionActivity.class));
+                    // Se arrastra el paciente que se está mirando: el peso y
+                    // la edad que la pantalla edita son LOS SUYOS. Sin esto,
+                    // el cuidador cargaba sus propios kilos en su propia
+                    // fila, que no lee nadie, y el dato no aparecía nunca
+                    // del lado del paciente.
+                    startActivity(idAdulto > 0
+                        ? ModoPaciente.de(idAdulto, nombreAdulto)
+                            .intent(this, ConfiguracionActivity.class)
+                        : new Intent(this, ConfiguracionActivity.class));
                 } else {
                     sessionManager.logout();
                     Intent i = new Intent(this, WelcomeActivity.class);

@@ -424,19 +424,30 @@ public final class VimedRepo {
 
         final boolean esElPropio = idUsuario <= 0;
 
-        // Solo viajan estas dos columnas: Gson omite los null, así que el
-        // resto del perfil (nombre, correo, rol) queda intacto.
-        UsuarioSupabase cambios = new UsuarioSupabase();
-        cambios.setPesoKg(pesoKg > 0 ? pesoKg : null);
-        cambios.setAnioNacimiento(anioNacimiento > 0 ? anioNacimiento : null);
+        // Por RPC: el cuidador no tiene UPDATE sobre usuarios, y no se lo
+        // vamos a dar —el mismo permiso que le deja tocar el peso de su
+        // paciente le dejaría cambiarle el rol—. La función escribe esas
+        // dos columnas y ninguna más, y comprueba ella el vínculo.
+        //
+        // El 0 viaja como null: significa "borrar el dato", no "pesa cero".
+        java.util.Map<String, Object> cuerpo = new java.util.HashMap<>();
+        cuerpo.put("p_id_usuario", id);
+        cuerpo.put("p_peso_kg", pesoKg > 0 ? (Object) pesoKg : null);
+        cuerpo.put("p_anio_nacimiento", anioNacimiento > 0 ? (Object) anioNacimiento : null);
 
-        SupabaseClient.getService()
-            .actualizarPerfil("eq." + id, cambios)
-            .enqueue(new Callback<List<UsuarioSupabase>>() {
+        SupabaseClient.getService().guardarDatosClinicos(cuerpo)
+            .enqueue(new Callback<Void>() {
                 @Override
-                public void onResponse(Call<List<UsuarioSupabase>> c,
-                                       Response<List<UsuarioSupabase>> r) {
+                public void onResponse(Call<Void> c, Response<Void> r) {
+                    if (r.code() == 404) {
+                        cb.onError("Falta crear guardar_datos_clinicos en la base"
+                            + " (supabase_datos_clinicos_compartidos.sql)");
+                        return;
+                    }
                     if (!r.isSuccessful()) { cb.onError(mensajeDeError(r)); return; }
+
+                    // La caché local es SOLO del perfil propio: el peso del
+                    // paciente no puede pisar el del cuidador en su sesión.
                     if (esElPropio) {
                         new SessionManager(ctx)
                             .guardarDatosClinicos(pesoKg, anioNacimiento);
@@ -444,7 +455,7 @@ public final class VimedRepo {
                     cb.onOk(null);
                 }
                 @Override
-                public void onFailure(Call<List<UsuarioSupabase>> c, Throwable t) {
+                public void onFailure(Call<Void> c, Throwable t) {
                     cb.onError("Sin conexión: " + t.getMessage());
                 }
             });
