@@ -54,7 +54,8 @@
             android:background="@drawable/shape_card"
             android:paddingTop="12dp"
             android:paddingBottom="12dp"
-            android:layout_marginBottom="20dp">
+            android:layout_marginBottom="20dp"
+            android:elevation="3dp">
 
             <TimePicker
                 android:id="@+id/tp_personalizado"

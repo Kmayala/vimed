@@ -91,7 +91,8 @@
                 android:paddingLeft="24dp"
                 android:paddingRight="24dp"
                 android:layout_marginTop="8dp"
-                android:visibility="gone">
+                android:visibility="gone"
+                android:elevation="3dp">
 
                 <FrameLayout
                     android:layout_width="110dp"
@@ -271,7 +272,8 @@
                     android:background="@drawable/shape_warn_alert"
                     android:padding="16dp"
                     android:layout_marginTop="14dp"
-                    android:visibility="gone">
+                    android:visibility="gone"
+                    android:elevation="3dp">
 
                     <FrameLayout
                         android:layout_width="42dp"
@@ -310,7 +312,8 @@
                     android:background="@drawable/shape_warn_alert"
                     android:padding="16dp"
                     android:layout_marginTop="14dp"
-                    android:visibility="gone">
+                    android:visibility="gone"
+                    android:elevation="3dp">
 
                     <FrameLayout
                         android:layout_width="42dp"
@@ -405,7 +408,8 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:background="@drawable/shape_dose_card"
-                    android:padding="20dp">
+                    android:padding="20dp"
+                    android:elevation="3dp">
 
                     <TextView
                         android:id="@+id/tv_adherencia_titular"
@@ -514,7 +518,8 @@
                     android:text="Sin tomas registradas hoy"
                     android:textSize="16sp"
                     android:textColor="@color/ink_4"
-                    android:visibility="gone" />
+                    android:visibility="gone" 
+                    android:elevation="3dp"/>
 
                 <!-- Medicamentos cargados del adulto mayor -->
                 <TextView
@@ -553,7 +558,8 @@
                     android:text="Todavía no tiene medicamentos cargados"
                     android:textSize="16sp"
                     android:textColor="@color/ink_4"
-                    android:visibility="gone" />
+                    android:visibility="gone" 
+                    android:elevation="3dp"/>
 
                 <!-- Próximas citas médicas -->
                 <TextView
@@ -583,7 +589,8 @@
                     android:text="Sin citas agendadas"
                     android:textSize="16sp"
                     android:textColor="@color/ink_4"
-                    android:visibility="gone" />
+                    android:visibility="gone" 
+                    android:elevation="3dp"/>
 
                 <!-- Actividad reciente -->
                 <TextView
@@ -613,7 +620,8 @@
                     android:text="Sin actividad todavía"
                     android:textSize="16sp"
                     android:textColor="@color/ink_4"
-                    android:visibility="gone" />
+                    android:visibility="gone" 
+                    android:elevation="3dp"/>
 
             </LinearLayout>
 
@@ -624,7 +632,12 @@
         android:id="@+id/bottom_nav_cuidador"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/paper_2"
+        android:background="@drawable/shape_nav_flotante"
+        android:elevation="8dp"
+        android:layout_marginStart="14dp"
+        android:layout_marginEnd="14dp"
+        android:layout_marginBottom="12dp"
+        android:clipToPadding="false"
         app:menu="@menu/bottom_nav_cuidador"
         app:itemIconTint="@color/nav_icono_color"
         app:itemActiveIndicatorStyle="@style/IndicadorNav"

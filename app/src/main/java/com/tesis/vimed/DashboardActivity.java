@@ -314,17 +314,13 @@ public class DashboardActivity extends AppCompatActivity {
             tvPct.setText(pct + "%");
             tvPct.setTextColor(ContextCompat.getColor(this, colorDeNivelTexto(pct)));
 
-            View barra = item.findViewById(R.id.barra);
-            barra.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
-                ContextCompat.getColor(this, colorDeNivel(pct))));
-            // El ancho se fija cuando el riel ya midió: antes de eso no
-            // sabemos contra qué calcular el porcentaje.
-            View riel = (View) barra.getParent();
-            riel.post(() -> {
-                android.view.ViewGroup.LayoutParams lp = barra.getLayoutParams();
-                lp.width = Math.round(riel.getWidth() * Math.max(pct, 0) / 100f);
-                barra.setLayoutParams(lp);
-            });
+            // El anillo reemplazó a la barra: ya no hay que medir el riel
+            // ni esperar al layout para calcular un ancho — el indicador
+            // sabe dibujar un porcentaje solo.
+            com.google.android.material.progressindicator.CircularProgressIndicator anillo =
+                item.findViewById(R.id.anillo);
+            anillo.setProgress(Math.max(pct, 0), true);
+            anillo.setIndicatorColor(ContextCompat.getColor(this, colorDeNivel(pct)));
 
             cont.addView(item);
         }

@@ -127,7 +127,8 @@
                 android:background="@drawable/shape_warn_alert"
                 android:padding="16dp"
                 android:layout_marginBottom="14dp"
-                android:visibility="gone">
+                android:visibility="gone"
+                android:elevation="3dp">
 
                 <FrameLayout
                     android:layout_width="42dp"
@@ -176,7 +177,8 @@
                 android:layout_marginBottom="14dp"
                 android:clickable="true"
                 android:focusable="true"
-                android:visibility="gone">
+                android:visibility="gone"
+                android:elevation="3dp">
 
                 <FrameLayout
                     android:layout_width="42dp"
@@ -222,7 +224,8 @@
                 android:background="@drawable/shape_card"
                 android:padding="18dp"
                 android:layout_marginBottom="14dp"
-                android:visibility="gone">
+                android:visibility="gone"
+                android:elevation="3dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -303,7 +306,8 @@
                 android:layout_marginBottom="14dp"
                 android:clickable="true"
                 android:focusable="true"
-                android:visibility="gone">
+                android:visibility="gone"
+                android:elevation="3dp">
 
                 <FrameLayout
                     android:layout_width="42dp"
@@ -346,7 +350,8 @@
                 android:gravity="center_vertical"
                 android:background="@drawable/shape_card"
                 android:padding="22dp"
-                android:layout_marginBottom="28dp">
+                android:layout_marginBottom="28dp"
+                android:elevation="3dp">
 
                 <!-- Anillo de progreso -->
                 <FrameLayout
@@ -482,7 +487,8 @@
                 android:paddingLeft="24dp"
                 android:paddingRight="24dp"
                 android:background="@drawable/shape_dose_card"
-                android:visibility="visible">
+                android:visibility="visible"
+                android:elevation="3dp">
 
                 <ImageView
                     android:layout_width="64dp"
@@ -538,7 +544,8 @@
                 android:padding="18dp"
                 android:layout_marginTop="24dp"
                 android:clickable="true"
-                android:focusable="true">
+                android:focusable="true"
+                android:elevation="3dp">
 
                 <FrameLayout
                     android:layout_width="56dp"
@@ -597,7 +604,8 @@
                 android:padding="18dp"
                 android:layout_marginTop="14dp"
                 android:clickable="true"
-                android:focusable="true">
+                android:focusable="true"
+                android:elevation="3dp">
 
                 <FrameLayout
                     android:layout_width="56dp"
@@ -667,7 +675,8 @@
                 android:gravity="center_vertical"
                 android:background="@drawable/shape_card"
                 android:padding="18dp"
-                android:visibility="gone">
+                android:visibility="gone"
+                android:elevation="3dp">
 
                 <!-- Badge de fecha: mes + día -->
                 <LinearLayout
@@ -771,7 +780,8 @@
                 android:gravity="center"
                 android:padding="28dp"
                 android:background="@drawable/shape_dose_card"
-                android:visibility="visible">
+                android:visibility="visible"
+                android:elevation="3dp">
 
                 <ImageView
                     android:layout_width="40dp"
@@ -812,7 +822,12 @@
         android:id="@+id/bottom_nav"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/paper_2"
+        android:background="@drawable/shape_nav_flotante"
+        android:elevation="8dp"
+        android:layout_marginStart="14dp"
+        android:layout_marginEnd="14dp"
+        android:layout_marginBottom="12dp"
+        android:clipToPadding="false"
         app:menu="@menu/bottom_nav_menu"
         app:itemIconTint="@color/nav_icono_color"
         app:itemActiveIndicatorStyle="@style/IndicadorNav"

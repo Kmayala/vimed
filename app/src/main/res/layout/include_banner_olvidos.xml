@@ -15,7 +15,8 @@
     android:layout_marginBottom="16dp"
     android:clickable="true"
     android:focusable="true"
-    android:visibility="gone">
+    android:visibility="gone"
+    android:elevation="3dp">
 
     <LinearLayout
         android:layout_width="0dp"

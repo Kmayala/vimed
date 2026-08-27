@@ -110,7 +110,8 @@
                 android:paddingRight="24dp"
                 android:background="@drawable/shape_dose_card"
                 android:layout_marginTop="12dp"
-                android:visibility="gone">
+                android:visibility="gone"
+                android:elevation="3dp">
 
                 <ImageView
                     android:layout_width="72dp"
@@ -171,7 +172,12 @@
         android:id="@+id/bottom_nav"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/paper_2"
+        android:background="@drawable/shape_nav_flotante"
+        android:elevation="8dp"
+        android:layout_marginStart="14dp"
+        android:layout_marginEnd="14dp"
+        android:layout_marginBottom="12dp"
+        android:clipToPadding="false"
         app:menu="@menu/bottom_nav_menu"
         app:itemIconTint="@color/nav_icono_color"
         app:itemActiveIndicatorStyle="@style/IndicadorNav"

@@ -194,7 +194,8 @@
                     android:gravity="center_vertical"
                     android:background="@drawable/shape_info_card"
                     android:padding="16dp"
-                    android:layout_marginBottom="16dp">
+                    android:layout_marginBottom="16dp"
+                    android:elevation="3dp">
 
                     <FrameLayout
                         android:layout_width="46dp"
@@ -257,7 +258,8 @@
                     android:paddingBottom="36dp"
                     android:paddingLeft="24dp"
                     android:paddingRight="24dp"
-                    android:visibility="gone">
+                    android:visibility="gone"
+                    android:elevation="3dp">
 
                     <FrameLayout
                         android:layout_width="120dp"
@@ -334,7 +336,8 @@
                     android:background="@drawable/shape_info_card"
                     android:padding="16dp"
                     android:clickable="true"
-                    android:focusable="true">
+                    android:focusable="true"
+                    android:elevation="3dp">
 
                     <FrameLayout
                         android:layout_width="46dp"
@@ -400,7 +403,8 @@
                     android:gravity="center_vertical"
                     android:background="@drawable/shape_card"
                     android:padding="10dp"
-                    android:layout_marginBottom="14dp">
+                    android:layout_marginBottom="14dp"
+                    android:elevation="3dp">
 
                     <ImageView
                         android:id="@+id/btn_week_prev"
@@ -438,7 +442,8 @@
                     android:orientation="vertical"
                     android:background="@drawable/shape_card"
                     android:padding="16dp"
-                    android:layout_marginBottom="18dp">
+                    android:layout_marginBottom="18dp"
+                    android:elevation="3dp">
 
                     <!-- Navegación de mes -->
                     <LinearLayout
@@ -548,7 +553,8 @@
                     android:text="No hay citas este día"
                     android:textSize="16sp"
                     android:textColor="@color/ink_4"
-                    android:visibility="gone" />
+                    android:visibility="gone" 
+                    android:elevation="3dp"/>
 
             </LinearLayout>
 
@@ -559,7 +565,12 @@
         android:id="@+id/bottom_nav"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/paper_2"
+        android:background="@drawable/shape_nav_flotante"
+        android:elevation="8dp"
+        android:layout_marginStart="14dp"
+        android:layout_marginEnd="14dp"
+        android:layout_marginBottom="12dp"
+        android:clipToPadding="false"
         app:menu="@menu/bottom_nav_menu"
         app:itemIconTint="@color/nav_icono_color"
         app:itemActiveIndicatorStyle="@style/IndicadorNav"

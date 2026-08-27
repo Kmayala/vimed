@@ -3,37 +3,57 @@
     <!-- ═══════════════════════════════════════════════════════
          PALETA VIMED
 
-         Primario #6A1B9A. La escala sale de aclararlo hacia el blanco
-         (50–400) y oscurecerlo (600–900), así cualquier par de la
-         escala combina sin elegir a ojo.
+         Primario #5B34E8, un índigo vivo. La escala sale de aclararlo
+         hacia el blanco (50–400) y oscurecerlo (600–900), así cualquier
+         par de la escala combina sin elegir a ojo.
 
-         El blanco sobre el primario da 9.39: muy por encima del 7:1
-         que pide WCAG AAA, que es el nivel que corresponde para
-         pérdida de sensibilidad al contraste por edad.
+         PÁGINA CASI BLANCA, TARJETAS BLANCAS. El fondo es #F6F5FC —un
+         blanco con una gota de lavanda— y las tarjetas blanco puro. La
+         jerarquía la hace ese salto mínimo más la sombra, no un fondo
+         gris: el contenido queda flotando sobre la página en vez de
+         encajado en ella.
+
+         EL COLOR PASTEL VA EN EL FONDO, NUNCA EN EL TEXTO. Cada familia
+         tiene su _50 (pastel, para rellenar tarjetas y círculos) y su
+         _700 (el mismo tono pero oscuro, para el texto que va encima).
+         Es lo que permite que la app se vea clara y liviana sin que el
+         texto baje de 7:1 — un rosa pastel escrito sobre blanco se ve
+         precioso en una maqueta y no se lee en la calle a las tres de
+         la tarde.
+
+         Todos los pares están verificados: los _700 sobre su _50 y los
+         ink sobre blanco superan 7:1 (WCAG AAA, el nivel que
+         corresponde para pérdida de sensibilidad al contraste por
+         edad); el blanco sobre los _500 de relleno supera 4.5:1.
          ═══════════════════════════════════════════════════════ -->
 
     <!-- ── Primario: violeta ─────────────────────────────────── -->
-    <color name="brand_50">#f2eefb</color>
-    <color name="brand_100">#e7e0f7</color>
-    <color name="brand_200">#d3c2ee</color>
-    <color name="brand_300">#bca0e3</color>
-    <color name="brand_400">#8e5cb8</color>
-    <color name="brand_500">#5e2585</color>   <!-- primario -->
-    <color name="brand_600">#4f1f70</color>   <!-- texto/acciones sobre fondo claro -->
-    <color name="brand_700">#471b64</color>
-    <color name="brand_800">#391551</color>
-    <color name="brand_900">#2b0f3d</color>
+    <color name="brand_50">#f1edfe</color>
+    <color name="brand_100">#e4dcfd</color>
+    <color name="brand_200">#c9bcfb</color>
+    <color name="brand_300">#a78bfa</color>
+    <color name="brand_400">#7c5cf5</color>
+    <color name="brand_500">#5b34e8</color>   <!-- primario -->
+    <color name="brand_600">#4a28c4</color>   <!-- texto/acciones sobre fondo claro -->
+    <color name="brand_700">#3d1fa6</color>
+    <color name="brand_800">#2e1780</color>
+    <color name="brand_900">#1f0f59</color>
 
     <!-- ══ FAMILIAS DE SECCIÓN ═══════════════════════════════════
          Cada zona de la app tiene su color, y el color es información:
          mirando el tono ya sabés dónde estás.
 
-             violeta  #6A1B9A  medicación (la marca)
-             azul     #1464C0  citas médicas
-             verde    #1B5E1F  progreso y logros
+             índigo   #5B34E8  medicación (la marca)
+             azul     #2563EB  citas médicas
+             verde    #0A7D55  progreso y logros
              amarillo #F9A825  stock y avisos
-             naranja  #BE360B  lo que se perdió
-             rosa     #870E4F  acentos
+             naranja  #C2410C  lo que se perdió
+             rosa     #DB2777  acentos
+
+         Las seis existían pero apuntaban casi todas al mismo violeta,
+         así que el color había dejado de ser información: todas las
+         secciones se veían iguales. Ahora cada familia es su propio
+         tono otra vez.
 
          Cada una tiene su _50 (fondo), _500 (relleno) y _700 (texto
          sobre el _50). Todos los _700 sobre su _50 superan 7:1.
@@ -44,37 +64,37 @@
          lleva texto OSCURO (8.69 contra ink), nunca blanco, y para
          usarlo COMO texto está amarillo_700, que sí es oscuro.     -->
 
-    <color name="azul_50">#e9eff8</color>
-    <color name="azul_100">#c3d3ea</color>
-    <color name="azul_200">#c3d3ea</color>
-    <color name="azul_500">#0b3f91</color>
-    <color name="azul_600">#0a377f</color>
-    <color name="azul_700">#092c66</color>
+    <color name="azul_50">#e8f1fe</color>
+    <color name="azul_100">#cfe2fd</color>
+    <color name="azul_200">#cfe2fd</color>
+    <color name="azul_500">#2563eb</color>
+    <color name="azul_600">#1d4ed8</color>
+    <color name="azul_700">#1e40af</color>
 
-    <color name="naranja_50">#f4eef8</color>
-    <color name="naranja_100">#e2cfee</color>
-    <color name="naranja_500">#5e2585</color>
-    <color name="naranja_700">#2b0f3d</color>
+    <color name="naranja_50">#fff0e8</color>
+    <color name="naranja_100">#ffd9c2</color>
+    <color name="naranja_500">#c2410c</color>
+    <color name="naranja_700">#7c2d12</color>
 
-    <color name="verde_50">#e9eff8</color>
-    <color name="verde_100">#c3d3ea</color>
-    <color name="verde_500">#0b3f91</color>
-    <color name="verde_700">#092c66</color>
+    <color name="verde_50">#e6f7f1</color>
+    <color name="verde_100">#c4ede0</color>
+    <color name="verde_500">#0a7d55</color>
+    <color name="verde_700">#04553e</color>
 
 
 
-    <color name="rosa_50">#f2eefb</color>
-    <color name="rosa_100">#d3c2ee</color>
-    <color name="rosa_500">#8e5cb8</color>
-    <color name="rosa_700">#471b64</color>
+    <color name="rosa_50">#fdecf3</color>
+    <color name="rosa_100">#fbd5e5</color>
+    <color name="rosa_500">#db2777</color>
+    <color name="rosa_700">#83153f</color>
 
     <!-- El _500 es el amarillo vivo, para rellenos con texto oscuro.
          El _700 es el tono que se usa cuando el amarillo tiene que ser
          texto sobre un fondo claro. -->
-    <color name="amarillo_50">#f2eefb</color>
-    <color name="amarillo_100">#e7e0f7</color>
-    <color name="amarillo_500">#8e5cb8</color>
-    <color name="amarillo_700">#5e2585</color>
+    <color name="amarillo_50">#fff6e0</color>
+    <color name="amarillo_100">#fde9b4</color>
+    <color name="amarillo_500">#f9a825</color>
+    <color name="amarillo_700">#6f4400</color>
 
     <!-- Texto que va ENCIMA del amarillo vivo. Fijo en los dos modos:
          en oscuro, ink es casi blanco y sobre #F9A825 daba 1.73. -->
@@ -85,59 +105,67 @@
          así que el fondo tampoco puede. Con un _500 que se aclara de
          noche, un ícono blanco encima caía a 2.31 de contraste.
          El amarillo no está acá: no admite blanco encima. -->
-    <color name="verde_solido">#0b3f91</color>
-    <color name="naranja_solido">#5e2585</color>
-    <color name="amarillo_solido">#8e5cb8</color>
-    <color name="azul_solido">#0b3f91</color>
-    <color name="rosa_solido">#8e5cb8</color>
+    <color name="verde_solido">#0a7d55</color>
+    <color name="naranja_solido">#c2410c</color>
+    <color name="amarillo_solido">#9a5c00</color>
+    <color name="azul_solido">#2563eb</color>
+    <color name="rosa_solido">#db2777</color>
 
     <!-- Alias legacy (código que todavía dice "turquesa") -->
-    <color name="turquesa">#5e2585</color>
-    <color name="turquesa_dark">#4f1f70</color>
-    <color name="turquesa_light">#f2eefb</color>
-    <color name="turquesa_border">#e7e0f7</color>
+    <color name="turquesa">#5b34e8</color>
+    <color name="turquesa_dark">#4a28c4</color>
+    <color name="turquesa_light">#f1edfe</color>
+    <color name="turquesa_border">#e4dcfd</color>
+
+    <!-- Borde de las tarjetas. En claro es CASI INVISIBLE a propósito:
+         la tarjeta se separa de la página por su blanco y por la sombra,
+         no por una línea. En oscuro pasa a verse, porque ahí la sombra
+         no existe —una sombra negra sobre un fondo negro no dibuja nada—
+         y sin el borde dos superficies oscuras se pegan. Mismo token,
+         dos trabajos según el modo. -->
+    <color name="borde_tarjeta">#eeebf8</color>
 
     <!-- ── Neutrales fríos (ink) ──────────────────────────── -->
-    <color name="ink">#1f1a2e</color>         <!-- texto principal -->
-    <color name="ink_2">#332e44</color>
-    <color name="ink_3">#4d4760</color>
-    <color name="ink_4">#585167</color>
-    <color name="ink_5">#6d6480</color>
-    <color name="ink_6">#8b7fa0</color>
-    <color name="ink_7">#b6a9cc</color>       <!-- bordes / divisores -->
-    <color name="ink_8">#e9e2f5</color>
-    <color name="paper">#f4f0fb</color>       <!-- fondo de pantalla -->
+    <color name="ink">#1a1836</color>         <!-- texto principal -->
+    <color name="ink_2">#2e2b4f</color>
+    <color name="ink_3">#4a4668</color>
+    <color name="ink_4">#4f4b72</color>
+    <color name="ink_5">#65618a</color>
+    <color name="ink_6">#9491b5</color>
+    <color name="ink_7">#ddd9ee</color>       <!-- bordes / divisores -->
+    <color name="ink_8">#efecf9</color>
+    <color name="paper">#f6f5fc</color>       <!-- fondo de pantalla -->
     <color name="paper_2">#ffffff</color>     <!-- cards -->
 
     <!-- Alias legacy -->
-    <color name="gris_fondo">#f4f0fb</color>
-    <color name="gris_borde">#b6a9cc</color>
-    <color name="gris_texto">#565760</color>
+    <color name="gris_fondo">#f6f5fc</color>
+    <color name="gris_borde">#ddd9ee</color>
+    <color name="gris_texto">#4f4b72</color>
 
     <!-- ── Semánticos (estados) ───────────────────────────── -->
-    <color name="success">#0b3f91</color>
-    <color name="success_bg">#e9eff8</color>
+    <color name="success">#04553e</color>
+    <color name="success_bg">#e6f7f1</color>
     <!-- Las alertas (stock bajo, permisos de la alarma) vuelven al
          ámbar. Es el color con el que la gente ya lee "atención" y
          meterlo en la escala violeta les sacaba justamente eso. -->
-    <color name="warn">#6f3304</color>
+    <color name="warn">#6f4400</color>
     <color name="warn_bg">#fef3c7</color>
     <color name="warn_border">#f4cf7d</color>
     <!-- El único color fuera de la paleta, y a propósito: una toma que
          no se tomó tiene que saltar a la vista. En la escala violeta se
          confundía con "pospuesta" y en una app de medicación eso importa. -->
-    <color name="danger">#9b1c1c</color>
-    <color name="danger_bg">#fbe5e5</color>
-    <color name="info">#0b3f91</color>
-    <color name="info_bg">#e9eff8</color>
+    <color name="danger">#a3123a</color>
+    <color name="danger_bg">#fdecf3</color>
+    <color name="info">#1e40af</color>
+    <color name="info_bg">#e8f1fe</color>
 
     <!-- ── Colores de pastillas (fondo de círculo, texto blanco) -->
-    <color name="pill_rojo">#0b3f91</color>
-    <color name="pill_azul">#0b3f91</color>
-    <color name="pill_amarillo">#8e5cb8</color>
-    <color name="pill_verde">#471b64</color>
-    <color name="pill_morado">#5e2585</color>
-    <color name="pill_gris">#5d5470</color>
+    <color name="pill_rojo">#e11d48</color>
+    <color name="pill_azul">#2563eb</color>
+    <color name="pill_amarillo">#9a5c00</color>
+    <color name="pill_verde">#0a7d55</color>
+    <color name="pill_morado">#5b34e8</color>
+    <color name="pill_gris">#6b6790</color>
 
     <!-- Texto e íconos que van ENCIMA del color de acento (colorPrimary).
          En claro el acento es el violeta oscuro, así que encima va blanco.
@@ -146,10 +174,10 @@
     <color name="sobre_acento">#ffffff</color>
 
     <!-- ── Texto ──────────────────────────────────────────── -->
-    <color name="texto_principal">#1f1a2e</color>
+    <color name="texto_principal">#1a1836</color>
     <color name="white">#ffffff</color>
     <color name="black">#000000</color>
-    <color name="rojo_error">#9b1c1c</color>
+    <color name="rojo_error">#a3123a</color>
 
     <!-- ── Pantalla de alarma ─────────────────────────────────
          Verde del botón "Ya tomé": más oscuro que el verde puro para que
@@ -160,15 +188,15 @@
          violeta en los dos modos, así que su texto tampoco cambia. Si
          usara brand_100 —como antes— en modo oscuro se volvería violeta
          oscuro sobre violeta y se perdería (2.9 contra 3.93). -->
-    <color name="alarma_header_sub">#e7e0f7</color>
+    <color name="alarma_header_sub">#e4dcfd</color>
 
     <!-- Texto secundario sobre la tarjeta destacada (paciente, próxima
          cita). Fijo en los dos modos, por el mismo motivo que
          alarma_header_sub: esa tarjeta es oscura siempre, así que su
          texto tiene que ser claro siempre. -->
-    <color name="sobre_superficie_oscura">#d3c2ee</color>
+    <color name="sobre_superficie_oscura">#c9bcfb</color>
 
-    <color name="alarma_verde">#0b3f91</color>
+    <color name="alarma_verde">#0a7d55</color>
     <color name="alarma_verde_ripple">#3315803d</color>
 
     <!-- ── Superficie oscura (tarjeta destacada de próxima cita y
@@ -177,13 +205,13 @@
          azulado: es el mismo extremo oscuro de la escala, así que la
          tarjeta se lee como parte de la familia y no como un bloque
          negro prestado de otro diseño. Texto blanco encima: 17.7.  -->
-    <color name="surface_dark">#2b0f3d</color>
-    <color name="surface_dark_2">#5e2585</color>
+    <color name="surface_dark">#2e1780</color>
+    <color name="surface_dark_2">#5b34e8</color>
 
     <!-- Fondo del ícono adaptativo. No tiene versión oscura: el ícono
          del launcher no sigue al tema de la app, lo dibuja el sistema.
          Es el mismo blanco lavanda del logo original. -->
-    <color name="ic_launcher_bg">#f2eefb</color>
+    <color name="ic_launcher_bg">#f1edfe</color>
 
     <!-- ── Modo oscuro (la app corre siempre en claro) ────── -->
     <color name="dark_bg">#21222d</color>

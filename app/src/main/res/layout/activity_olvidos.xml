@@ -83,7 +83,8 @@
                 android:textSize="16sp"
                 android:lineSpacingMultiplier="1.15"
                 android:layout_marginBottom="20dp"
-                android:visibility="gone" />
+                android:visibility="gone" 
+                android:elevation="3dp"/>
 
             <LinearLayout
                 android:id="@+id/olvidos_container"

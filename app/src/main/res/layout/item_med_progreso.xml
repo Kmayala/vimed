@@ -1,19 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Fila de cumplimiento por medicamento: inicial en su color, nombre,
-     barra de avance y porcentaje. -->
+<!-- Fila de cumplimiento por medicamento: inicial en su color, nombre y
+     un anillo con el porcentaje adentro.
+
+     El anillo reemplaza a la barra horizontal que estaba antes. Una barra
+     dentro de una fila que ya tiene inicial, nombre y detalle es un cuarto
+     elemento compitiendo por el mismo renglón, y el número quedaba lejos
+     de la barra que lo explicaba. El anillo junta la forma y el número en
+     un solo objeto, que además se lee de un vistazo sin comparar largos
+     entre filas. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:gravity="center_vertical"
     android:background="@drawable/shape_card"
     android:padding="16dp"
-    android:layout_marginBottom="10dp">
+    android:layout_marginBottom="12dp"
+    android:elevation="3dp">
 
     <TextView
         android:id="@+id/tv_inicial"
-        android:layout_width="42dp"
-        android:layout_height="42dp"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
         android:gravity="center"
         android:textSize="18sp"
         android:textStyle="bold"
@@ -24,7 +33,8 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:layout_marginEnd="12dp">
 
         <TextView
             android:id="@+id/tv_nombre"
@@ -41,27 +51,35 @@
             android:textSize="14sp"
             android:textColor="@color/ink_4"
             android:layout_marginTop="2dp" />
-
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="8dp"
-            android:background="@drawable/shape_pista_barra"
-            android:layout_marginTop="8dp">
-
-            <View
-                android:id="@+id/barra"
-                android:layout_width="0dp"
-                android:layout_height="8dp"
-                android:background="@drawable/shape_barra_dia" />
-        </FrameLayout>
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/tv_pct"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_marginStart="14dp" />
+    <!-- El anillo y el número comparten centro: el FrameLayout los apila
+         en vez de ponerlos uno al lado del otro. -->
+    <FrameLayout
+        android:layout_width="56dp"
+        android:layout_height="56dp">
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/anillo"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_gravity="center"
+            app:indicatorSize="56dp"
+            app:trackThickness="6dp"
+            app:trackCornerRadius="3dp"
+            app:trackColor="@color/ink_8"
+            app:indicatorColor="@color/brand_500"
+            android:progress="0"
+            app:indicatorDirectionCircular="clockwise" />
+
+        <TextView
+            android:id="@+id/tv_pct"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="@color/ink" />
+    </FrameLayout>
 
 </LinearLayout>

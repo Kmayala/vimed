@@ -96,7 +96,8 @@
                 android:paddingBottom="22dp"
                 android:paddingLeft="24dp"
                 android:paddingRight="24dp"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="16dp"
+                android:elevation="3dp">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -230,7 +231,8 @@
                 android:gravity="center"
                 android:padding="28dp"
                 android:background="@drawable/shape_dose_card"
-                android:visibility="gone">
+                android:visibility="gone"
+                android:elevation="3dp">
 
                 <TextView
                     android:layout_width="wrap_content"

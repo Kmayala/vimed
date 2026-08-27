@@ -196,7 +196,8 @@
         android:textColor="@color/warn"
         android:textSize="17sp"
         android:lineSpacingMultiplier="1.15"
-        android:visibility="gone" />
+        android:visibility="gone" 
+        android:elevation="3dp"/>
 
     <!-- Empuja los botones al fondo -->
     <View

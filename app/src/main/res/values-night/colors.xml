@@ -3,7 +3,13 @@
     <!-- ═══════════════════════════════════════════════════════
          PALETA VIMED — MODO OSCURO
 
-         Gris muy oscuro con acentos neón, no negro puro.
+         Los mismos colores del modo claro, sobre gris y negro.
+
+         Cada familia conserva SU tono —el azul sigue azul, el verde
+         verde— pero pasa a la versión clara del tono, porque sobre un
+         fondo oscuro el color tiene que ser lo luminoso. La versión
+         anterior mandaba todo al violeta y las secciones dejaban de
+         distinguirse entre sí.
 
          El fondo ES #151515 y no #000000. Sobre negro absoluto no hay
          forma de que una tarjeta se distinga del fondo por su relleno
@@ -12,12 +18,9 @@
          quien ya lee con dificultad. Con la página en #151515 y las
          tarjetas en #232323 cada capa se ve sin depender del borde.
 
-         La versión anterior teñía TODO de violeta, incluidos los
-         fondos, con la idea de que se leyera como la misma app con la
-         luz baja. En la práctica quedaba lavada: sobre un fondo que ya
-         tiene color, cualquier acento pierde fuerza, y todo terminaba
-         pareciéndose entre sí. Con el fondo en negro los colores
-         recuperan saturación y se pueden usar brillantes.
+         Los fondos son grises neutros, sin tinte de color: es lo que
+         deja que los acentos se lean saturados. Un gris violáceo se
+         los come.
 
              fondo    #151515   la página
              tarjeta  #232323   una capa por encima
@@ -34,8 +37,8 @@
 
          Contrastes sobre la tarjeta #232323:
            ink 15.7 · ink_2 12.8 · ink_3 8.3 · ink_4 7.0
-           violeta 7.5 · azul 7.2 · amarillo 10.6 · rojo 7.9
-           blanco sobre brand_500 10.1 · oscuro sobre acento 8.9
+           índigo 7.6 · azul 7.4 · verde 7.6 · naranja 7.5
+           amarillo 9.8 · rosa 7.6 · blanco sobre brand_500 6.8
          ═══════════════════════════════════════════════════════ -->
 
     <!-- ── Primario ───────────────────────────────────────────
@@ -43,56 +46,60 @@
          de la burbuja del chat, y encima lleva texto blanco escrito a
          mano en los layouts. Si se aclarara, ese blanco perdería
          contraste. Los tonos de TEXTO (600 en adelante) sí pasan al
-         violeta neón.                                            -->
-    <color name="brand_50">#171018</color>    <!-- fondo suave / ripple -->
-    <color name="brand_100">#241a2e</color>   <!-- círculos de ícono, chips -->
-    <color name="brand_200">#d79bff</color>   <!-- texto sobre superficie oscura -->
-    <color name="brand_300">#e2b3ff</color>
-    <color name="brand_400">#8e5cb8</color>
-    <color name="brand_500">#5e2585</color>   <!-- primario (sin cambios) -->
-    <color name="brand_600">#d79bff</color>   <!-- texto/íconos sobre fondo -->
-    <color name="brand_700">#e2b3ff</color>   <!-- texto sobre brand_100 -->
-    <color name="brand_800">#e6c4ff</color>
-    <color name="brand_900">#f0dcff</color>
+         índigo claro.                                            -->
+    <color name="brand_50">#161329</color>    <!-- fondo suave / ripple -->
+    <color name="brand_100">#241d47</color>   <!-- círculos de ícono, chips -->
+    <color name="brand_200">#bda8ff</color>   <!-- texto sobre superficie oscura -->
+    <color name="brand_300">#c9b8ff</color>
+    <color name="brand_400">#7c5cf5</color>
+    <color name="brand_500">#5b34e8</color>   <!-- primario (sin cambios) -->
+    <color name="brand_600">#bda8ff</color>   <!-- texto/íconos sobre fondo -->
+    <color name="brand_700">#c9b8ff</color>   <!-- texto sobre brand_100 -->
+    <color name="brand_800">#dbd0ff</color>
+    <color name="brand_900">#ebe5ff</color>
 
     <!-- ══ FAMILIAS DE SECCIÓN, en neón ══════════════════════════
          El _50 es el fondo oscuro de la familia, el _500 el neón que
          se usa como relleno o gráfico, y el _700 el mismo neón un paso
          más claro para cuando va como texto.                      -->
 
-    <color name="azul_50">#0a1a24</color>
-    <color name="azul_100">#0f2937</color>
-    <color name="azul_200">#6fb4ff</color>
-    <color name="azul_500">#6fb4ff</color>
-    <color name="azul_600">#8dc4ff</color>
-    <color name="azul_700">#a3cdff</color>
+    <color name="azul_50">#101c2e</color>
+    <color name="azul_100">#172a45</color>
+    <color name="azul_200">#7fb4ff</color>
+    <color name="azul_500">#7fb4ff</color>
+    <color name="azul_600">#93c0ff</color>
+    <color name="azul_700">#93c0ff</color>
 
-    <color name="verde_50">#0a1520</color>
-    <color name="verde_100">#102336</color>
-    <color name="verde_500">#6fb4ff</color>
-    <color name="verde_700">#9ccbff</color>
+    <color name="verde_50">#0d2119</color>
+    <color name="verde_100">#143026</color>
+    <color name="verde_500">#4fc99a</color>
+    <color name="verde_700">#7bd9b6</color>
 
-    <color name="naranja_50">#1c0d26</color>
-    <color name="naranja_100">#2a143a</color>
-    <color name="naranja_500">#d79bff</color>
-    <color name="naranja_700">#e2b3ff</color>
+    <color name="naranja_50">#2a170f</color>
+    <color name="naranja_100">#3a2116</color>
+    <color name="naranja_500">#ff9a5c</color>
+    <color name="naranja_700">#ffb583</color>
 
-    <color name="amarillo_50">#1c1226</color>
-    <color name="amarillo_100">#2a1b38</color>
-    <color name="amarillo_500">#c9a4e8</color>
-    <color name="amarillo_700">#ddc2f4</color>
+    <color name="amarillo_50">#2a2109</color>
+    <color name="amarillo_100">#3a2e0d</color>
+    <color name="amarillo_500">#ffc247</color>
+    <color name="amarillo_700">#ffd270</color>
 
 
-    <color name="rosa_50">#1c1226</color>
-    <color name="rosa_100">#2a1b38</color>
-    <color name="rosa_500">#c9a4e8</color>
-    <color name="rosa_700">#ddc2f4</color>
+    <color name="rosa_50">#2b1220</color>
+    <color name="rosa_100">#3b1a2d</color>
+    <color name="rosa_500">#ff93bd</color>
+    <color name="rosa_700">#ffa6c8</color>
 
     <!-- Alias legacy -->
-    <color name="turquesa">#5e2585</color>
-    <color name="turquesa_dark">#d79bff</color>
-    <color name="turquesa_light">#171018</color>
-    <color name="turquesa_border">#241a2e</color>
+    <color name="turquesa">#5b34e8</color>
+    <color name="turquesa_dark">#bda8ff</color>
+    <color name="turquesa_light">#161329</color>
+    <color name="turquesa_border">#241d47</color>
+
+    <!-- Ver la nota en values/colors.xml: acá el borde SÍ tiene que
+         verse, es lo que separa una capa de la otra. -->
+    <color name="borde_tarjeta">#3a3a3a</color>
 
     <!-- ── Neutrales: la escala de ink se da vuelta ───────────
          Grises neutros, sin tinte: es lo que deja que los neones se
@@ -119,15 +126,15 @@
     <!-- ── Semánticos ─────────────────────────────────────────
          El color plano se usa como TEXTO y va en neón; el _bg es
          fondo y se hunde.                                        -->
-    <color name="success">#6fb4ff</color>
-    <color name="success_bg">#0a1520</color>
-    <color name="warn">#ffce4f</color>
-    <color name="warn_bg">#241d08</color>
-    <color name="warn_border">#4a3a10</color>
-    <color name="danger">#ff9c9c</color>
-    <color name="danger_bg">#2e1010</color>
-    <color name="info">#6fb4ff</color>
-    <color name="info_bg">#0a1520</color>
+    <color name="success">#4fc99a</color>
+    <color name="success_bg">#0d2119</color>
+    <color name="warn">#ffc247</color>
+    <color name="warn_bg">#2a2109</color>
+    <color name="warn_border">#4d3d0f</color>
+    <color name="danger">#ff93bd</color>
+    <color name="danger_bg">#2b1220</color>
+    <color name="info">#7fb4ff</color>
+    <color name="info_bg">#101c2e</color>
 
     <!-- Los pill_* NO se redefinen acá: llevan la inicial del
          medicamento en BLANCO encima, y ese blanco no cambia de modo.
@@ -136,7 +143,7 @@
 
     <!-- Ver la nota en values/colors.xml: acá el acento es claro, así
          que lo que va encima es el violeta más profundo (8.9). -->
-    <color name="sobre_acento">#1d0a29</color>
+    <color name="sobre_acento">#180b3d</color>
 
     <!-- ── Texto ──────────────────────────────────────────── -->
     <color name="texto_principal">#ffffff</color>
