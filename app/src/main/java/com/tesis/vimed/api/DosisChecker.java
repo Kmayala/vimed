@@ -163,14 +163,24 @@ public final class DosisChecker {
         float min = ref.getDosisMgKgDiaMin() * peso;
         float max = ref.getDosisMgKgDiaMax() * peso;
 
-        // El techo absoluto recorta el rango: muchos medicamentos se
+        // El techo absoluto recorta el MÁXIMO: muchos medicamentos se
         // dosifican por kilo HASTA un tope, y sin esto una persona de 110 kg
         // recibiría una referencia por encima de la dosis máxima real.
+        //
+        // El mínimo NO se recorta. Estar por debajo del techo no es estar
+        // por debajo de la dosis mínima que hace efecto: son dos cosas
+        // distintas. Recortando los dos, en una persona pesada el rango
+        // colapsaba —min y max quedaban los dos en el tope— y cualquier
+        // dosis por debajo del máximo salía avisada como "estás tomando
+        // menos de lo habitual". Justo a quien más chances tiene de estar
+        // bien medicado.
         float tope = ref.getDosisMaxDia();
-        if (tope > 0) {
-            if (max > tope) max = tope;
-            if (min > tope) min = tope;
-        }
+        if (tope > 0 && max > tope) max = tope;
+
+        // Si el tope deja el máximo por debajo del mínimo por peso, el
+        // rango es incoherente y no hay nada sensato que decir. Callarse es
+        // mejor que mostrar "de 4400 a 4000 mg por día".
+        if (min > max) return SIN_AVISO;
 
         String nombre = ref.getNombreComercial() != null
             ? ref.getNombreComercial() : "este medicamento";

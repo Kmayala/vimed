@@ -774,7 +774,13 @@ public final class VimedRepo {
                         agregarLosQueEsperan(otros, yo, pendientes);
                         cb.onOk(pendientes);
                     }
-                    @Override public void onError(String msg) { cb.onOk(pendientes); }
+                    @Override public void onError(String msg) {
+                        // Falla la SEGUNDA consulta. Devolver lo que trajo la
+                        // primera mostraría "1 solicitud" cuando hay tres, y
+                        // eso es peor que no mostrar nada: la persona entra,
+                        // responde la que ve y se queda tranquila.
+                        cb.onError(msg);
+                    }
                 });
             }
             @Override public void onError(String msg) { cb.onError(msg); }

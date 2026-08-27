@@ -202,6 +202,47 @@ public class DosisCheckerTest {
             DosisChecker.revisar(conReferenciaPorPeso(), 1100f, "mg", pesado, 3).nivel);
     }
 
+    /**
+     * El techo recorta el máximo, NO el mínimo.
+     *
+     * Con 200 kg el rango por peso es 2000 a 4000, y el techo del producto
+     * es 3000. Recortando los dos extremos el rango colapsaba a "3000 a
+     * 3000", y entonces cualquier dosis por debajo del techo salía avisada
+     * como si fuera POCA. Estar debajo del máximo no es estar debajo del
+     * mínimo que hace efecto.
+     */
+    @Test
+    public void elTechoNoRecortaElMinimo() {
+        PerfilClinico pesado = new PerfilClinico(200f, 0);
+        // 800 × 3 = 2400: por encima del mínimo real (2000) y por debajo
+        // del techo (3000). No hay nada que avisar.
+        assertEquals(DosisChecker.Nivel.NINGUNO,
+            DosisChecker.revisar(conReferenciaPorPeso(), 800f, "mg", pesado, 3).nivel);
+    }
+
+    @Test
+    public void avisaSiLaDiariaQuedaDebajoDelMinimoPorPeso() {
+        // 200 kg: el mínimo por peso son 2000 mg/día. Con 500 × 3 = 1500
+        // sí corresponde el aviso, y sigue funcionando después del arreglo.
+        PerfilClinico pesado = new PerfilClinico(200f, 0);
+        assertEquals(DosisChecker.Nivel.REVISAR,
+            DosisChecker.revisar(conReferenciaPorPeso(), 500f, "mg", pesado, 3).nivel);
+    }
+
+    /**
+     * Si el techo del producto queda por debajo del mínimo que le tocaría
+     * por peso, el rango es incoherente y no hay nada sensato que decir.
+     * Antes se mostraba "de 4400 a 4000 mg por día".
+     */
+    @Test
+    public void seCallaSiElTechoDejaElRangoDadoVuelta() {
+        CatalogoMedicamento apretado = conReferenciaPorPeso();
+        apretado.setDosisMaxDia(1500f);           // por debajo de 200 × 10
+        PerfilClinico pesado = new PerfilClinico(200f, 0);
+        assertEquals(DosisChecker.Nivel.NINGUNO,
+            DosisChecker.revisar(apretado, 400f, "mg", pesado, 3).nivel);
+    }
+
     @Test
     public void elChequeoDeSiempreTienePrioridadSobreElDelPeso() {
         // 5000 mg contra una presentación de 500: eso es un cero de más, y
