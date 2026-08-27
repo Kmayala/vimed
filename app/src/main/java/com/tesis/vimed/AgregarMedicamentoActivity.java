@@ -26,6 +26,7 @@ import com.tesis.vimed.api.VimedRepo;
 import com.tesis.vimed.models.CatalogoMedicamento;
 import com.tesis.vimed.models.Horario;
 import com.tesis.vimed.models.Medicamento;
+import com.tesis.vimed.models.PerfilClinico;
 import com.tesis.vimed.utils.NotificationHelper;
 
 import java.util.ArrayList;
@@ -47,6 +48,17 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
     /** -1 = me lo cargo a mí mismo. */
     private int idUsuarioDestino = -1;
     private String nombreDestino = null;
+
+    /**
+     * Peso y edad de QUIEN VA A TOMAR el medicamento — que no siempre es
+     * quien lo está cargando.
+     *
+     * null mientras no llegó de la red, y eso es un estado válido: el
+     * chequeo por peso simplemente no dice nada hasta entonces. Es
+     * preferible a completarlo con lo que haya a mano, que es justo el
+     * error que este campo existe para evitar.
+     */
+    private PerfilClinico perfilDeQuienLoToma = null;
 
     // ── Datos recolectados en los 7 pasos ──────────────────────
     private String nombre = "";
@@ -119,14 +131,7 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
             avisoDestino.setVisibility(View.VISIBLE);
         }
 
-        // Refresca peso y edad en la sesión mientras la persona recorre los
-        // pasos. El chequeo del final los lee de ahí, y si el cuidador cargó
-        // el peso desde su teléfono este es el momento de enterarse. Sin red
-        // se usa lo último que teníamos.
-        VimedRepo.cargarDatosClinicos(this, -1,
-            new VimedRepo.Cb<com.tesis.vimed.models.UsuarioSupabase>() {
-                @Override public void onOk(com.tesis.vimed.models.UsuarioSupabase p) {}
-            });
+        cargarPerfilDeQuienLoToma();
 
         tvTituloPaso  = findViewById(R.id.tv_titulo_paso);
         tvContadorPaso = findViewById(R.id.tv_contador_paso);
@@ -548,13 +553,51 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
      * habitual, que casi siempre es un cero de más—. Una diferencia menor
      * ya se avisó y no justifica un segundo cartel.
      */
+    /**
+     * Trae el peso y la edad de quien va a tomar el medicamento.
+     *
+     * POR QUÉ NO ALCANZA CON LA SESIÓN. El chequeo por peso leía
+     * SessionManager, que guarda los datos de quien está logueado. Para el
+     * adulto mayor cargando lo suyo estaba bien, pero cuando el cuidador
+     * carga para su paciente esos son SUS kilos y su edad: la app calculaba
+     * los mg/kg del hijo de 45 años y 80 kg y los presentaba como la
+     * referencia de la madre de 78 y 52. Y como el cartel habla en tercera
+     * persona —"para 80 kg, lo habitual es…"— suena tan específico que se
+     * le cree.
+     *
+     * Cuando es para otra persona se pide su perfil y NO se cachea: el peso
+     * del paciente no puede pisar el propio en la sesión (de eso ya se
+     * ocupa VimedRepo, que solo guarda el perfil propio).
+     */
+    private void cargarPerfilDeQuienLoToma() {
+        // El propio se puede usar de entrada: ya está en la sesión. La
+        // consulta igual sale, por si el cuidador le corrigió el peso desde
+        // su teléfono.
+        if (idUsuarioDestino <= 0) {
+            perfilDeQuienLoToma = new SessionManager(this).getPerfilClinico();
+        }
+
+        VimedRepo.cargarDatosClinicos(this, idUsuarioDestino,
+            new VimedRepo.Cb<com.tesis.vimed.models.UsuarioSupabase>() {
+                @Override public void onOk(com.tesis.vimed.models.UsuarioSupabase p) {
+                    if (p != null) perfilDeQuienLoToma = p.perfilClinico();
+                }
+                @Override public void onError(String msg) {
+                    // Sin red se sigue sin el peso. Para el propio queda lo
+                    // que ya había en la sesión; para el del paciente, nada,
+                    // y el chequeo por peso se calla — que es lo correcto:
+                    // no tenemos sus kilos y no los vamos a inventar.
+                }
+            });
+    }
+
     private void chequearDosisYSeguir() {
         // Acá SÍ se puede usar el peso: la frecuencia ya está elegida, y sin
         // ella no se sabe cuánto se toma por día — 50 mg pueden ser 50 o 200.
         // En el aviso del paso 2 todavía no se conoce.
         DosisChecker.Aviso aviso = DosisChecker.revisar(
             CatalogoMatcher.buscar(nombre, catalogo), dosis, unidad,
-            new SessionManager(this).getPerfilClinico(), tomasPorDia(),
+            perfilDeQuienLoToma, tomasPorDia(),
             idUsuarioDestino > 0);
 
         // ALTO interrumpe siempre. Un REVISAR común ya se mostró en el paso
