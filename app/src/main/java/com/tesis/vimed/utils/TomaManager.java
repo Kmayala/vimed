@@ -63,6 +63,9 @@ public final class TomaManager {
                 fechaHoyCon(horaHHMM));
             r.setEstado("confirmada");
             r.setFechaHoraConfirmacion(ahora);
+            // Copia para el historial: ver la nota en RegistroToma.
+            r.setNombreMedicamento(med.getNombre());
+            r.setDosisTexto(MedCache.dosisLegible(med));
             VimedRepo.confirmarTomaDelSlot(r, ahora, new VimedRepo.Cb<Void>() {
                 @Override public void onOk(Void v) { trasRegistrar.onOk(null); }
                 @Override public void onError(String msg) { cb.onError(msg); }
@@ -147,6 +150,11 @@ public final class TomaManager {
                     fechaHoyCon(horaHHMM));
                 r.setEstado("confirmada");
                 r.setFechaHoraConfirmacion(ahora);
+                // Copia para el historial. Acá el medicamento puede no
+                // haberse podido leer (confirmación sin conexión), y en ese
+                // caso queda lo que tenga la caché.
+                r.setNombreMedicamento(MedCache.nombre(ctx, idMedicamento));
+                r.setDosisTexto(MedCache.dosis(ctx, idMedicamento));
 
                 RegistroToma fila = VimedRepo.asegurarTomaSync(r);
                 if (fila != null && !fila.estaConfirmada()) {

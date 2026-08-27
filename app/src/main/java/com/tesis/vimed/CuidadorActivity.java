@@ -607,10 +607,18 @@ public class CuidadorActivity extends AppCompatActivity {
 
             String hora = prog.length() >= 16 ? prog.substring(11, 16) : "";
 
-            // Nombre del medicamento (vacío si todavía no cargó el mapa)
+            // El nombre sale PRIMERO de la propia fila de la toma, donde
+            // quedó copiado al registrarla. El mapa es el respaldo: sirve
+            // para las filas viejas, anteriores a esa columna, pero se cae
+            // en cuanto el medicamento se da de baja —el mapa se arma con
+            // los activos— y era lo que dejaba todo el historial diciendo
+            // "Medicamento".
             Medicamento med = medPorHorario.get(t.getIdHorario());
-            String nombreMed = med != null && med.getNombre() != null
-                ? med.getNombre() : "Medicamento";
+            String nombreMed = t.nombreParaMostrar();
+            if (nombreMed == null) {
+                nombreMed = med != null && med.getNombre() != null
+                    ? med.getNombre() : "Medicamento";
+            }
 
             // Mismo código de color que en la app del adulto mayor: verde
             // tomada, ámbar pospuesta, rojo sin confirmar. Así el familiar
@@ -636,7 +644,10 @@ public class CuidadorActivity extends AppCompatActivity {
 
             msg.setText(estado);
             String detalle = "Programada a las " + hora;
-            if (med != null) detalle += " · " + dosisLegible(med);
+            String dosisTxt = t.getDosisTexto() != null && !t.getDosisTexto().isEmpty()
+                ? t.getDosisTexto()
+                : (med != null ? dosisLegible(med) : "");
+            if (!dosisTxt.isEmpty()) detalle += " · " + dosisTxt;
             fecha.setText(detalle);
             tomasContainer.addView(item);
         }

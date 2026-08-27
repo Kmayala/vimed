@@ -175,6 +175,12 @@ public class AlarmaReceiver extends BroadcastReceiver {
         if (idHorario > 0 && idUsuario > 0) {
             RegistroToma r = new RegistroToma(idHorario, idUsuario,
                 TomaManager.fechaHoyCon(hora));
+            // Se copia el nombre y la dosis en la fila: si mañana dan de
+            // baja el medicamento, esta toma tiene que seguir diciendo qué
+            // era. Salen de la caché, que es lo mismo que se acaba de
+            // mostrar en la alarma.
+            r.setNombreMedicamento(nombre);
+            r.setDosisTexto(dosisTxt);
             RegistroToma creado = VimedRepo.asegurarTomaSync(r);
             if (creado != null) {
                 // La notificación ya está en pantalla, pero sin el id de la

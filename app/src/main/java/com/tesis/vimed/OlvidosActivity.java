@@ -95,10 +95,14 @@ public class OlvidosActivity extends AppCompatActivity {
     /**
      * Primero los medicamentos y sus horarios, después los olvidos.
      *
-     * Encadenado y no en paralelo: registro_tomas guarda id_horario, no
-     * id_medicamento, así que sin el mapa armado la lista se pintaría con
-     * "Medicamento" en vez del nombre — justo el dato que hace falta para
-     * decidir si uno se acuerda de haberla tomado.
+     * El mapa id_horario → medicamento es el RESPALDO del nombre: desde que
+     * cada toma guarda una copia del suyo, el camino normal no lo necesita.
+     * Sigue armándose para las filas viejas, anteriores a esa columna, que
+     * el backfill no haya podido resolver.
+     *
+     * Encadenado y no en paralelo por la misma razón de siempre: si las
+     * tomas llegaran antes que el mapa, esas filas viejas se pintarían sin
+     * nombre.
      */
     private void cargar() {
         VimedRepo.listarMedicamentosDe(idMirado(), new VimedRepo.Cb<List<Medicamento>>() {
@@ -216,14 +220,23 @@ public class OlvidosActivity extends AppCompatActivity {
     private View filaDe(LayoutInflater inflater, RegistroToma t) {
         View item = inflater.inflate(R.layout.item_olvido, contenedor, false);
 
+        // Igual que en el panel del cuidador: primero lo que quedó copiado
+        // en la fila, y el mapa solo como respaldo para las filas viejas.
+        // Un medicamento dado de baja no está en el mapa, y sus olvidos son
+        // justamente los que hay que poder leer.
         Medicamento med = medPorHorario.get(t.getIdHorario());
-        String nombre = med != null && med.getNombre() != null
-            ? med.getNombre() : "Medicamento";
+        String guardado = t.nombreParaMostrar();
+        final String nombre = guardado != null
+            ? guardado
+            : (med != null && med.getNombre() != null ? med.getNombre() : "Medicamento");
 
         ((TextView) item.findViewById(R.id.olv_nombre)).setText(nombre);
 
         String detalle = "Estaba programada a las " + horaDe(t);
-        if (med != null) detalle += " · " + dosisLegible(med);
+        String dosisTxt = t.getDosisTexto() != null && !t.getDosisTexto().isEmpty()
+            ? t.getDosisTexto()
+            : (med != null ? dosisLegible(med) : "");
+        if (!dosisTxt.isEmpty()) detalle += " · " + dosisTxt;
         ((TextView) item.findViewById(R.id.olv_detalle)).setText(detalle);
 
         MaterialButton btn = item.findViewById(R.id.olv_btn_tome);

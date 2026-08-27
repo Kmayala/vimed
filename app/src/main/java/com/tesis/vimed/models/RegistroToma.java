@@ -25,6 +25,23 @@ public class RegistroToma {
      */
     private Integer confirmadoPor;
 
+    /**
+     * Copia del nombre y de la dosis EN EL MOMENTO de la toma.
+     *
+     * El historial no puede depender de la ficha del medicamento: darlo de
+     * baja lo saca de todas las consultas (que filtran activo = true) y el
+     * registro entero pasaba a decir "Medicamento". Y aunque no se diera de
+     * baja, renombrarlo reescribiría el pasado — lo que se tomó el martes
+     * no cambia porque hoy cambie la ficha.
+     *
+     * Es duplicar un dato a propósito. En un registro clínico lo correcto
+     * es lo que era cierto cuando pasó, no lo que es cierto ahora.
+     */
+    private String nombreMedicamento;
+
+    /** Dosis ya formateada ("50 mg"). Ver la nota de arriba. */
+    private String dosisTexto;
+
     public RegistroToma() {}
 
     public RegistroToma(int idHorario, int idUsuario, String fechaHoraProgramada) {
@@ -49,6 +66,24 @@ public class RegistroToma {
     public void setEstado(String estado) { this.estado = estado; }
     public Integer getConfirmadoPor() { return confirmadoPor; }
     public void setConfirmadoPor(Integer v) { this.confirmadoPor = v; }
+
+    public String getNombreMedicamento() { return nombreMedicamento; }
+    public void setNombreMedicamento(String v) { this.nombreMedicamento = v; }
+    public String getDosisTexto() { return dosisTexto; }
+    public void setDosisTexto(String v) { this.dosisTexto = v; }
+
+    /**
+     * Nombre para mostrar, o null si esta fila no lo tiene guardado.
+     *
+     * Devuelve null en vez de "Medicamento" a propósito: así quien la
+     * llama puede intentar el camino viejo —buscarlo por el horario— antes
+     * de rendirse. Solo las filas anteriores a esta columna que el backfill
+     * no pudo resolver llegan sin nombre.
+     */
+    public String nombreParaMostrar() {
+        return nombreMedicamento != null && !nombreMedicamento.trim().isEmpty()
+            ? nombreMedicamento.trim() : null;
+    }
 
     public boolean estaConfirmada() { return "confirmada".equals(estado); }
     public boolean estaOlvidada()   { return "omitida".equals(estado); }
