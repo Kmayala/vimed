@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -687,7 +686,15 @@ public class CuidadorActivity extends AppCompatActivity {
             // a qué hora, cada cuánto, cuántas quedan.
             fecha.setText(pautaDe(m) + System.lineSeparator() + inventarioDe(m));
 
-            item.setOnClickListener(v -> menuMedicamento(m));
+            // Misma puerta que en la app del adulto mayor: la ficha completa.
+            // El menú de dos opciones que había acá dejaba al cuidador sin
+            // ver la dosis ni el vencimiento de lo que estaba mirando.
+            item.setOnClickListener(v -> {
+                Intent i = ModoPaciente.de(idAdulto, nombreAdulto)
+                    .intent(this, MedicamentoDetalleActivity.class);
+                i.putExtra(MedicamentoDetalleActivity.EXTRA_ID_MEDICAMENTO, m.getId());
+                startActivity(i);
+            });
             medsContainer.addView(item);
         }
     }
@@ -730,144 +737,6 @@ public class CuidadorActivity extends AppCompatActivity {
             if (m.venceProto()) sb.append(" ⚠");
         }
         return sb.toString();
-    }
-
-    /** Opciones del cuidador sobre un medicamento del adulto. */
-    private void menuMedicamento(Medicamento m) {
-        new AlertDialog.Builder(this)
-            .setTitle(m.getNombre())
-            .setItems(new String[]{"Cambiar stock", "Dar de baja"}, (d, w) -> {
-                if (w == 0) dialogoStock(m);
-                else confirmarBaja(m);
-            })
-            .show();
-    }
-
-    /**
-     * Reponer la caja: unidades y vencimiento en el mismo diálogo.
-     *
-     * Van juntos porque son el mismo gesto — el cuidador vuelve de la
-     * farmacia con un envase nuevo, y ese envase trae las dos cosas. En dos
-     * diálogos separados, el vencimiento sería el que nadie actualiza.
-     */
-    private void dialogoStock(Medicamento m) {
-        int pad = (int) (20 * getResources().getDisplayMetrics().density);
-
-        LinearLayout caja = new LinearLayout(this);
-        caja.setOrientation(LinearLayout.VERTICAL);
-        caja.setPadding(pad, pad / 2, pad, 0);
-
-        final android.widget.EditText input = new android.widget.EditText(this);
-        input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
-        input.setHint("Unidades");
-        input.setText(String.valueOf(m.getStockActual()));
-        input.setSelection(input.getText().length());
-        caja.addView(input);
-
-        // El vencimiento arranca con lo que ya estaba cargado; el array de
-        // un elemento es para poder escribirlo desde el listener del
-        // calendario, que necesita una referencia efectivamente final.
-        final String[] vencimiento = { m.getFechaVencimiento() };
-
-        final android.widget.TextView tvVence = new android.widget.TextView(this);
-        tvVence.setTextSize(17f);
-        tvVence.setPadding(0, pad / 2, 0, 0);
-        tvVence.setTextColor(getColor(R.color.brand_600));
-        tvVence.setText(textoVencimiento(vencimiento[0]));
-        tvVence.setOnClickListener(v ->
-            elegirVencimiento(vencimiento[0], elegido -> {
-                vencimiento[0] = elegido;
-                tvVence.setText(textoVencimiento(elegido));
-            }));
-        caja.addView(tvVence);
-
-        new AlertDialog.Builder(this)
-            .setTitle("Reponer " + m.getNombre())
-            .setMessage("¿Cuántas unidades le quedan?")
-            .setView(caja)
-            .setNegativeButton("Cancelar", null)
-            .setPositiveButton("Guardar", (d, w) -> {
-                int nuevo;
-                try {
-                    nuevo = Integer.parseInt(input.getText().toString().trim());
-                } catch (NumberFormatException e) {
-                    Toast.makeText(this, "Número inválido", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                if (nuevo < 0) {
-                    Toast.makeText(this, "El stock no puede ser negativo",
-                        Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                VimedRepo.corregirStock(m.getId(), nuevo, vencimiento[0],
-                    new VimedRepo.Cb<Void>() {
-                        @Override public void onOk(Void v) {
-                            // Si cambió el vencimiento, se borra el freno de
-                            // "ya avisé hoy": si no, cargar una caja nueva no
-                            // volvería a avisar hasta mañana, y una fecha
-                            // corregida a mano tampoco avisaría nunca.
-                            com.tesis.vimed.utils.VencimientoChecker
-                                .olvidarAviso(CuidadorActivity.this, m.getId());
-                            Toast.makeText(CuidadorActivity.this,
-                                "Guardado ✓", Toast.LENGTH_SHORT).show();
-                            cargarPaciente();
-                        }
-                        @Override public void onError(String msg) {
-                            Toast.makeText(CuidadorActivity.this, msg, Toast.LENGTH_LONG).show();
-                        }
-                    });
-            })
-            .show();
-    }
-
-    private interface AlElegirFecha { void elegida(String ymd); }
-
-    private String textoVencimiento(String ymd) {
-        if (ymd == null || ymd.length() < 10) return "Vence el: tocá para cargarlo";
-        return "Vence el " + ymd.substring(8, 10) + "/" + ymd.substring(5, 7)
-            + "/" + ymd.substring(0, 4) + " (tocá para cambiar)";
-    }
-
-    private void elegirVencimiento(String actual, AlElegirFecha alElegir) {
-        java.util.Calendar inicial = java.util.Calendar.getInstance();
-        if (actual != null && actual.length() >= 10) {
-            try {
-                inicial.setTime(new SimpleDateFormat("yyyy-MM-dd", Locale.US)
-                    .parse(actual.substring(0, 10)));
-            } catch (Exception ignored) { }
-        } else {
-            inicial.add(java.util.Calendar.YEAR, 1);
-        }
-
-        android.app.DatePickerDialog dlg = new android.app.DatePickerDialog(this,
-            (view, year, month, day) -> alElegir.elegida(
-                String.format(Locale.US, "%04d-%02d-%02d", year, month + 1, day)),
-            inicial.get(java.util.Calendar.YEAR),
-            inicial.get(java.util.Calendar.MONTH),
-            inicial.get(java.util.Calendar.DAY_OF_MONTH));
-        dlg.show();
-    }
-
-    private void confirmarBaja(Medicamento m) {
-        new AlertDialog.Builder(this)
-            .setTitle("¿Dar de baja " + m.getNombre() + "?")
-            .setMessage("Va a dejar de aparecer en la app de "
-                + (nombreAdulto.isEmpty() ? "tu familiar" : nombreAdulto)
-                + " y no le va a sonar más la alarma.")
-            .setNegativeButton("Cancelar", null)
-            .setPositiveButton("Dar de baja", (d, w) ->
-                VimedRepo.eliminarMedicamento(m.getId(), new VimedRepo.Cb<Void>() {
-                    @Override public void onOk(Void v) {
-                        Toast.makeText(CuidadorActivity.this,
-                            "Medicamento dado de baja", Toast.LENGTH_SHORT).show();
-                        cargarPaciente();
-                    }
-                    @Override public void onError(String msg) {
-                        Toast.makeText(CuidadorActivity.this, msg, Toast.LENGTH_LONG).show();
-                    }
-                }))
-            .show();
     }
 
     private void pintarCitas(List<CitaMedica> citas) {

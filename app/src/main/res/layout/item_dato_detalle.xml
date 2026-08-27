@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Una fila "etiqueta / valor" de la ficha del medicamento.
+     La etiqueta va arriba y chica, el valor abajo y grande: al leer de
+     corrido lo que importa es el valor, y la etiqueta solo hace falta
+     cuando uno se detiene a buscar un dato puntual. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingTop="13dp"
+    android:paddingBottom="13dp">
+
+    <TextView
+        android:id="@+id/tv_etiqueta"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="13sp"
+        android:letterSpacing="0.05"
+        android:textColor="@color/ink_3" />
+
+    <TextView
+        android:id="@+id/tv_valor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:textColor="@color/ink"
+        android:layout_marginTop="3dp"
+        android:lineSpacingMultiplier="1.2" />
+</LinearLayout>

@@ -60,6 +60,20 @@ public interface SupabaseService {
         @Query("order")      String order
     );
 
+    /**
+     * Reemplaza los campos editables de un medicamento.
+     *
+     * Distinto de {@link #actualizarMedicamento}, que recibe un DTO de
+     * parche con dos o tres columnas: acá viaja el objeto entero porque lo
+     * que se está guardando es un formulario completo, y un campo vaciado a
+     * propósito tiene que llegar como null y no omitirse.
+     */
+    @PATCH("medicamentos")
+    Call<List<Medicamento>> actualizarMedicamentoCompleto(
+        @Query("id_medicamento") String idEq,
+        @Body Medicamento med
+    );
+
     @POST("medicamentos")
     Call<List<Medicamento>> crearMedicamento(@Body Medicamento nuevo);
 

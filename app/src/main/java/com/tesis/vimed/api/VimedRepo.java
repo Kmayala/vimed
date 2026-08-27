@@ -73,6 +73,8 @@ public final class VimedRepo {
     private static class HorarioPatch {
         @com.google.gson.annotations.SerializedName("hora_inicio")
         String horaInicio;
+        @com.google.gson.annotations.SerializedName("intervalo_horas")
+        Integer intervaloHoras;
     }
 
     private static class VinculoPatch {
@@ -106,6 +108,31 @@ public final class VimedRepo {
         return r.isEmpty() ? null : r.get(0);
     }
 
+    /**
+     * Un medicamento por su id, sin filtrar por activo.
+     *
+     * Sin filtro a propósito: la pantalla de detalle se puede abrir para uno
+     * que se acaba de dar de baja —desde el historial, por ejemplo— y
+     * mostrarle "ya no está" a alguien que lo está mirando en la lista
+     * sería mentirle.
+     */
+    public static void buscarMedicamento(int idMedicamento, Cb<Medicamento> cb) {
+        SupabaseClient.getService().getMedicamentoPorId("eq." + idMedicamento)
+            .enqueue(new Callback<List<Medicamento>>() {
+                @Override
+                public void onResponse(Call<List<Medicamento>> c,
+                                       Response<List<Medicamento>> r) {
+                    if (!r.isSuccessful()) { cb.onError(mensajeDeError(r)); return; }
+                    List<Medicamento> body = r.body();
+                    cb.onOk(body == null || body.isEmpty() ? null : body.get(0));
+                }
+                @Override
+                public void onFailure(Call<List<Medicamento>> c, Throwable t) {
+                    cb.onError("Sin conexión: " + t.getMessage());
+                }
+            });
+    }
+
     public static void crearMedicamento(Context ctx, Medicamento med, Cb<Medicamento> cb) {
         int idUsuario = idUsuario(ctx);
         if (idUsuario == -1) { cb.onError("Sesión no sincronizada"); return; }
@@ -126,6 +153,57 @@ public final class VimedRepo {
                     cb.onError("Sin conexión: " + t.getMessage());
                 }
             });
+    }
+
+    /**
+     * Guarda los cambios de la pantalla de edición.
+     *
+     * Manda el medicamento ENTERO y no un parche: acá se está guardando un
+     * formulario en el que la persona pudo tocar cualquier campo, y armar
+     * un parche con "solo lo que cambió" obligaría a comparar campo por
+     * campo contra el original. Vaciar un campo a propósito —borrar el
+     * vencimiento, por ejemplo— es indistinguible de "no lo toqué" en un
+     * parche, y ese es justo el caso que se rompe en silencio.
+     *
+     * Va con el callback estricto: si es el medicamento de un paciente y el
+     * RLS lo rechaza, PostgREST devuelve 200 con lista vacía y sin esto la
+     * pantalla diría "Guardado" sin haber guardado.
+     */
+    public static void actualizarMedicamento(int idMedicamento, Medicamento med,
+                                             Cb<Void> cb) {
+        // Se manda una COPIA armada acá y no el objeto que llega. Dos
+        // motivos, los dos silenciosos si se pasan por alto:
+        //
+        //   · el id no puede viajar en el cuerpo —es la clave por la que se
+        //     filtra, y PostgREST rechaza reescribir la PK—, y el modelo no
+        //     tiene forma de volverlo a null una vez seteado;
+        //   · `activo` es un boolean primitivo, así que Gson lo manda
+        //     SIEMPRE. Un objeto al que nadie le puso activo = true daría de
+        //     baja el medicamento al guardarlo. El constructor lo deja en
+        //     true, que es lo correcto acá: se está editando uno vigente, y
+        //     la baja tiene su propio camino (eliminarMedicamento).
+        Medicamento copia = new Medicamento(
+            med.getIdUsuario(), med.getNombre(), med.getPresentacion(),
+            med.getDosis(), med.getUnidad(), med.getInstrucciones(),
+            med.getColorIcono(), med.getStockActual(), med.getStockMinimo());
+        copia.setFechaVencimiento(med.getFechaVencimiento());
+
+        SupabaseClient.getService()
+            .actualizarMedicamentoCompleto("eq." + idMedicamento, copia)
+            .enqueue(VimedRepo.<Medicamento>voidCbEstricto(cb,
+                "No se pudo guardar. Puede que ya no estés vinculado a esa persona."));
+    }
+
+    /** Cambia la hora de inicio y la frecuencia de un horario. */
+    public static void actualizarHorario(int idHorario, String horaHHMM,
+                                         int intervaloHoras, Cb<Void> cb) {
+        HorarioPatch cambios = new HorarioPatch();
+        cambios.horaInicio = horaHHMM;
+        cambios.intervaloHoras = intervaloHoras;
+        SupabaseClient.getService()
+            .actualizarHorario("eq." + idHorario, cambios)
+            .enqueue(VimedRepo.<Horario>voidCbEstricto(cb,
+                "No se pudo guardar el horario."));
     }
 
     /** Baja lógica: activo = false. */

@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/bg_welcome_gradient">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingLeft="16dp"
+        android:paddingRight="20dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp">
+
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_arrow_back"
+            android:background="@drawable/shape_neutral_icon_container"
+            android:scaleType="center"
+            android:tint="@color/ink_2"
+            android:contentDescription="Volver" />
+
+        <TextView
+            android:id="@+id/tv_toolbar_titulo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Medicamento"
+            android:textSize="22sp"
+            android:fontFamily="@font/atkinson"
+            android:textColor="@color/ink"
+            android:letterSpacing="-0.02"
+            android:layout_marginStart="12dp" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:paddingBottom="32dp">
+
+            <!-- ══ Identidad ══
+                 La inicial de color es la misma que en la lista: es como la
+                 persona reconoce el medicamento de un vistazo, y cambiarla
+                 acá lo volvería otro. -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/shape_card"
+                android:elevation="3dp"
+                android:padding="20dp">
+
+                <TextView
+                    android:id="@+id/tv_inicial"
+                    android:layout_width="62dp"
+                    android:layout_height="62dp"
+                    android:gravity="center"
+                    android:textSize="27sp"
+                    android:textColor="@color/white"
+                    android:background="@drawable/shape_icon_purple" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="16dp">
+
+                    <TextView
+                        android:id="@+id/tv_nombre"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="24sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/ink"
+                        android:lineSpacingMultiplier="1.05" />
+
+                    <TextView
+                        android:id="@+id/tv_dosis"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="18sp"
+                        android:textColor="@color/brand_600"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- ══ Aviso de vencimiento ══
+                 Arriba de todo cuando corresponde: es lo único de esta
+                 pantalla que pide una acción hoy. -->
+            <TextView
+                android:id="@+id/tv_alerta_vencimiento"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/shape_warn_alert"
+                android:elevation="3dp"
+                android:paddingLeft="18dp"
+                android:paddingRight="18dp"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:textColor="@color/warn"
+                android:textSize="16sp"
+                android:lineSpacingMultiplier="1.25"
+                android:layout_marginTop="14dp"
+                android:visibility="gone" />
+
+            <!-- ══ Ficha ══ -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="La ficha"
+                android:textSize="15sp"
+                android:letterSpacing="0.08"
+                android:textColor="@color/ink_3"
+                android:layout_marginTop="28dp"
+                android:layout_marginBottom="10dp" />
+
+            <LinearLayout
+                android:id="@+id/card_ficha"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/shape_card"
+                android:elevation="3dp"
+                android:padding="6dp" />
+
+            <!-- ══ El envase ══ -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="El envase"
+                android:textSize="15sp"
+                android:letterSpacing="0.08"
+                android:textColor="@color/ink_3"
+                android:layout_marginTop="26dp"
+                android:layout_marginBottom="10dp" />
+
+            <LinearLayout
+                android:id="@+id/card_envase"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/shape_card"
+                android:elevation="3dp"
+                android:padding="6dp" />
+
+            <!-- ══ Acciones ══
+                 Reponer arriba y en lleno: es lo que se hace seguido.
+                 Editar en contorno. Eliminar aparte, abajo y en rojo, para
+                 que el dedo no lo encuentre buscando otra cosa. -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_reponer"
+                style="@style/Boton.Principal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minWidth="0dp"
+                android:minHeight="58dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:layout_marginTop="30dp"
+                android:text="Reponer stock"
+                android:textSize="17sp"
+                app:cornerRadius="16dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_editar"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minWidth="0dp"
+                android:minHeight="58dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:layout_marginTop="12dp"
+                android:text="Editar medicamento"
+                android:textSize="17sp"
+                android:textColor="@color/brand_600"
+                app:strokeColor="@color/brand_600"
+                app:cornerRadius="16dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_eliminar"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minWidth="0dp"
+                android:minHeight="52dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:layout_marginTop="20dp"
+                android:text="Eliminar medicamento"
+                android:textSize="16sp"
+                android:textColor="@color/danger" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>
