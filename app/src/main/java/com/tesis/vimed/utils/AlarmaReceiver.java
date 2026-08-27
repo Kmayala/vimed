@@ -157,6 +157,10 @@ public class AlarmaReceiver extends BroadcastReceiver {
         Medicamento med = VimedRepo.buscarMedicamentoSync(idMedicamento);
         if (med != null) {
             MedCache.guardar(ctx, med);   // refrescamos por si cambió la dosis
+            // La alarma de la toma suena todos los días, así que este es el
+            // único punto que garantiza el aviso de vencimiento aunque la
+            // persona no abra la app en una semana.
+            VencimientoChecker.revisar(ctx, med);
         }
 
         int idUsuario = med != null ? med.getIdUsuario()

@@ -156,16 +156,28 @@ public class MedsListActivity extends AppCompatActivity {
             }
         });
 
-        // Chip de stock — cambia de color si está por acabarse
+        // Chip de stock — cambia de color si está por acabarse.
+        // El vencimiento comparte el chip en vez de sumar uno al lado: en una
+        // fila que ya tiene nombre, dosis, instrucción y horario, un chip más
+        // deja de leerse. Y cuando el medicamento está por vencer, ESO es lo
+        // que importa, así que se queda con el chip entero.
         if (tvStock != null) {
-            tvStock.setText("Quedan " + med.getStockActual()
-                + (med.getStockActual() == 1 ? " unidad" : " unidades"));
-            if (med.isStockBajo()) {
+            String unidades = "Quedan " + med.getStockActual()
+                + (med.getStockActual() == 1 ? " unidad" : " unidades");
+
+            if (med.venceProto()) {
+                tvStock.setText(med.vencimientoLegible() + " · " + unidades);
                 tvStock.setBackgroundResource(R.drawable.shape_chip_warn);
                 tvStock.setTextColor(getColor(R.color.warn));
             } else {
-                tvStock.setBackgroundResource(R.drawable.shape_chip_success);
-                tvStock.setTextColor(getColor(R.color.success));
+                tvStock.setText(unidades);
+                if (med.isStockBajo()) {
+                    tvStock.setBackgroundResource(R.drawable.shape_chip_warn);
+                    tvStock.setTextColor(getColor(R.color.warn));
+                } else {
+                    tvStock.setBackgroundResource(R.drawable.shape_chip_success);
+                    tvStock.setTextColor(getColor(R.color.success));
+                }
             }
         }
 

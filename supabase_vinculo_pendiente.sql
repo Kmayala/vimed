@@ -136,7 +136,24 @@ CREATE POLICY vinculado_lee_perfil ON public.usuarios
     USING (public.tengo_vinculo_con(id_usuario));
 
 
--- ── 5. VERIFICACIÓN ──────────────────────────────────────────
+-- ── 5. REFRESCAR EL CACHE DE POSTGREST ───────────────────────
+--
+-- PostgREST guarda en memoria una copia del esquema. La columna
+-- solicitado_por no existe para él hasta que se refresca, y hasta
+-- entonces todo INSERT de vínculo vuelve con
+-- "PGRST204 — Could not find the 'solicitado_por' column".
+
+NOTIFY pgrst, 'reload schema';
+
+
+-- ── 6. VERIFICACIÓN ──────────────────────────────────────────
+
+SELECT column_name
+FROM   information_schema.columns
+WHERE  table_schema = 'public'
+  AND  table_name   = 'vinculacion_familiar'
+  AND  column_name  = 'solicitado_por';
+
 
 SELECT policyname, cmd
 FROM   pg_policies

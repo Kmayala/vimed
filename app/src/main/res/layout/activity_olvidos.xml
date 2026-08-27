@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/bg_welcome_gradient">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingLeft="16dp"
+        android:paddingRight="20dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp">
+
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_arrow_back"
+            android:background="@drawable/shape_neutral_icon_container"
+            android:scaleType="center"
+            android:tint="@color/ink_2"
+            android:contentDescription="Volver" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="12dp">
+
+            <TextView
+                android:id="@+id/tv_titulo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Dosis olvidadas"
+                android:textSize="26sp"
+                android:fontFamily="serif"
+                android:textColor="@color/ink"
+                android:letterSpacing="-0.02" />
+
+            <TextView
+                android:id="@+id/tv_subtitulo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Últimos 7 días"
+                android:textSize="14sp"
+                android:textColor="@color/ink_3" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:paddingBottom="28dp">
+
+            <!-- Resumen. Un número solo no dice nada; el texto lo pone en
+                 contexto ("de 21 tomas de la semana"). -->
+            <TextView
+                android:id="@+id/tv_resumen"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/shape_warn_alert"
+                android:paddingLeft="18dp"
+                android:paddingRight="18dp"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:textColor="@color/warn"
+                android:textSize="16sp"
+                android:lineSpacingMultiplier="1.15"
+                android:layout_marginBottom="20dp"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:id="@+id/olvidos_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+            <!-- Vacío: es una BUENA noticia, así que no se pinta como error -->
+            <LinearLayout
+                android:id="@+id/empty_olvidos"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingTop="64dp"
+                android:paddingBottom="40dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="72dp"
+                    android:layout_height="72dp"
+                    android:src="@drawable/ic_check"
+                    android:tint="@color/success"
+                    android:contentDescription="@null" />
+
+                <TextView
+                    android:id="@+id/tv_empty_titulo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="No falta ninguna"
+                    android:gravity="center"
+                    android:textSize="21sp"
+                    android:textColor="@color/ink"
+                    android:layout_marginTop="18dp" />
+
+                <TextView
+                    android:id="@+id/tv_empty_detalle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Todas las tomas de los últimos 7 días están confirmadas."
+                    android:gravity="center"
+                    android:textSize="15sp"
+                    android:textColor="@color/ink_3"
+                    android:layout_marginTop="8dp"
+                    android:lineSpacingMultiplier="1.2" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_cargando"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Cargando…"
+                android:gravity="center"
+                android:paddingTop="64dp"
+                android:textSize="16sp"
+                android:textColor="@color/ink_3" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

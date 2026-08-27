@@ -13,6 +13,7 @@ import com.tesis.vimed.models.UsuarioSupabase;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -53,12 +54,16 @@ public final class VimedRepo {
         @com.google.gson.annotations.SerializedName("stock_actual")
         Integer stockActual;
         Boolean activo;
+        @com.google.gson.annotations.SerializedName("fecha_vencimiento")
+        String fechaVencimiento;
     }
 
     private static class RegistroTomaPatch {
         String estado;
         @com.google.gson.annotations.SerializedName("fecha_hora_confirmacion")
         String fechaHoraConfirmacion;
+        @com.google.gson.annotations.SerializedName("confirmado_por")
+        Integer confirmadoPor;
     }
 
     private static class CitaPatch {
@@ -138,6 +143,28 @@ public final class VimedRepo {
         SupabaseClient.getService()
             .actualizarMedicamento("eq." + idMedicamento, cambios)
             .enqueue(VimedRepo.<Medicamento>voidCb(cb));
+    }
+
+    /**
+     * Corrige el stock —y opcionalmente el vencimiento— de un medicamento
+     * que puede no ser propio: es lo que usa el cuidador cuando repone la
+     * caja de su paciente.
+     *
+     * Va con el callback estricto porque acá el RLS SÍ puede rechazar la
+     * escritura, y un "cero filas" que se lee como éxito le mostraría
+     * "Guardado ✓" a alguien que no guardó nada.
+     *
+     * @param vencimiento "yyyy-MM-dd", o null para no tocar esa columna.
+     */
+    public static void corregirStock(int idMedicamento, int nuevoStock,
+                                     String vencimiento, Cb<Void> cb) {
+        MedicamentoPatch cambios = new MedicamentoPatch();
+        cambios.stockActual = nuevoStock;
+        cambios.fechaVencimiento = vencimiento;
+        SupabaseClient.getService()
+            .actualizarMedicamento("eq." + idMedicamento, cambios)
+            .enqueue(VimedRepo.<Medicamento>voidCbEstricto(cb,
+                "No se pudo guardar. Puede que ya no estés vinculado a esa persona."));
     }
 
     public static void actualizarStockSync(int idMedicamento, int nuevoStock) {
@@ -345,6 +372,78 @@ public final class VimedRepo {
         PerfilClinico p = perfil.perfilClinico();
         new SessionManager(ctx).guardarDatosClinicos(p.getPesoKg(), p.getAnioNacimiento());
     }
+
+    // ═══════════════════════════════════════════════════════════
+    //  DOSIS OLVIDADAS
+    // ═══════════════════════════════════════════════════════════
+
+    /**
+     * Tomas en 'omitida' desde {@code desdeYMD}, de la más reciente a la más
+     * vieja.
+     *
+     * El filtro se hace acá y no en el servidor porque el endpoint de
+     * registro_tomas ya está armado con el rango de fechas; agregarle un
+     * parámetro de estado obligaría a tocar la firma que usan otras cuatro
+     * pantallas. Son unas pocas decenas de filas.
+     *
+     * También se descartan las del FUTURO: la fila de una toma nace en
+     * 'omitida' y recién pasa a 'confirmada' cuando la persona aprieta el
+     * botón, así que la dosis de esta tarde ya existe y figura omitida sin
+     * que nadie se haya olvidado de nada. Listarla sería acusar a alguien
+     * por algo que todavía no pasó.
+     *
+     * @param idUsuario de quién; -1 para el usuario logueado.
+     */
+    public static void listarOlvidos(Context ctx, int idUsuario, String desdeYMD,
+                                     Cb<List<RegistroToma>> cb) {
+        final int id = idUsuario > 0 ? idUsuario : idUsuario(ctx);
+        if (id == -1) { cb.onError("Sesión no sincronizada"); return; }
+
+        final String ahora = SDF_TS_LOCAL.format(new java.util.Date());
+
+        listarTomasDelDiaDe(id, desdeYMD, new Cb<List<RegistroToma>>() {
+            @Override public void onOk(List<RegistroToma> todas) {
+                List<RegistroToma> olvidos = new ArrayList<>();
+                for (RegistroToma t : todas) {
+                    String prog = t.getFechaHoraProgramada();
+                    if (!t.estaOlvidada() || prog == null) continue;
+                    if (prog.compareTo(ahora) > 0) continue;   // todavía no le tocaba
+                    olvidos.add(t);
+                }
+                // Más reciente primero: lo de ayer se corrige, lo de hace
+                // dos semanas ya no lo recuerda nadie.
+                java.util.Collections.sort(olvidos, (a, b) ->
+                    b.getFechaHoraProgramada().compareTo(a.getFechaHoraProgramada()));
+                cb.onOk(olvidos);
+            }
+            @Override public void onError(String msg) { cb.onError(msg); }
+        });
+    }
+
+    /**
+     * Marca una dosis olvidada como tomada.
+     *
+     * @param idQuienConfirma 0 cuando la marca el propio paciente. Si la
+     *        corrige el cuidador va SU id, y la fila queda diciendo que la
+     *        confirmación no salió del paciente. Ver la nota de
+     *        confirmado_por en RegistroToma: sin esa distinción el
+     *        porcentaje de adherencia deja de significar algo.
+     */
+    public static void confirmarOlvido(int idRegistro, int idQuienConfirma, Cb<Void> cb) {
+        RegistroTomaPatch cambios = new RegistroTomaPatch();
+        cambios.estado = "confirmada";
+        cambios.fechaHoraConfirmacion = SDF_TS_LOCAL.format(new java.util.Date());
+        if (idQuienConfirma > 0) cambios.confirmadoPor = idQuienConfirma;
+
+        SupabaseClient.getService()
+            .actualizarRegistroToma("eq." + idRegistro, cambios)
+            .enqueue(VimedRepo.<RegistroToma>voidCbEstricto(cb,
+                "No se pudo corregir esta toma. Puede que ya no estés"
+                    + " vinculado a esa persona."));
+    }
+
+    private static final java.text.SimpleDateFormat SDF_TS_LOCAL =
+        new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
 
     // ═══════════════════════════════════════════════════════════
     //  CITAS
@@ -567,7 +666,8 @@ public final class VimedRepo {
         cambios.estado = estado;
         SupabaseClient.getService()
             .actualizarVinculo("eq." + idVinculo, cambios)
-            .enqueue(VimedRepo.<com.tesis.vimed.models.Vinculacion>voidCb(cb));
+            .enqueue(VimedRepo.<com.tesis.vimed.models.Vinculacion>voidCbEstricto(cb,
+                "Esta solicitud ya no está pendiente. Actualizá la lista."));
     }
 
     /**
@@ -768,6 +868,34 @@ public final class VimedRepo {
             public void onResponse(Call<List<T>> c, Response<List<T>> r) {
                 if (r.isSuccessful()) cb.onOk(null);
                 else cb.onError(mensajeDeError(r));
+            }
+            @Override
+            public void onFailure(Call<List<T>> c, Throwable t) {
+                cb.onError("Sin conexión: " + t.getMessage());
+            }
+        };
+    }
+
+    /**
+     * Como {@link #voidCb}, pero una respuesta SIN filas cuenta como error.
+     *
+     * Cuando el RLS bloquea un UPDATE, PostgREST no devuelve un error:
+     * devuelve 200 con una lista vacía, porque "cero filas cumplían la
+     * condición" es una respuesta legítima. Con voidCb eso se lee como
+     * éxito, y la pantalla llega a decir "Listo, ya podés ver la medicación
+     * de Rosa" sin que haya cambiado nada.
+     *
+     * Sirve porque el cliente manda Prefer: return=representation en todas
+     * las llamadas (ver SupabaseClient), así que las filas afectadas vienen
+     * en el cuerpo.
+     */
+    private static <T> Callback<List<T>> voidCbEstricto(Cb<Void> cb, String siNoCambioNada) {
+        return new Callback<List<T>>() {
+            @Override
+            public void onResponse(Call<List<T>> c, Response<List<T>> r) {
+                if (!r.isSuccessful())              cb.onError(mensajeDeError(r));
+                else if (r.body() == null || r.body().isEmpty()) cb.onError(siNoCambioNada);
+                else                                cb.onOk(null);
             }
             @Override
             public void onFailure(Call<List<T>> c, Throwable t) {

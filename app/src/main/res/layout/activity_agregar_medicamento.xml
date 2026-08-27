@@ -1099,6 +1099,35 @@
 
                 </com.google.android.material.textfield.TextInputLayout>
 
+                <!-- Vencimiento. OPCIONAL: mucha gente carga el medicamento
+                     sin la caja a mano, y obligar a poner una fecha lleva a
+                     que inventen una. Sin fecha, la app simplemente no avisa.
+                     El campo es de solo lectura y abre el calendario: escribir
+                     una fecha a mano en un teclado numérico es de lo que peor
+                     sale en un celular. -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_vencimiento"
+                    style="@style/CampoForm"
+                    android:hint="Vence el (opcional)"
+                    app:helperText="Te avisamos 2 días antes. Está en la caja."
+                    app:helperTextTextColor="@color/ink_4"
+                    android:layout_marginBottom="24dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_vencimiento"
+                        android:layout_width="match_parent"
+                        android:layout_height="64dp"
+                        android:focusable="false"
+                        android:clickable="true"
+                        android:cursorVisible="false"
+                        android:inputType="none"
+                        android:textSize="19sp"
+                        android:textColor="@color/ink"
+                        android:paddingTop="18dp"
+                        android:paddingBottom="18dp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
                 <!-- Resumen de lo que se va a guardar -->
                 <LinearLayout
                     android:layout_width="match_parent"

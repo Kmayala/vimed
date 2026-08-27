@@ -115,6 +115,8 @@
 
             <include layout="@layout/include_banner_solicitudes" />
 
+            <include layout="@layout/include_banner_olvidos" />
+
             <!-- ─── Alerta de interacción (warn) ─── -->
             <LinearLayout
                 android:id="@+id/alert_interaction"

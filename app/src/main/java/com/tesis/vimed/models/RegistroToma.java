@@ -13,6 +13,18 @@ public class RegistroToma {
     private String fechaHoraConfirmacion;
     private String estado; // confirmada | pospuesta | omitida
 
+    /**
+     * Quién la marcó como confirmada, cuando NO fue el propio paciente.
+     * null = la confirmó él mismo (y también los registros viejos).
+     *
+     * Existe para que una dosis que el cuidador da por tomada no se
+     * confunda con una que la persona confirmó apretando el botón: la
+     * primera es lo que alguien CREE que pasó, la segunda es lo que la
+     * persona dijo que hizo. Mezclarlas vacía de sentido el porcentaje de
+     * adherencia sin que nadie se entere.
+     */
+    private Integer confirmadoPor;
+
     public RegistroToma() {}
 
     public RegistroToma(int idHorario, int idUsuario, String fechaHoraProgramada) {
@@ -35,4 +47,14 @@ public class RegistroToma {
     public void setFechaHoraConfirmacion(String f) { this.fechaHoraConfirmacion = f; }
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
+    public Integer getConfirmadoPor() { return confirmadoPor; }
+    public void setConfirmadoPor(Integer v) { this.confirmadoPor = v; }
+
+    public boolean estaConfirmada() { return "confirmada".equals(estado); }
+    public boolean estaOlvidada()   { return "omitida".equals(estado); }
+
+    /** True si la confirmó otra persona (el cuidador), no el paciente. */
+    public boolean laCorrigioOtro() {
+        return confirmadoPor != null && confirmadoPor > 0;
+    }
 }

@@ -59,6 +59,9 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
     private boolean personalizado = false;
     private int stockActual = 0;
     private int stockMinimo = 5;
+
+    /** Vencimiento elegido, "yyyy-MM-dd", o null si la persona no lo cargó. */
+    private String fechaVencimiento = null;
     // Nombre de color (no hex) — así lo interpreta MainActivity.colorForMed()
     private String colorIcono = "azul";
 
@@ -463,8 +466,16 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
     private void configurarPaso6() {
         TextInputEditText etStock    = pasos[6].findViewById(R.id.et_stock);
         TextInputEditText etStockMin = pasos[6].findViewById(R.id.et_stock_minimo);
+        TextInputEditText etVence    = pasos[6].findViewById(R.id.et_vencimiento);
 
         etStockMin.setText("5");
+
+        // El click va también en el TextInputLayout: el campo es focusable
+        // false para que no salte el teclado, y sin esto tocar el borde de
+        // la caja —que es la mitad del área— no hace nada.
+        View.OnClickListener abrirCalendario = v -> elegirVencimiento(etVence);
+        etVence.setOnClickListener(abrirCalendario);
+        pasos[6].findViewById(R.id.til_vencimiento).setOnClickListener(abrirCalendario);
 
         pasos[6].findViewById(R.id.btn_guardar).setOnClickListener(v -> {
             String stockStr    = etStock.getText()    != null ? etStock.getText().toString().trim()    : "";
@@ -483,6 +494,47 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
             }
             chequearDosisYSeguir();
         });
+    }
+
+    /**
+     * Calendario para el vencimiento.
+     *
+     * Arranca dentro de un año, que es donde cae la mayoría de las cajas, y
+     * no deja elegir una fecha pasada: cargar un medicamento ya vencido es
+     * casi siempre un error de tipeo, y si de verdad está vencido lo que
+     * hay que hacer es tirarlo, no agendarlo.
+     */
+    private void elegirVencimiento(TextInputEditText campo) {
+        java.util.Calendar inicial = java.util.Calendar.getInstance();
+        if (fechaVencimiento != null) {
+            try {
+                inicial.setTime(new java.text.SimpleDateFormat("yyyy-MM-dd",
+                    Locale.US).parse(fechaVencimiento));
+            } catch (Exception ignored) { }
+        } else {
+            inicial.add(java.util.Calendar.YEAR, 1);
+        }
+
+        android.app.DatePickerDialog dlg = new android.app.DatePickerDialog(this,
+            (view, year, month, day) -> {
+                fechaVencimiento = String.format(Locale.US, "%04d-%02d-%02d",
+                    year, month + 1, day);
+                campo.setText(String.format(Locale.getDefault(), "%02d/%02d/%d",
+                    day, month + 1, year));
+            },
+            inicial.get(java.util.Calendar.YEAR),
+            inicial.get(java.util.Calendar.MONTH),
+            inicial.get(java.util.Calendar.DAY_OF_MONTH));
+
+        java.util.Calendar hoy = java.util.Calendar.getInstance();
+        hoy.set(java.util.Calendar.HOUR_OF_DAY, 0);
+        hoy.set(java.util.Calendar.MINUTE, 0);
+        hoy.set(java.util.Calendar.SECOND, 0);
+        hoy.set(java.util.Calendar.MILLISECOND, 0);
+        // Menos un segundo: con la medianoche exacta, algunos equipos
+        // redondean al día siguiente y no dejan elegir hoy.
+        dlg.getDatePicker().setMinDate(hoy.getTimeInMillis() - 1000);
+        dlg.show();
     }
 
     // ── Chequeo de dosis contra el catálogo ────────────────────
@@ -697,6 +749,7 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
             0, nombre, presentacion,
             dosis, unidad, instrucciones, colorIcono, stockActual, stockMinimo
         );
+        med.setFechaVencimiento(fechaVencimiento);   // null si no se cargó
 
         VimedRepo.Cb<Medicamento> alGuardar = new VimedRepo.Cb<Medicamento>() {
             @Override

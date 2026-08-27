@@ -56,6 +56,14 @@ public class CuidadorActivity extends AppCompatActivity {
      */
     private final Map<Integer, Medicamento> medPorHorario = new HashMap<>();
 
+    /**
+     * id_medicamento → sus horarios. Lo que el cuidador pregunta por teléfono
+     * es "¿a qué hora la toma?" y "¿cada cuánto?", y hasta ahora la tarjeta
+     * del medicamento no lo decía: había que entrar a la pantalla de
+     * medicamentos y abrir la ficha.
+     */
+    private final Map<Integer, List<Horario>> horariosPorMed = new HashMap<>();
+
     /** Todos los familiares a cargo de este cuidador. */
     private final List<Vinculacion> misVinculos = new ArrayList<>();
 
@@ -257,7 +265,9 @@ public class CuidadorActivity extends AppCompatActivity {
         medsContainer.removeAllViews();
         citasContainer.removeAllViews();
         medPorHorario.clear();
+        horariosPorMed.clear();
         findViewById(R.id.alert_stock_cuidador).setVisibility(View.GONE);
+        findViewById(R.id.alert_olvidos_cuidador).setVisibility(View.GONE);
         findViewById(R.id.card_adherencia).setVisibility(View.GONE);
     }
 
@@ -320,6 +330,9 @@ public class CuidadorActivity extends AppCompatActivity {
             }
         });
 
+        // Olvidos de la semana
+        cargarOlvidosDelPaciente();
+
         // Actividad reciente (notificaciones espejadas)
         VimedRepo.listarNotificacionesDe(idAdulto, new VimedRepo.Cb<List<Notificacion>>() {
             @Override
@@ -327,6 +340,48 @@ public class CuidadorActivity extends AppCompatActivity {
                 pintarActividad(notis);
             }
         });
+    }
+
+    /**
+     * Cuántas tomas quedaron sin confirmar en la semana. Es un contador, no
+     * una lista: el detalle vive en {@link OlvidosActivity}, que además deja
+     * corregirlas. Meter la lista entera acá alargaría justo la pantalla que
+     * hay que acortar.
+     */
+    private void cargarOlvidosDelPaciente() {
+        View banner = findViewById(R.id.alert_olvidos_cuidador);
+        banner.setVisibility(View.GONE);
+
+        final int paciente = idAdulto;
+        java.util.Calendar desde = java.util.Calendar.getInstance();
+        desde.add(java.util.Calendar.DAY_OF_YEAR, -7);
+        String desdeYMD = new SimpleDateFormat("yyyy-MM-dd", Locale.US)
+            .format(desde.getTime());
+
+        VimedRepo.listarOlvidos(this, paciente, desdeYMD,
+            new VimedRepo.Cb<List<RegistroToma>>() {
+                @Override public void onOk(List<RegistroToma> olvidos) {
+                    // Puede haber cambiado de paciente mientras viajaba la
+                    // consulta; el número del anterior no va acá.
+                    if (paciente != idAdulto || olvidos.isEmpty()) return;
+
+                    String nombre = nombreAdulto.isEmpty()
+                        ? "Tu familiar" : nombreAdulto.split(" ")[0];
+                    ((TextView) findViewById(R.id.tv_olvidos_cuidador)).setText(
+                        olvidos.size() == 1
+                            ? nombre + " tiene 1 toma sin confirmar esta semana"
+                            : nombre + " tiene " + olvidos.size()
+                                + " tomas sin confirmar esta semana");
+
+                    banner.setVisibility(View.VISIBLE);
+                    banner.setOnClickListener(v -> startActivity(
+                        ModoPaciente.de(idAdulto, nombreAdulto)
+                            .intent(CuidadorActivity.this, OlvidosActivity.class)));
+                }
+                @Override public void onError(String msg) {
+                    // Sin red no se muestra nada. Ya está oculto.
+                }
+            });
     }
 
     /**
@@ -346,10 +401,22 @@ public class CuidadorActivity extends AppCompatActivity {
             @Override
             public void onOk(List<Horario> horarios) {
                 medPorHorario.clear();
+                horariosPorMed.clear();
                 for (Horario h : horarios) {
                     Medicamento m = porIdMed.get(h.getIdMedicamento());
                     if (m != null) medPorHorario.put(h.getId(), m);
+
+                    List<Horario> delMed = horariosPorMed.get(h.getIdMedicamento());
+                    if (delMed == null) {
+                        delMed = new ArrayList<>();
+                        horariosPorMed.put(h.getIdMedicamento(), delMed);
+                    }
+                    delMed.add(h);
                 }
+                // Se repinta: la primera pasada corrió sin horarios (vienen
+                // en una segunda consulta) y las tarjetas quedaron sin la
+                // hora ni la frecuencia, que es lo que se vino a ver.
+                pintarMedicamentos(meds);
                 cargarTomasDeHoy();
                 cargarResumenAdherencia(meds, horarios);
             }
@@ -595,13 +662,55 @@ public class CuidadorActivity extends AppCompatActivity {
             icon.setImageResource(R.drawable.ic_nav_meds);
             msg.setText(m.getNombre() != null ? m.getNombre() : "Medicamento");
 
-            String stock = "Stock: " + m.getStockActual();
-            if (m.isStockBajo()) stock += " ⚠ por acabarse";
-            fecha.setText(dosisLegible(m) + " · " + stock);
+            // Dos renglones y nada más. La pantalla del cuidador tiene seis
+            // secciones; si cada medicamento ocupa cuatro líneas, lo de
+            // abajo no se lee nunca. Va lo que se pregunta por teléfono:
+            // a qué hora, cada cuánto, cuántas quedan.
+            fecha.setText(pautaDe(m) + System.lineSeparator() + inventarioDe(m));
 
             item.setOnClickListener(v -> menuMedicamento(m));
             medsContainer.addView(item);
         }
+    }
+
+    /** "50 mg · primera a las 08:00 · cada 8 h" */
+    private String pautaDe(Medicamento m) {
+        StringBuilder sb = new StringBuilder(dosisLegible(m));
+
+        List<Horario> hs = horariosPorMed.get(m.getId());
+        if (hs == null || hs.isEmpty()) return sb.toString();
+
+        // La "primera dosis" es la hora más temprana del día, no la primera
+        // fila que devolvió la base: con dos horarios cargados en cualquier
+        // orden, tomar la primera fila mostraría la de la tarde.
+        String primera = null;
+        int intervalo = 0;
+        for (Horario h : hs) {
+            String hi = h.getHoraInicio();
+            if (hi == null || hi.length() < 5) continue;
+            if (primera == null || hi.compareTo(primera) < 0) primera = hi;
+            if (h.getIntervaloHoras() > 0) intervalo = h.getIntervaloHoras();
+        }
+
+        if (primera != null) sb.append(" · primera a las ").append(primera.substring(0, 5));
+        if (intervalo > 0) {
+            sb.append(intervalo == 24 ? " · una vez al día"
+                                      : " · cada " + intervalo + " h");
+        }
+        return sb.toString();
+    }
+
+    /** "Quedan 12 · Vence en 2 días", con los avisos que correspondan. */
+    private String inventarioDe(Medicamento m) {
+        StringBuilder sb = new StringBuilder("Quedan ").append(m.getStockActual());
+        if (m.isStockBajo()) sb.append(" ⚠ por acabarse");
+
+        String vence = m.vencimientoLegible();
+        if (!vence.isEmpty()) {
+            sb.append(" · ").append(vence);
+            if (m.venceProto()) sb.append(" ⚠");
+        }
+        return sb.toString();
     }
 
     /** Opciones del cuidador sobre un medicamento del adulto. */
@@ -615,21 +724,48 @@ public class CuidadorActivity extends AppCompatActivity {
             .show();
     }
 
+    /**
+     * Reponer la caja: unidades y vencimiento en el mismo diálogo.
+     *
+     * Van juntos porque son el mismo gesto — el cuidador vuelve de la
+     * farmacia con un envase nuevo, y ese envase trae las dos cosas. En dos
+     * diálogos separados, el vencimiento sería el que nadie actualiza.
+     */
     private void dialogoStock(Medicamento m) {
+        int pad = (int) (20 * getResources().getDisplayMetrics().density);
+
+        LinearLayout caja = new LinearLayout(this);
+        caja.setOrientation(LinearLayout.VERTICAL);
+        caja.setPadding(pad, pad / 2, pad, 0);
+
         final android.widget.EditText input = new android.widget.EditText(this);
         input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        input.setHint("Unidades");
         input.setText(String.valueOf(m.getStockActual()));
         input.setSelection(input.getText().length());
+        caja.addView(input);
 
-        int pad = (int) (20 * getResources().getDisplayMetrics().density);
-        FrameLayout wrap = new FrameLayout(this);
-        wrap.setPadding(pad, pad / 2, pad, 0);
-        wrap.addView(input);
+        // El vencimiento arranca con lo que ya estaba cargado; el array de
+        // un elemento es para poder escribirlo desde el listener del
+        // calendario, que necesita una referencia efectivamente final.
+        final String[] vencimiento = { m.getFechaVencimiento() };
+
+        final android.widget.TextView tvVence = new android.widget.TextView(this);
+        tvVence.setTextSize(17f);
+        tvVence.setPadding(0, pad / 2, 0, 0);
+        tvVence.setTextColor(getColor(R.color.brand_600));
+        tvVence.setText(textoVencimiento(vencimiento[0]));
+        tvVence.setOnClickListener(v ->
+            elegirVencimiento(vencimiento[0], elegido -> {
+                vencimiento[0] = elegido;
+                tvVence.setText(textoVencimiento(elegido));
+            }));
+        caja.addView(tvVence);
 
         new AlertDialog.Builder(this)
-            .setTitle("Stock de " + m.getNombre())
+            .setTitle("Reponer " + m.getNombre())
             .setMessage("¿Cuántas unidades le quedan?")
-            .setView(wrap)
+            .setView(caja)
             .setNegativeButton("Cancelar", null)
             .setPositiveButton("Guardar", (d, w) -> {
                 int nuevo;
@@ -639,18 +775,59 @@ public class CuidadorActivity extends AppCompatActivity {
                     Toast.makeText(this, "Número inválido", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                VimedRepo.actualizarStock(m.getId(), nuevo, new VimedRepo.Cb<Void>() {
-                    @Override public void onOk(Void v) {
-                        Toast.makeText(CuidadorActivity.this,
-                            "Stock actualizado ✓", Toast.LENGTH_SHORT).show();
-                        cargarPaciente();
-                    }
-                    @Override public void onError(String msg) {
-                        Toast.makeText(CuidadorActivity.this, msg, Toast.LENGTH_LONG).show();
-                    }
-                });
+                if (nuevo < 0) {
+                    Toast.makeText(this, "El stock no puede ser negativo",
+                        Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                VimedRepo.corregirStock(m.getId(), nuevo, vencimiento[0],
+                    new VimedRepo.Cb<Void>() {
+                        @Override public void onOk(Void v) {
+                            // Si cambió el vencimiento, se borra el freno de
+                            // "ya avisé hoy": si no, cargar una caja nueva no
+                            // volvería a avisar hasta mañana, y una fecha
+                            // corregida a mano tampoco avisaría nunca.
+                            com.tesis.vimed.utils.VencimientoChecker
+                                .olvidarAviso(CuidadorActivity.this, m.getId());
+                            Toast.makeText(CuidadorActivity.this,
+                                "Guardado ✓", Toast.LENGTH_SHORT).show();
+                            cargarPaciente();
+                        }
+                        @Override public void onError(String msg) {
+                            Toast.makeText(CuidadorActivity.this, msg, Toast.LENGTH_LONG).show();
+                        }
+                    });
             })
             .show();
+    }
+
+    private interface AlElegirFecha { void elegida(String ymd); }
+
+    private String textoVencimiento(String ymd) {
+        if (ymd == null || ymd.length() < 10) return "Vence el: tocá para cargarlo";
+        return "Vence el " + ymd.substring(8, 10) + "/" + ymd.substring(5, 7)
+            + "/" + ymd.substring(0, 4) + " (tocá para cambiar)";
+    }
+
+    private void elegirVencimiento(String actual, AlElegirFecha alElegir) {
+        java.util.Calendar inicial = java.util.Calendar.getInstance();
+        if (actual != null && actual.length() >= 10) {
+            try {
+                inicial.setTime(new SimpleDateFormat("yyyy-MM-dd", Locale.US)
+                    .parse(actual.substring(0, 10)));
+            } catch (Exception ignored) { }
+        } else {
+            inicial.add(java.util.Calendar.YEAR, 1);
+        }
+
+        android.app.DatePickerDialog dlg = new android.app.DatePickerDialog(this,
+            (view, year, month, day) -> alElegir.elegida(
+                String.format(Locale.US, "%04d-%02d-%02d", year, month + 1, day)),
+            inicial.get(java.util.Calendar.YEAR),
+            inicial.get(java.util.Calendar.MONTH),
+            inicial.get(java.util.Calendar.DAY_OF_MONTH));
+        dlg.show();
     }
 
     private void confirmarBaja(Medicamento m) {

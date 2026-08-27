@@ -296,6 +296,60 @@
                         android:lineSpacingMultiplier="1.35" />
                 </LinearLayout>
 
+                <!-- Olvidos de la semana. Va ACÁ arriba, junto al stock,
+                     porque es lo único de esta pantalla sobre lo que el
+                     cuidador puede hacer algo hoy mismo: llamar y preguntar.
+                     Más abajo, entre listas, se leería como un número más. -->
+                <LinearLayout
+                    android:id="@+id/alert_olvidos_cuidador"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="@drawable/shape_warn_alert"
+                    android:padding="16dp"
+                    android:layout_marginTop="14dp"
+                    android:visibility="gone">
+
+                    <FrameLayout
+                        android:layout_width="42dp"
+                        android:layout_height="42dp"
+                        android:background="@drawable/shape_warn_icon_circle"
+                        android:layout_marginEnd="14dp">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_warn"
+                            android:contentDescription="Olvidos" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tv_olvidos_cuidador"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textSize="16sp"
+                            android:textColor="@color/warn"
+                            android:lineSpacingMultiplier="1.35" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Tocá para verlas y corregirlas"
+                            android:textSize="13sp"
+                            android:textColor="@color/warn"
+                            android:alpha="0.8"
+                            android:layout_marginTop="2dp" />
+                    </LinearLayout>
+                </LinearLayout>
+
                 <!-- Acciones: cargar cosas PARA el adulto mayor -->
                 <LinearLayout
                     android:layout_width="match_parent"

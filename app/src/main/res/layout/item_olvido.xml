@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Una dosis que no se confirmó. El botón de "sí la tomé" es grande y va
+     en su propia línea: el dedo de un adulto mayor no acierta un enlace de
+     texto al costado, y equivocarse acá escribe un dato clínico. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/shape_card"
+    android:padding="16dp"
+    android:layout_marginBottom="12dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:id="@+id/olv_icon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_warn"
+            android:tint="@color/danger"
+            android:scaleType="center"
+            android:contentDescription="@null" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="14dp">
+
+            <TextView
+                android:id="@+id/olv_nombre"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/ink" />
+
+            <TextView
+                android:id="@+id/olv_detalle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@color/ink_3"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/olv_btn_tome"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minWidth="0dp"
+        android:minHeight="52dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:layout_marginTop="14dp"
+        android:text="Sí, la tomé"
+        android:textSize="16sp"
+        android:textColor="@color/brand_600"
+        app:strokeColor="@color/brand_600"
+        app:cornerRadius="14dp" />
+
+    <!-- Reemplaza al botón cuando ya se corrigió -->
+    <TextView
+        android:id="@+id/olv_resuelto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:textSize="14sp"
+        android:textColor="@color/success"
+        android:visibility="gone" />
+</LinearLayout>

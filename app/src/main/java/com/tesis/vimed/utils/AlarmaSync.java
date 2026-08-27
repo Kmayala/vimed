@@ -35,6 +35,12 @@ public final class AlarmaSync {
         POOL.execute(() -> {
             try {
                 List<Medicamento> meds = VimedRepo.listarMedicamentosSync(appCtx);
+
+                // Aprovechamos que ya están todos cargados. Es el momento
+                // natural para mirar los vencimientos: un vencimiento no
+                // tiene hora, así que no merece una alarma propia.
+                VencimientoChecker.revisar(appCtx, meds);
+
                 for (Medicamento m : meds) {
                     // Deja el nombre, la dosis y el STOCK al día: la alarma
                     // los lee de acá cuando dispara sin conexión, y el stock

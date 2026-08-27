@@ -28,10 +28,16 @@ ALTER TABLE public.usuarios
     ADD COLUMN IF NOT EXISTS peso_kg REAL
         CHECK (peso_kg IS NULL OR (peso_kg > 0 AND peso_kg < 400));
 
+-- El tope es un numero fijo y no EXTRACT(YEAR FROM NOW()): Postgres
+-- exige que las funciones de un CHECK sean IMMUTABLE, y now() es
+-- STABLE, asi que con esa version el ALTER TABLE ni siquiera corria
+-- ("functions in check constraint must be marked IMMUTABLE"). Que el
+-- tope quede holgado no importa: PerfilClinico.edad() ya descarta
+-- cualquier edad absurda antes de usarla.
 ALTER TABLE public.usuarios
     ADD COLUMN IF NOT EXISTS anio_nacimiento INTEGER
         CHECK (anio_nacimiento IS NULL
-               OR anio_nacimiento BETWEEN 1900 AND EXTRACT(YEAR FROM NOW())::INT);
+               OR anio_nacimiento BETWEEN 1900 AND 2100);
 
 
 -- ── 2. REFERENCIA DE DOSIFICACIÓN DEL CATÁLOGO ───────────────
@@ -103,7 +109,33 @@ ALTER TABLE public.catalogo_medicamentos
 --  WHERE principio_activo = '<principio activo>';
 
 
--- ── 5. VERIFICACIÓN ──────────────────────────────────────────
+-- ── 5. REFRESCAR EL CACHE DE POSTGREST ───────────────────────
+--
+-- PostgREST (la API REST que usa la app) mantiene en memoria una
+-- copia del esquema. Una columna recién creada NO existe para él
+-- hasta que ese cache se refresca, y mientras tanto cualquier
+-- INSERT o PATCH que la mencione vuelve con:
+--
+--   400 PGRST204 — Could not find the 'peso_kg' column of
+--   'usuarios' in the schema cache
+--
+-- Que es exactamente el error que ve la app aunque el ALTER TABLE
+-- de más arriba haya salido bien. Suele refrescarse solo en un
+-- minuto o dos, pero conviene no esperarlo.
+
+NOTIFY pgrst, 'reload schema';
+
+
+-- ── 6. VERIFICACIÓN ──────────────────────────────────────────
+
+-- Las columnas nuevas de usuarios. Tienen que aparecer las dos.
+SELECT column_name, data_type
+FROM   information_schema.columns
+WHERE  table_schema = 'public'
+  AND  table_name   = 'usuarios'
+  AND  column_name IN ('peso_kg', 'anio_nacimiento')
+ORDER  BY column_name;
+
 -- Cuántas entradas del catálogo tienen ya la referencia por kilo.
 -- Recién cuando este número sea > 0 la app empieza a usar el peso.
 SELECT
