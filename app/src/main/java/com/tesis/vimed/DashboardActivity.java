@@ -191,7 +191,10 @@ public class DashboardActivity extends AppCompatActivity {
 
         if (!p.hayDatos()) {
             tvAnimo.setText("Sin datos todavía");
-            tvResumen.setText("Cuando confirmes tus tomas vas a ver tu avance acá.");
+            tvResumen.setText(modo.esDeOtro()
+                ? "Cuando " + modo.primerNombre() + " confirme sus tomas vas"
+                    + " a ver su avance acá."
+                : "Cuando confirmes tus tomas vas a ver tu avance acá.");
             findViewById(R.id.card_racha).setVisibility(View.GONE);
             return;
         }
@@ -207,10 +210,12 @@ public class DashboardActivity extends AppCompatActivity {
         TextView tvRacha = findViewById(R.id.tv_racha);
         if (p.racha >= 2) {
             tvRacha.setText("¡" + p.racha + " días seguidos cumpliendo!"
-                + (p.mejorRacha > p.racha ? " Tu mejor racha fue de " + p.mejorRacha + "." : ""));
+                + (p.mejorRacha > p.racha
+                    ? " " + modo.Su() + " mejor racha fue de " + p.mejorRacha + "."
+                    : ""));
             card.setVisibility(View.VISIBLE);
         } else if (p.mejorRacha >= 3) {
-            tvRacha.setText("Tu mejor racha en este período fue de "
+            tvRacha.setText(modo.Su() + " mejor racha en este período fue de "
                 + p.mejorRacha + " días seguidos.");
             card.setVisibility(View.VISIBLE);
         } else {

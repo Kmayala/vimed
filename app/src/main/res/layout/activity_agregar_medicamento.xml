@@ -204,9 +204,10 @@
                     android:layout_marginBottom="10dp" />
 
                 <TextView
+                    android:id="@+id/tv_paso2_ayuda"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Elegí una dosis común o escribí la tuya."
+                    android:text="@string/paso2_ayuda"
                     android:textSize="17sp"
                     android:textColor="@color/ink_3"
                     android:lineSpacingMultiplier="1.35"
@@ -896,6 +897,7 @@
                 android:visibility="gone">
 
                 <TextView
+                    android:id="@+id/tv_paso5a_pregunta"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/paso5a_pregunta"
@@ -962,6 +964,7 @@
                 android:visibility="gone">
 
                 <TextView
+                    android:id="@+id/tv_paso5b_pregunta"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/paso5b_pregunta"
@@ -973,9 +976,10 @@
                     android:layout_marginBottom="10dp" />
 
                 <TextView
+                    android:id="@+id/tv_paso5b_ayuda"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Vas a recibir un recordatorio en cada horario."
+                    android:text="@string/paso5b_ayuda"
                     android:textSize="17sp"
                     android:textColor="@color/ink_3"
                     android:lineSpacingMultiplier="1.35"
@@ -1046,6 +1050,7 @@
                 android:visibility="gone">
 
                 <TextView
+                    android:id="@+id/tv_paso6_pregunta"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/paso6_pregunta"

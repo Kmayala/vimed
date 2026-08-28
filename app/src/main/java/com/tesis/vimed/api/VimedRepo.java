@@ -191,7 +191,7 @@ public final class VimedRepo {
         SupabaseClient.getService()
             .actualizarMedicamentoCompleto("eq." + idMedicamento, copia)
             .enqueue(VimedRepo.<Medicamento>voidCbEstricto(cb,
-                "No se pudo guardar. Puede que ya no estés vinculado a esa persona."));
+                "No se pudo guardar. Puede que el vínculo con esa persona ya no exista."));
     }
 
     /** Cambia la hora de inicio y la frecuencia de un horario. */
@@ -242,7 +242,7 @@ public final class VimedRepo {
         SupabaseClient.getService()
             .actualizarMedicamento("eq." + idMedicamento, cambios)
             .enqueue(VimedRepo.<Medicamento>voidCbEstricto(cb,
-                "No se pudo guardar. Puede que ya no estés vinculado a esa persona."));
+                "No se pudo guardar. Puede que el vínculo con esa persona ya no exista."));
     }
 
     public static void actualizarStockSync(int idMedicamento, int nuevoStock) {
@@ -609,8 +609,8 @@ public final class VimedRepo {
         SupabaseClient.getService()
             .actualizarRegistroToma("eq." + idRegistro, cambios)
             .enqueue(VimedRepo.<RegistroToma>voidCbEstricto(cb,
-                "No se pudo corregir esta toma. Puede que ya no estés"
-                    + " vinculado a esa persona."));
+                "No se pudo corregir esta toma. Puede que el vínculo"
+                    + " con esa persona ya no exista."));
     }
 
     private static final java.text.SimpleDateFormat SDF_TS_LOCAL =

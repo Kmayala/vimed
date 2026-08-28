@@ -553,7 +553,7 @@ public class CuidadorActivity extends AppCompatActivity {
             else return false;
 
             if (idAdulto <= 0) {
-                Toast.makeText(this, "Todavía no hay un familiar vinculado",
+                Toast.makeText(this, "Todavía no hay ningún paciente vinculado",
                     Toast.LENGTH_SHORT).show();
                 return false;
             }

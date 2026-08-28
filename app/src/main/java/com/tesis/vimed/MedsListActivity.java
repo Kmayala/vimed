@@ -75,6 +75,14 @@ public class MedsListActivity extends AppCompatActivity {
         if (vacio != null) {
             vacio.setText(modo.frase("todavía no tiene medicamentos"));
         }
+
+        // El renglón de abajo se había quedado afuera: decía "te vamos a
+        // recordar cada toma", y a quien se le recuerda es al paciente.
+        TextView detalle = findViewById(R.id.tv_meds_vacio_detalle);
+        if (detalle != null) {
+            detalle.setText("Agregá el primero y le vamos a recordar cada"
+                + " toma a su hora.");
+        }
     }
 
     private void mostrarCartelDePaciente() {

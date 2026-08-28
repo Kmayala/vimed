@@ -107,4 +107,25 @@
     <string name="error_passwords_mismatch">Las contraseñas no coinciden</string>
     <string name="error_invalid_credentials">Correo o contraseña incorrectos</string>
     <string name="error_email_exists">Ya existe una cuenta con ese correo</string>
+
+    <!-- ── El formulario, hablando de OTRA persona ───────────────
+         Cuando el cuidador carga un medicamento para su paciente, las
+         preguntas en segunda persona dejan de tener sentido: "¿a qué hora
+         lo tomás?" leído por la hija pregunta por ELLA. Y no es solo
+         gramática — si contesta pensando en su propio horario, el que
+         queda mal cargado es el tratamiento de la madre.
+
+         Se usa el futuro perifrástico ("va a tomar") y no el simple
+         ("tomará"): es como se habla acá, y esta app la usan personas que
+         no tienen por qué leer nada que suene a formulario. -->
+    <string name="paso2_ayuda">Elegí una dosis común o escribí la tuya.</string>
+    <string name="paso2_ayuda_otro">Elegí una dosis común o escribí la suya.</string>
+
+    <string name="paso5a_pregunta_otro">¿A qué hora lo va a tomar por primera vez?</string>
+    <string name="paso5b_pregunta_otro">¿Cada cuánto lo va a tomar?</string>
+
+    <string name="paso5b_ayuda">Vas a recibir un recordatorio en cada horario.</string>
+    <string name="paso5b_ayuda_otro">Va a recibir un recordatorio en cada horario.</string>
+
+    <string name="paso6_pregunta_otro">¿Cuántas unidades tiene ahora?</string>
 </resources>

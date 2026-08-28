@@ -91,7 +91,9 @@ public class NotificationHelper {
             // Canal de las citas médicas (un día antes y dos horas antes).
             NotificationChannel citas = new NotificationChannel(
                 CITA_CHANNEL_ID, CITA_CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
-            citas.setDescription("Avisos previos a tus citas médicas");
+            // Sin "tus": este canal también se crea en el teléfono del
+            // cuidador, que recibe los avisos de las citas de otra persona.
+            citas.setDescription("Avisos previos a las citas médicas");
             citas.enableVibration(true);
             manager.createNotificationChannel(citas);
 

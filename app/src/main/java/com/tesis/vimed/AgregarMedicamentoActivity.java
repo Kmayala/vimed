@@ -129,6 +129,7 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
             avisoDestino.setText("Estás cargando este medicamento para "
                 + nombreSeguroDestino() + ". Le va a aparecer en su app con la alarma.");
             avisoDestino.setVisibility(View.VISIBLE);
+            hablarDeLaOtraPersona();
         }
 
         cargarPerfilDeQuienLoToma();
@@ -467,6 +468,46 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
                 .show(getSupportFragmentManager(), "personalizado"));
     }
 
+    /**
+     * Pasa las preguntas del formulario a tercera persona.
+     *
+     * No es solo gramática. "¿A qué hora lo tomás?" leído por la hija que
+     * está cargando el medicamento de su madre pregunta por ELLA, y si
+     * contesta pensando en su propio horario el que queda mal cargado es el
+     * tratamiento de la otra. Lo mismo con "¿cuántas unidades tenés?": las
+     * unidades están en la casa de la madre.
+     *
+     * Solo se cambian las preguntas que hablan de quien TOMA el
+     * medicamento. Las que hablan de quien lo carga se dejan en segunda
+     * persona, porque ahí la que actúa sí es ella: "elegí un color",
+     * "escribí el nombre", "te avisamos cuando esté por acabarse" —el aviso
+     * de stock bajo le llega al cuidador—.
+     */
+    private void hablarDeLaOtraPersona() {
+        texto(R.id.tv_paso2_ayuda,       R.string.paso2_ayuda_otro);
+        texto(R.id.tv_paso5a_pregunta,   R.string.paso5a_pregunta_otro);
+        texto(R.id.tv_paso5b_pregunta,   R.string.paso5b_pregunta_otro);
+        texto(R.id.tv_paso5b_ayuda,      R.string.paso5b_ayuda_otro);
+        texto(R.id.tv_paso6_pregunta,    R.string.paso6_pregunta_otro);
+    }
+
+    /**
+     * "su" cuando se carga para otra persona, "tu" cuando es para uno mismo.
+     *
+     * El médico del que hablan estos avisos es el de quien TOMA el
+     * medicamento. "Consultá con tu médico" leído por la hija la manda a su
+     * propio médico, que no tiene nada que ver con el tratamiento que está
+     * cargando.
+     */
+    private String suOtu() {
+        return idUsuarioDestino > 0 ? "su" : "tu";
+    }
+
+    private void texto(int idVista, int idTexto) {
+        TextView tv = findViewById(idVista);
+        if (tv != null) tv.setText(idTexto);
+    }
+
     // ── Paso 6: Stock ──────────────────────────────────────────
     private void configurarPaso6() {
         TextInputEditText etStock    = pasos[6].findViewById(R.id.et_stock);
@@ -614,7 +655,8 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
 
         new AlertDialog.Builder(this)
             .setTitle(aviso.nivel == DosisChecker.Nivel.ALTO
-                ? "Revisá la dosis" : "Sobre tu dosis diaria")
+                ? "Revisá la dosis"
+                : "Sobre " + suOtu() + " dosis diaria")
             .setMessage(aviso.texto)
             .setNegativeButton("Corregir", (d, w) -> mostrarPaso(1))
             .setPositiveButton("Está bien así", (d, w) -> chequearInteraccionesYGuardar())
@@ -775,9 +817,11 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
         if (alto > 0) {
             builder.setPositiveButton("Guardar igual", (d, w) -> {
                 new AlertDialog.Builder(this)
-                    .setTitle("¿Estás segura?")
+                    // "¿Estás segura?" daba por sentado el género de quien
+                    // usa la app. No hace falta suponerlo para preguntar.
+                    .setTitle("¿Confirmás?")
                     .setMessage("Esta combinación puede ser peligrosa. "
-                        + "Confirmá que ya lo hablaste con tu médico.")
+                        + "Confirmá que ya lo hablaste con " + suOtu() + " médico.")
                     .setNegativeButton("Cancelar", null)
                     .setPositiveButton("Sí, guardar", (d2, w2) -> guardarMedicamento())
                     .show();

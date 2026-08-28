@@ -127,6 +127,9 @@ public class AppointmentsActivity extends AppCompatActivity {
         texto(R.id.tv_citas_vacio_detalle,
             "Agregá su próxima cita médica para tener todo organizado y que"
                 + " reciba los recordatorios.");
+        // "acompañarla" daría por sentado el género del paciente, que la app
+        // no conoce ni pregunta. Sin pronombre no hace falta adivinarlo.
+        texto(R.id.tv_consejos_titulo, "Consejos para acompañar mejor");
     }
 
     private void texto(int id, String valor) {
