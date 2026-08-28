@@ -182,6 +182,26 @@
         <item name="android:textColorHint">@color/ink_4</item>
     </style>
 
+    <!-- Campo con lista desplegable.
+         Hereda de ExposedDropdownMenu y no del OutlinedBox común: es el
+         padre que Material espera cuando el campo tiene un
+         MaterialAutoCompleteTextView adentro. Con el otro, la flecha del
+         final queda como un icono suelto y el toque para abrir la lista lo
+         tiene que resolver la Activity a mano — que era justamente lo que
+         rompía el abrir y cerrar. -->
+    <style name="CampoForm.Desplegable" parent="Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="boxCornerRadiusTopStart">16dp</item>
+        <item name="boxCornerRadiusTopEnd">16dp</item>
+        <item name="boxCornerRadiusBottomStart">16dp</item>
+        <item name="boxCornerRadiusBottomEnd">16dp</item>
+        <item name="boxStrokeColor">@color/brand_500</item>
+        <item name="hintTextColor">@color/ink_3</item>
+        <item name="android:textColorHint">@color/ink_4</item>
+        <item name="endIconTint">@color/ink_3</item>
+    </style>
+
     <style name="CheckTema">
         <item name="android:layout_width">26dp</item>
         <item name="android:layout_height">26dp</item>

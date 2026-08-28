@@ -129,10 +129,8 @@
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/til_nombre"
-                    style="@style/CampoForm"
-                                        android:hint="@string/hint_nombre_med"
-                    app:endIconMode="dropdown_menu"
-                    app:endIconTint="@color/ink_3"
+                    style="@style/CampoForm.Desplegable"
+                    android:hint="@string/hint_nombre_med"
                     android:layout_marginBottom="12dp">
 
                     <com.google.android.material.textfield.MaterialAutoCompleteTextView
@@ -143,7 +141,9 @@
                         android:textColor="@color/ink"
                         android:paddingTop="18dp"
                         android:paddingBottom="18dp"
-                        android:inputType="textCapWords"
+                        android:maxLines="1"
+                        android:imeOptions="actionDone"
+                        android:inputType="textCapWords|textNoSuggestions"
                         android:completionThreshold="1"
                         android:popupBackground="@drawable/shape_card"
                         android:dropDownVerticalOffset="6dp" />

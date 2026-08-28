@@ -232,11 +232,30 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
         };
         setAdaptadorNombres(etNombre, new ArrayList<>(Arrays.asList(respaldo)));
 
-        // La lista se abre al tocar el campo o al recibir foco — sin tener
-        // que escribir nada primero.
-        etNombre.setOnClickListener(v -> etNombre.showDropDown());
-        etNombre.setOnFocusChangeListener((v, hasFocus) -> {
-            if (hasFocus) etNombre.showDropDown();
+        // NO se le pone OnClickListener ni OnFocusChangeListener para abrir
+        // la lista. Antes se hacía, y era el origen de que el desplegable se
+        // volviera a abrir solo: TextInputLayout instala SU PROPIO listener
+        // de click para abrir y cerrar, y ponerle uno acá lo reemplazaba.
+        // Quedaba un campo que sabía abrir pero no cerrar. Con el estilo
+        // CampoForm.Desplegable, de eso se ocupa Material.
+
+        // El "Listo" del teclado: baja el teclado, cierra la lista y suelta
+        // el foco. Antes no hacía nada de las tres cosas —el filtro del
+        // autocompletado terminaba después de que el teclado bajaba y
+        // reabría la lista—, así que parecía que la tecla estuviera rota.
+        //
+        // A propósito NO pasa al paso siguiente: la persona puede estar a
+        // mitad de escribir el nombre, y avanzar solo por apretar Listo se
+        // llevaría puesto lo que falta. Con el teclado abajo, el botón
+        // Siguiente queda a la vista.
+        etNombre.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE) {
+                etNombre.dismissDropDown();
+                ocultarTeclado(etNombre);
+                etNombre.clearFocus();
+                return true;
+            }
+            return false;
         });
 
         // Al elegir del catálogo, precargamos dosis / presentación / instrucciones.
@@ -249,6 +268,8 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
             etNombre.setText(limpio, false);   // false = no volver a filtrar/abrir
             etNombre.setSelection(limpio.length());
             etNombre.dismissDropDown();
+            // Eligió de la lista: no hay nada más que escribir acá.
+            ocultarTeclado(etNombre);
         });
 
         pasos[0].findViewById(R.id.btn_siguiente_1).setOnClickListener(v -> {
@@ -258,6 +279,13 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
         });
 
         cargarCatalogo(etNombre);
+    }
+
+    private void ocultarTeclado(View campo) {
+        android.view.inputmethod.InputMethodManager imm =
+            (android.view.inputmethod.InputMethodManager)
+                getSystemService(INPUT_METHOD_SERVICE);
+        if (imm != null) imm.hideSoftInputFromWindow(campo.getWindowToken(), 0);
     }
 
     /** Trae el catálogo de Supabase y reemplaza la lista de respaldo. */
