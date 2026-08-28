@@ -135,7 +135,16 @@
     <color name="ink_7">#ddd9ee</color>       <!-- bordes / divisores -->
     <color name="ink_8">#efecf9</color>
     <color name="paper">#f6f5fc</color>       <!-- fondo de pantalla -->
-    <color name="paper_2">#ffffff</color>     <!-- cards -->
+    <color name="paper_2">#ffffff</color>
+
+    <!-- Burbuja de Vita. Token propio y no paper_2 (#ffffff): sobre paper
+         (#f6f5fc) el blanco da 1.03 de contraste, o sea ninguno. El
+         recuadro no se veía y el texto de Vita quedaba pegado al fondo,
+         como si estuviera superpuesto sobre la pantalla en vez de dentro
+         de una burbuja. En oscuro los dos tonos sí se separaban solos, por
+         eso pasaba únicamente en modo claro. -->
+    <color name="burbuja_vita">#e9e3f6</color>
+    <color name="burbuja_vita_borde">#b9a9d8</color>     <!-- cards -->
 
     <!-- Alias legacy -->
     <color name="gris_fondo">#f6f5fc</color>

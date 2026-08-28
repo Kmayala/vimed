@@ -244,7 +244,7 @@
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:layout_gravity="center"
-                            android:src="@drawable/ic_sparkle"
+                            android:src="@drawable/ic_idea"
                             android:tint="@color/brand_700"
                             android:contentDescription="Sugerencia" />
                     </FrameLayout>

@@ -116,7 +116,12 @@
     <color name="ink_7">#4a4a4a</color>       <!-- bordes / divisores -->
     <color name="ink_8">#2a2a2a</color>
     <color name="paper">#151515</color>       <!-- fondo de pantalla -->
-    <color name="paper_2">#232323</color>     <!-- cards -->
+    <color name="paper_2">#232323</color>
+
+    <!-- En oscuro la burbuja ya se separaba del fondo; se conserva ese par
+         y solo se le da nombre propio. -->
+    <color name="burbuja_vita">#232323</color>
+    <color name="burbuja_vita_borde">#3d3d3d</color>     <!-- cards -->
 
     <!-- Alias legacy -->
     <color name="gris_fondo">#151515</color>

@@ -54,7 +54,7 @@
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:layout_gravity="center"
-                    android:src="@drawable/ic_sparkle"
+                    android:src="@drawable/ic_vita"
                     android:contentDescription="Vita" />
             </FrameLayout>
 
@@ -157,7 +157,7 @@
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/ic_sparkle"
+                        android:src="@drawable/ic_vita"
                         android:contentDescription="Vita" />
                 </FrameLayout>
 

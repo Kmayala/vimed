@@ -18,6 +18,6 @@
         android:title="Progreso" />
     <item
         android:id="@+id/nav_vita"
-        android:icon="@drawable/ic_sparkle"
+        android:icon="@drawable/ic_vita"
         android:title="Vita" />
 </menu>
