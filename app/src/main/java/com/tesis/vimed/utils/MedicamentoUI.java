@@ -71,8 +71,14 @@ public final class MedicamentoUI {
         Collections.sort(horas);   // "HH:mm" ordena bien como texto
 
         String intervaloTxt = intervaloMasCorto == 24
-            ? "Una vez al día" : "Cada " + intervaloMasCorto + "h";
-        return android.text.TextUtils.join(", ", horas) + " · " + intervaloTxt;
+            ? "Una vez al día" : "Cada " + intervaloMasCorto + " h";
+
+        // Dos separadores distintos a propósito. Las horas son entre sí lo
+        // mismo, así que van con un punto medio que las deja parejas; la
+        // frecuencia NO es una hora más, y con coma o con el mismo punto se
+        // leía como si lo fuera: "00:19, 06:19, 12:19, 18:19 · Cada 6h"
+        // parecía una lista de cinco cosas. La raya la separa del grupo.
+        return android.text.TextUtils.join("  •  ", horas) + "  —  " + intervaloTxt;
     }
 
     /**
