@@ -9,6 +9,15 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+
+    <!-- Permite abrir el diálogo de "quitar optimización de batería" para
+         ESTA app, en vez de mandar a la persona a una lista del sistema
+         donde tiene que encontrarla.
+         En muchos celulares —MIUI entre ellos— esa lista arranca filtrada y
+         Vimed directamente no aparece, así que el ajuste era inalcanzable.
+         Google Play restringe este permiso, pero lo admite justamente para
+         apps de alarmas y recordatorios, que es lo que esta es. -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
 
     <!-- Alarma a pantalla completa (como despertador) + vibración -->

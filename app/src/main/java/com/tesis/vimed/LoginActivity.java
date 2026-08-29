@@ -207,20 +207,31 @@ public class LoginActivity extends AppCompatActivity {
                 : (System.currentTimeMillis() / 1000) + body.expiresIn
         );
 
-        // Resolver el id_usuario de public.usuarios (lo crea si no existe).
-        // Best effort — si falla, la app sigue andando con SQLite local.
+        // Resolver el id_usuario de public.usuarios (lo crea si no existe)
+        // ANTES de entrar a la app.
+        //
+        // Se esperaba a que terminara: se llamaba con callback null y se
+        // navegaba de una. La primera pantalla se abría con el id todavía
+        // sin resolver y todo lo que consulta a Supabase respondía "Sesión
+        // no sincronizada", hasta que la respuesta llegaba sola y el
+        // siguiente onResume ya andaba. Parecía un error de red al azar.
+        //
+        // La espera es corta —una consulta— y ocurre con el botón ya en
+        // "Entrando…", así que no hay pantalla en blanco.
         com.tesis.vimed.api.PerfilSync.asegurarPerfil(
             this, authUserId, usuario.getNombre(), usuario.getCorreo(),
-            usuario.getRol(), null);
-
-        setLoading(false);
-
-        if (sessionManager.hasRole()) {
-            goToHome();
-        } else {
-            startActivity(new Intent(this, RoleSelectionActivity.class));
-            finish();
-        }
+            usuario.getRol(), idUsuario -> {
+                setLoading(false);
+                // Se entra igual si no se pudo resolver: quedarse en el
+                // login por un fallo de red sería peor, y la app reintenta
+                // sola en cada pantalla.
+                if (sessionManager.hasRole()) {
+                    goToHome();
+                } else {
+                    startActivity(new Intent(this, RoleSelectionActivity.class));
+                    finish();
+                }
+            });
     }
 
     private void mostrarErrorRespuesta(Response<?> r) {

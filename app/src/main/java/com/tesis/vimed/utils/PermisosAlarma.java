@@ -59,18 +59,31 @@ public final class PermisosAlarma {
     /**
      * Abre el diálogo del sistema para quitar la optimización.
      *
-     * Se usa el intent SIN el permiso REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
-     * declarado, que abre la LISTA de ajustes en vez del diálogo directo.
-     * Pedirlo directo requiere declarar ese permiso, y Google Play lo
-     * rechaza salvo en categorías muy puntuales; para una app de tesis no
-     * vale la pena arriesgar la publicación por un toque menos.
+     * Va DIRECTO al diálogo de esta app y no a la lista general.
+     *
+     * Antes se abría ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS, que
+     * muestra la lista de todas las apps. En muchos celulares —MIUI entre
+     * ellos— esa lista arranca filtrada por "restringidas" o por "todas"
+     * según la versión, y Vimed simplemente no aparecía: el ajuste quedaba
+     * inalcanzable aunque la app lo pidiera.
+     *
+     * El intent directo necesita el permiso declarado en el manifiesto.
+     * Google Play lo restringe, pero lo admite para apps de alarmas y
+     * recordatorios, que es exactamente esta.
+     *
+     * Si el diálogo directo no está disponible se cae a la lista, y de ahí
+     * a los ajustes de la app, que siempre existen.
      */
     @SuppressLint("BatteryLife")
     public static void abrirAjusteBateria(Activity act) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
-        if (!intentar(act, new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))) {
-            abrirAjustesDeLaApp(act);
-        }
+
+        Intent directo = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+            .setData(android.net.Uri.parse("package:" + act.getPackageName()));
+
+        if (intentar(act, directo)) return;
+        if (intentar(act, new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))) return;
+        abrirAjustesDeLaApp(act);
     }
 
     // ═══ Capas de fabricante ═══════════════════════════════════
@@ -157,9 +170,19 @@ public final class PermisosAlarma {
             NotificationHelper.puedeFullScreenIntent(act),
             () -> NotificationHelper.pedirPermisoFullScreenIntent(act)));
 
+        // El estado de este puede ir y venir sin que nadie lo toque: los
+        // celulares con capa propia (MIUI, EMUI…) tienen SU ahorro de
+        // batería aparte del de Android, y el que la app puede consultar es
+        // solo el de Android. Se aclara en el texto en vez de dejar a la
+        // persona pensando que tocó algo mal.
         lista.add(new Requisito(
             "Batería sin restricciones",
-            "Si el sistema duerme la app, le cancela las alarmas.",
+            tieneGestorPropio()
+                ? "Si el sistema duerme la app, le cancela las alarmas. Tu"
+                    + " celular tiene además su propio ahorro de batería, así"
+                    + " que este aviso puede volver a aparecer aunque ya lo"
+                    + " hayas dado: tocá de nuevo y confirmá."
+                : "Si el sistema duerme la app, le cancela las alarmas.",
             bateriaSinRestriccion(act),
             () -> abrirAjusteBateria(act)));
 

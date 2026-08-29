@@ -146,11 +146,21 @@ public class RegisterActivity extends AppCompatActivity {
                     ? body.expiresAt
                     : (System.currentTimeMillis() / 1000) + body.expiresIn
             );
-            // 3) Crear la fila espejo en public.usuarios (best effort — no bloquea)
+            // 3) Crear la fila espejo en public.usuarios y ESPERARLA: la
+            //    pantalla siguiente ya consulta con ese id, y sin él
+            //    responde "Sesión no sincronizada". Ver la nota en
+            //    LoginActivity.onLoginExitoso.
             com.tesis.vimed.api.PerfilSync.asegurarPerfil(
-                this, authUserId, name, email, "", null);
+                this, authUserId, name, email, "",
+                idUsuario -> irADespuesDelRegistro(body));
+            return;
         }
 
+        irADespuesDelRegistro(body);
+    }
+
+    /** A dónde va la persona una vez creada la cuenta. */
+    private void irADespuesDelRegistro(AuthPayloads.AuthResponse body) {
         setLoading(false);
         // Si el dashboard tiene "Confirm email" activado, accessToken viene null
         // y el usuario tiene que confirmar antes de loguearse. Le avisamos.
