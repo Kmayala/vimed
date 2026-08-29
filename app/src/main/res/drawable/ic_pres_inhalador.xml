@@ -1,15 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Inhalador: el cuerpo con la boquilla y el vapor saliendo. -->
+<!-- Inhalador de cartucho presurizado, con la forma de L que tiene de
+     verdad: el cuerpo vertical con su cartucho arriba, la boquilla saliendo
+     abajo a la derecha, y el disparo saliendo de la boquilla.
+
+     Antes era un rectángulo con rayitas al costado, que podía ser
+     cualquier cosa. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp" android:height="24dp"
     android:viewportWidth="24" android:viewportHeight="24">
-    <path android:strokeColor="#FFFFFF" android:strokeWidth="1.9"
-        android:strokeLineCap="round" android:strokeLineJoin="round"
-        android:pathData="M8.6,2.4 L13.4,2.4 L13.4,6.4 L8.6,6.4 Z" />
-    <path android:strokeColor="#FFFFFF" android:strokeWidth="1.9"
-        android:strokeLineCap="round" android:strokeLineJoin="round"
-        android:pathData="M7.4,6.4 L14.6,6.4 A2.4,2.4 0 0 1 17,8.8 L17,19.2 A2.4,2.4 0 0 1 14.6,21.6 L7.4,21.6 A2.4,2.4 0 0 1 5,19.2 L5,8.8 A2.4,2.4 0 0 1 7.4,6.4 Z" />
+
+    <!-- Cartucho -->
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="1.8"
+        android:strokeLineJoin="round"
+        android:pathData="M4.6,1.8 L9.8,1.8 L9.8,4.4 L4.6,4.4 Z" />
+
+    <!-- Cuerpo en L: baja por la izquierda y sale la boquilla a la derecha -->
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="1.8"
+        android:strokeLineJoin="round"
+        android:pathData="M3.8,4.4 L10.6,4.4 L10.6,11.6 L16.4,11.6 L16.4,17.6 L3.8,17.6 Z" />
+
+    <!-- Boca de la boquilla -->
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="1.6"
+        android:pathData="M13.4,11.6 L13.4,17.6" />
+
+    <!-- El disparo -->
     <path android:strokeColor="#FFFFFF" android:strokeWidth="1.7"
         android:strokeLineCap="round"
-        android:pathData="M19.4,10.6 L21.6,10.6 M19.4,14 L22.4,14 M19.4,17.4 L21.6,17.4" />
+        android:pathData="M18.4,12 L20.8,9.8 M19,14.6 L22,14.6 M18.4,17.2 L20.8,19.4" />
 </vector>

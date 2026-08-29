@@ -133,6 +133,12 @@
     <color name="ink_5">#65618a</color>
     <color name="ink_6">#9491b5</color>
     <color name="ink_7">#ddd9ee</color>       <!-- bordes / divisores -->
+
+    <!-- Borde de los campos de texto SIN foco. Token propio y no ink_7:
+         ink_7 es para divisores, que pueden ser tenues; el borde de una
+         caja donde hay que escribir tiene que verse, y en oscuro ink_7
+         (#4a4a4a) daba 1.77 contra la tarjeta. Este da 3.0. -->
+    <color name="borde_campo">#9491b5</color>
     <color name="ink_8">#efecf9</color>
     <color name="paper">#f6f5fc</color>       <!-- fondo de pantalla -->
     <color name="paper_2">#ffffff</color>

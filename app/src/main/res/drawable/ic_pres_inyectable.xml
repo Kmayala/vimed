@@ -1,12 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Inyectable: jeringa en diagonal, con el émbolo y la aguja. -->
+<!-- Inyectable: jeringa HORIZONTAL.
+     Estaba en diagonal y a 28dp se veía torcida: una diagonal a 45° sobre
+     una grilla de 24 deja los bordes entre píxeles y el dibujo se ve
+     descuadrado. Horizontal cae sobre la grilla y queda derecha.
+
+     De izquierda a derecha: aguja, cono, cuerpo con sus marcas, ala y
+     émbolo. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp" android:height="24dp"
     android:viewportWidth="24" android:viewportHeight="24">
-    <path android:strokeColor="#FFFFFF" android:strokeWidth="1.9"
-        android:strokeLineCap="round" android:strokeLineJoin="round"
-        android:pathData="M14.4,4.2 L19.8,9.6 L10.6,18.8 L6.6,19.8 L5.2,18.4 L6.2,14.4 Z" />
-    <path android:strokeColor="#FFFFFF" android:strokeWidth="1.9"
+
+    <!-- Aguja y cono -->
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="1.8"
         android:strokeLineCap="round"
-        android:pathData="M16.4,2.2 L21.8,7.6 M4.4,19.6 L2,22 M11,7.6 L16.4,13 M8.6,10 L14,15.4" />
+        android:pathData="M1.4,12 L5.4,12" />
+
+    <!-- Cuerpo -->
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="1.8"
+        android:strokeLineJoin="round"
+        android:pathData="M5.4,9.2 L16.2,9.2 L16.2,14.8 L5.4,14.8 Z" />
+
+    <!-- Marcas de la escala -->
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="1.6"
+        android:strokeLineCap="round"
+        android:pathData="M8.6,9.2 L8.6,11.4 M11.2,9.2 L11.2,11.4 M13.8,9.2 L13.8,11.4" />
+
+    <!-- Ala y émbolo -->
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:pathData="M16.2,7 L16.2,17 M16.2,12 L21,12 M21,9 L21,15" />
 </vector>

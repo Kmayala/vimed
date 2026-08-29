@@ -177,7 +177,10 @@
         <item name="boxCornerRadiusTopEnd">16dp</item>
         <item name="boxCornerRadiusBottomStart">16dp</item>
         <item name="boxCornerRadiusBottomEnd">16dp</item>
-        <item name="boxStrokeColor">@color/brand_500</item>
+        <item name="boxStrokeColor">@color/borde_campo_estados</item>
+        <!-- 1dp de gris medio a 60 años no es un borde. -->
+        <item name="boxStrokeWidth">1.5dp</item>
+        <item name="boxStrokeWidthFocused">2.5dp</item>
         <item name="hintTextColor">@color/ink_3</item>
         <item name="android:textColorHint">@color/ink_4</item>
     </style>
@@ -196,7 +199,10 @@
         <item name="boxCornerRadiusTopEnd">16dp</item>
         <item name="boxCornerRadiusBottomStart">16dp</item>
         <item name="boxCornerRadiusBottomEnd">16dp</item>
-        <item name="boxStrokeColor">@color/brand_500</item>
+        <item name="boxStrokeColor">@color/borde_campo_estados</item>
+        <!-- 1dp de gris medio a 60 años no es un borde. -->
+        <item name="boxStrokeWidth">1.5dp</item>
+        <item name="boxStrokeWidthFocused">2.5dp</item>
         <item name="hintTextColor">@color/ink_3</item>
         <item name="android:textColorHint">@color/ink_4</item>
         <item name="endIconTint">@color/ink_3</item>

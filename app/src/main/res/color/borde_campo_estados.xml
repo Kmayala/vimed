@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  El borde de los campos de texto.
+
+  Hace falta una lista de estados y no un color suelto: cuando a
+  boxStrokeColor se le da un color solo, Material lo usa para el campo
+  ENFOCADO y deja el resto de los estados en su valor por omisión, que sale
+  de colorOnSurface con muy poca opacidad. En claro apenas se nota; en
+  oscuro el borde queda casi del color del fondo y la caja desaparece.
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:color="@color/brand_500" />
+    <item android:state_hovered="true" android:color="@color/brand_500" />
+    <item android:state_enabled="false" android:color="@color/ink_7" />
+    <item android:color="@color/borde_campo" />
+</selector>

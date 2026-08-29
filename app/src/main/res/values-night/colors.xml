@@ -114,6 +114,8 @@
          que las separa —#151515 y #232323 se distinguen por su relleno—
          pero sigue haciendo falta donde dos capas se tocan. -->
     <color name="ink_7">#4a4a4a</color>       <!-- bordes / divisores -->
+
+    <color name="borde_campo">#6e6a80</color>
     <color name="ink_8">#2a2a2a</color>
     <color name="paper">#151515</color>       <!-- fondo de pantalla -->
     <color name="paper_2">#232323</color>
