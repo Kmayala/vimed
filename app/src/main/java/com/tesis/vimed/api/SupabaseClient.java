@@ -77,11 +77,33 @@ public final class SupabaseClient {
             return chain.proceed(b.build());
         };
 
+        // TODAS las llamadas de la app van al mismo host de Supabase, y
+        // OkHttp permite por omisión solo 5 en paralelo POR HOST. Cada
+        // pantalla dispara bastantes más —el panel del cuidador pide
+        // perfil, medicamentos, horarios, tomas, citas, notificaciones y
+        // olvidos— así que las que sobran se quedan encoladas esperando un
+        // lugar. En una conexión buena no se nota; en 4G flojo la espera se
+        // suma al tiempo de la llamada y termina en "sin conexión: timeout"
+        // aunque la red esté andando.
+        okhttp3.Dispatcher despachante = new okhttp3.Dispatcher();
+        despachante.setMaxRequestsPerHost(12);
+
         OkHttpClient http = new OkHttpClient.Builder()
+            .dispatcher(despachante)
             .addInterceptor(authHeaders)
             .addInterceptor(logger)
-            .connectTimeout(15, TimeUnit.SECONDS)
+            // Conectar es lo que más tarda cuando la radio del celular está
+            // dormida: el primer paquete tiene que despertarla.
+            .connectTimeout(20, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            // Tope de punta a punta, encolado incluido. Sin esto una llamada
+            // trabada puede quedar colgada mucho más que los timeouts de
+            // arriba, porque ninguno cuenta el tiempo en la cola.
+            .callTimeout(60, TimeUnit.SECONDS)
+            // Es el valor por omisión, pero conviene que esté escrito: es lo
+            // que reintenta solo cuando el celular cambia de wifi a datos.
+            .retryOnConnectionFailure(true)
             .build();
 
         String base = BuildConfig.SUPABASE_URL;

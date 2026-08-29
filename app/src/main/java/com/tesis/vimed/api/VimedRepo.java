@@ -128,7 +128,7 @@ public final class VimedRepo {
                 }
                 @Override
                 public void onFailure(Call<List<Medicamento>> c, Throwable t) {
-                    cb.onError("Sin conexión: " + t.getMessage());
+                    cb.onError(mensajeDeFallo(t));
                 }
             });
     }
@@ -150,7 +150,7 @@ public final class VimedRepo {
                 }
                 @Override
                 public void onFailure(Call<List<Medicamento>> c, Throwable t) {
-                    cb.onError("Sin conexión: " + t.getMessage());
+                    cb.onError(mensajeDeFallo(t));
                 }
             });
     }
@@ -279,7 +279,7 @@ public final class VimedRepo {
                 }
                 @Override
                 public void onFailure(Call<List<Horario>> c, Throwable t) {
-                    cb.onError("Sin conexión: " + t.getMessage());
+                    cb.onError(mensajeDeFallo(t));
                 }
             });
     }
@@ -425,7 +425,7 @@ public final class VimedRepo {
 
                 @Override
                 public void onFailure(Call<List<RegistroToma>> c, Throwable t) {
-                    cb.onError("Sin conexión: " + t.getMessage());
+                    cb.onError(mensajeDeFallo(t));
                 }
             });
     }
@@ -443,7 +443,7 @@ public final class VimedRepo {
                 }
                 @Override
                 public void onFailure(Call<List<RegistroToma>> c, Throwable t) {
-                    cb.onError("Sin conexión: " + t.getMessage());
+                    cb.onError(mensajeDeFallo(t));
                 }
             });
     }
@@ -482,7 +482,7 @@ public final class VimedRepo {
                 }
                 @Override
                 public void onFailure(Call<List<UsuarioSupabase>> c, Throwable t) {
-                    cb.onError("Sin conexión: " + t.getMessage());
+                    cb.onError(mensajeDeFallo(t));
                 }
             });
     }
@@ -534,7 +534,7 @@ public final class VimedRepo {
                 }
                 @Override
                 public void onFailure(Call<Void> c, Throwable t) {
-                    cb.onError("Sin conexión: " + t.getMessage());
+                    cb.onError(mensajeDeFallo(t));
                 }
             });
     }
@@ -656,7 +656,7 @@ public final class VimedRepo {
                 }
                 @Override
                 public void onFailure(Call<List<CitaMedica>> c, Throwable t) {
-                    cb.onError("Sin conexión: " + t.getMessage());
+                    cb.onError(mensajeDeFallo(t));
                 }
             });
     }
@@ -678,7 +678,7 @@ public final class VimedRepo {
                     else cb.onError("No se pudo eliminar (código " + r.code() + ")");
                 }
                 @Override public void onFailure(Call<Void> c, Throwable t) {
-                    cb.onError("Sin conexión: " + t.getMessage());
+                    cb.onError(mensajeDeFallo(t));
                 }
             });
     }
@@ -720,7 +720,7 @@ public final class VimedRepo {
                 }
                 @Override
                 public void onFailure(Call<List<com.tesis.vimed.models.UsuarioSupabase>> c, Throwable t) {
-                    cb.onError("Sin conexión: " + t.getMessage());
+                    cb.onError(mensajeDeFallo(t));
                 }
             });
     }
@@ -740,7 +740,7 @@ public final class VimedRepo {
                 }
                 @Override
                 public void onFailure(Call<List<com.tesis.vimed.models.UsuarioSupabase>> c, Throwable t) {
-                    cb.onError("Sin conexión: " + t.getMessage());
+                    cb.onError(mensajeDeFallo(t));
                 }
             });
     }
@@ -893,7 +893,7 @@ public final class VimedRepo {
                     else cb.onError("No se pudo desvincular (código " + r.code() + ")");
                 }
                 @Override public void onFailure(Call<Void> c, Throwable t) {
-                    cb.onError("Sin conexión: " + t.getMessage());
+                    cb.onError(mensajeDeFallo(t));
                 }
             });
     }
@@ -966,7 +966,7 @@ public final class VimedRepo {
                 }
                 @Override
                 public void onFailure(Call<List<Medicamento>> c, Throwable t) {
-                    cb.onError("Sin conexión: " + t.getMessage());
+                    cb.onError(mensajeDeFallo(t));
                 }
             });
     }
@@ -985,7 +985,7 @@ public final class VimedRepo {
                 }
                 @Override
                 public void onFailure(Call<List<CitaMedica>> c, Throwable t) {
-                    cb.onError("Sin conexión: " + t.getMessage());
+                    cb.onError(mensajeDeFallo(t));
                 }
             });
     }
@@ -1003,6 +1003,32 @@ public final class VimedRepo {
      * PostgREST manda el detalle en el body ({"message":…,"hint":…}),
      * y sin eso un "error 401" no dice nada.
      */
+    /**
+     * Por qué falló una llamada, dicho de forma que se pueda actuar.
+     *
+     * Antes todo caía en "Sin conexión: timeout", que es confuso cuando la
+     * red anda: un timeout no es lo mismo que estar sin señal, y la
+     * respuesta de la persona es distinta —esperar y reintentar, o buscar
+     * señal—. El texto de la excepción tampoco ayudaba: llega en inglés y
+     * con el nombre del host adentro.
+     */
+    public static String mensajeDeFallo(Throwable t) {
+        if (t instanceof java.net.SocketTimeoutException) {
+            return "El servidor tardó demasiado en responder. Probá de nuevo.";
+        }
+        if (t instanceof java.net.UnknownHostException) {
+            return "No hay conexión a internet.";
+        }
+        if (t instanceof javax.net.ssl.SSLException) {
+            return "No se pudo establecer una conexión segura. "
+                + "Revisá la fecha y hora del celular.";
+        }
+        if (t instanceof java.io.InterruptedIOException) {
+            return "La conexión se cortó a mitad de camino. Probá de nuevo.";
+        }
+        return "Sin conexión. Revisá tus datos o el wifi.";
+    }
+
     public static String mensajeDeError(Response<?> r) {
         String detalle = "";
         try {
@@ -1033,7 +1059,7 @@ public final class VimedRepo {
             }
             @Override
             public void onFailure(Call<List<T>> c, Throwable t) {
-                cb.onError("Sin conexión: " + t.getMessage());
+                cb.onError(mensajeDeFallo(t));
             }
         };
     }
@@ -1048,7 +1074,7 @@ public final class VimedRepo {
             }
             @Override
             public void onFailure(Call<List<T>> c, Throwable t) {
-                cb.onError("Sin conexión: " + t.getMessage());
+                cb.onError(mensajeDeFallo(t));
             }
         };
     }
@@ -1076,7 +1102,7 @@ public final class VimedRepo {
             }
             @Override
             public void onFailure(Call<List<T>> c, Throwable t) {
-                cb.onError("Sin conexión: " + t.getMessage());
+                cb.onError(mensajeDeFallo(t));
             }
         };
     }

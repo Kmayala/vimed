@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.tesis.vimed.api.VimedRepo;
 import com.tesis.vimed.api.auth.AuthPayloads;
 import com.tesis.vimed.api.auth.SupabaseAuthClient;
 
@@ -118,7 +119,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
                 @Override
                 public void onFailure(Call<AuthPayloads.AuthUser> c, Throwable t) {
                     setLoading(false);
-                    tilPassword.setError("Sin conexión: " + t.getMessage());
+                    tilPassword.setError(VimedRepo.mensajeDeFallo(t));
                 }
             });
     }

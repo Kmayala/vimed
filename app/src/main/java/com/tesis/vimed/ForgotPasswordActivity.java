@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.tesis.vimed.api.VimedRepo;
 import com.tesis.vimed.api.auth.AuthPayloads;
 import com.tesis.vimed.api.auth.SupabaseAuthClient;
 
@@ -80,7 +81,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                 @Override
                 public void onFailure(Call<Void> c, Throwable t) {
                     setLoading(false);
-                    tilEmail.setError("Sin conexión: " + t.getMessage());
+                    tilEmail.setError(VimedRepo.mensajeDeFallo(t));
                 }
             });
     }

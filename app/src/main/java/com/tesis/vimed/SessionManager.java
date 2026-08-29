@@ -60,6 +60,21 @@ public class SessionManager {
         editor.apply();
     }
 
+    /**
+     * Corrige el nombre con el que quedó guardada la sesión.
+     *
+     * Lo usa la sincronización del perfil: al entrar en un celular donde no
+     * está la fila local, el login inventaba un nombre a partir del correo
+     * —"karenayala1711"— porque era lo único que tenía a mano. El nombre de
+     * verdad, el que la persona escribió al registrarse, está en Supabase;
+     * en cuanto llega, pisa al inventado.
+     */
+    public void actualizarNombre(String nombre) {
+        if (nombre == null || nombre.trim().isEmpty()) return;
+        editor.putString(KEY_NOMBRE, nombre.trim());
+        editor.apply();
+    }
+
     /** Guarda sesión de usuario Google (sin id de BD aún). */
     public void saveGoogleUser(String nombre, String correo) {
         editor.putString(KEY_NOMBRE, nombre);

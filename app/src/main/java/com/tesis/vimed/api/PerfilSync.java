@@ -52,7 +52,7 @@ public final class PerfilSync {
                     if (r.isSuccessful() && r.body() != null && !r.body().isEmpty()) {
                         // Ya existe
                         UsuarioSupabase perfil = r.body().get(0);
-                        guardarId(ctx, perfil.getIdUsuario(), cb);
+                        guardarId(ctx, perfil.getIdUsuario(), perfil, cb);
                     } else {
                         // No existe → crearlo
                         crearPerfil(ctx, authUserId, nombre, correo, rol, cb);
@@ -78,7 +78,8 @@ public final class PerfilSync {
                 public void onResponse(Call<List<UsuarioSupabase>> c,
                                        Response<List<UsuarioSupabase>> r) {
                     if (r.isSuccessful() && r.body() != null && !r.body().isEmpty()) {
-                        guardarId(ctx, r.body().get(0).getIdUsuario(), cb);
+                        guardarId(ctx, r.body().get(0).getIdUsuario(),
+                            r.body().get(0), cb);
                     } else {
                         if (cb != null) cb.onListo(-1);
                     }
@@ -109,11 +110,25 @@ public final class PerfilSync {
             });
     }
 
-    private static void guardarId(Context ctx, Integer id, Callback0 cb) {
+    /**
+     * Guarda el id y, de paso, el NOMBRE de verdad.
+     *
+     * Cuando el celular no tiene la fila local —reinstalación, teléfono
+     * nuevo, o cualquiera que se loguee por primera vez acá— el login arma
+     * un nombre cortando el correo por la arroba, porque es lo único que
+     * tiene antes de hablar con el servidor. Así aparecía "Buenas tardes,
+     * karenayala1711". El nombre que la persona escribió al registrarse
+     * está en public.usuarios, y esta consulta ya lo trae: se aprovecha
+     * para corregirlo en vez de dejar el inventado.
+     */
+    private static void guardarId(Context ctx, Integer id,
+                                  UsuarioSupabase perfil, Callback0 cb) {
         int resuelto = id != null ? id : -1;
-        if (resuelto != -1) {
-            new SessionManager(ctx).saveSupabaseIdUsuario(resuelto);
-        }
+        SessionManager ses = new SessionManager(ctx);
+
+        if (resuelto != -1) ses.saveSupabaseIdUsuario(resuelto);
+        if (perfil != null) ses.actualizarNombre(perfil.getNombre());
+
         if (cb != null) cb.onListo(resuelto);
     }
 }

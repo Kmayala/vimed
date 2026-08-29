@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.tesis.vimed.api.VimedRepo;
 import com.tesis.vimed.api.auth.AuthPayloads;
 import com.tesis.vimed.api.auth.LoginGoogle;
 import com.tesis.vimed.api.auth.SupabaseAuthClient;
@@ -105,7 +106,7 @@ public class LoginActivity extends AppCompatActivity {
                 public void onFailure(Call<AuthPayloads.AuthResponse> c, Throwable t) {
                     setLoading(false);
                     Toast.makeText(LoginActivity.this,
-                        "Sin conexión: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                        VimedRepo.mensajeDeFallo(t), Toast.LENGTH_LONG).show();
                 }
             });
     }
@@ -147,7 +148,7 @@ public class LoginActivity extends AppCompatActivity {
                         public void onFailure(Call<AuthPayloads.AuthResponse> c, Throwable t) {
                             setCargandoGoogle(false);
                             Toast.makeText(LoginActivity.this,
-                                "Sin conexión: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                                VimedRepo.mensajeDeFallo(t), Toast.LENGTH_LONG).show();
                         }
                     });
             }
