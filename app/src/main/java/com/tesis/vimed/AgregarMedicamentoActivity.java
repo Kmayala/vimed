@@ -76,6 +76,16 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
     /** Vencimiento elegido, "yyyy-MM-dd", o null si la persona no lo cargó. */
     private String fechaVencimiento = null;
 
+    /**
+     * Nombres de los medicamentos que esta persona ya tiene cargados.
+     *
+     * Es lo que hace que un antigripal —o cualquier cosa que no esté en el
+     * catálogo— se reconozca a partir del SEGUNDO escaneo: la primera vez
+     * se adivina por el tamaño del texto, se guarda como medicamento suyo,
+     * y de ahí en más ya es un nombre conocido.
+     */
+    private final List<String> nombresYaCargados = new ArrayList<>();
+
     /** Dónde le pedimos a la cámara que deje la foto de la caja. */
     private java.io.File fotoCaja;
     private androidx.activity.result.ActivityResultLauncher<android.net.Uri> tomarFoto;
@@ -295,6 +305,27 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
         });
 
         cargarCatalogo(etNombre);
+        cargarNombresYaCargados();
+    }
+
+    /**
+     * Los nombres que esta persona ya tiene, para que el escáner reconozca
+     * lo que escaneó alguna vez aunque no esté en el catálogo.
+     */
+    private void cargarNombresYaCargados() {
+        VimedRepo.Cb<List<com.tesis.vimed.models.Medicamento>> cb =
+            new VimedRepo.Cb<List<com.tesis.vimed.models.Medicamento>>() {
+                @Override public void onOk(List<com.tesis.vimed.models.Medicamento> meds) {
+                    nombresYaCargados.clear();
+                    for (com.tesis.vimed.models.Medicamento m : meds) {
+                        if (m.getNombre() != null) nombresYaCargados.add(m.getNombre());
+                    }
+                }
+                @Override public void onError(String msg) { /* se escanea igual */ }
+            };
+
+        if (idUsuarioDestino > 0) VimedRepo.listarMedicamentosDe(idUsuarioDestino, cb);
+        else                      VimedRepo.listarMedicamentos(this, cb);
     }
 
     private void ocultarTeclado(View campo) {
@@ -440,11 +471,21 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
         }
     }
 
-    private List<String> lineasDe(com.google.mlkit.vision.text.Text texto) {
-        List<String> lineas = new ArrayList<>();
+    /**
+     * Las líneas leídas, CON el alto que ocupa cada una en la foto.
+     *
+     * El alto es lo que permite reconocer un medicamento que no está en
+     * ninguna lista: en una caja, el nombre del producto es lo que está
+     * impreso más grande. El lector ya devuelve el rectángulo de cada
+     * línea; antes se descartaba.
+     */
+    private List<EscanerCaja.Linea> lineasDe(com.google.mlkit.vision.text.Text texto) {
+        List<EscanerCaja.Linea> lineas = new ArrayList<>();
         for (com.google.mlkit.vision.text.Text.TextBlock b : texto.getTextBlocks()) {
             for (com.google.mlkit.vision.text.Text.Line l : b.getLines()) {
-                lineas.add(l.getText());
+                android.graphics.Rect caja = l.getBoundingBox();
+                lineas.add(new EscanerCaja.Linea(
+                    l.getText(), caja != null ? caja.height() : 0));
             }
         }
         return lineas;
@@ -458,8 +499,8 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
      * medicación: la app propone y la persona confirma, igual que hace el
      * chequeo de dosis, que tampoco decide nada por su cuenta.
      */
-    private void usarLoLeido(List<String> lineas) {
-        EscanerCaja.Lectura l = EscanerCaja.leer(lineas, catalogo);
+    private void usarLoLeido(List<EscanerCaja.Linea> lineas) {
+        EscanerCaja.Lectura l = EscanerCaja.leer(lineas, catalogo, nombresYaCargados);
 
         if (l.vacia()) {
             new AlertDialog.Builder(this)
@@ -485,6 +526,13 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
         // los aciertos deja creer que lo demás también se cargó.
         if (!l.tieneNombre()) {
             leido.append("\nEl nombre no lo reconocimos: cargalo vos.");
+        } else if (l.nombreEsUnaApuesta) {
+            // Este nombre NO salió de ninguna lista: es lo más grande que
+            // había impreso en la caja. Suele ser el correcto, pero puede
+            // ser la marca del laboratorio o un eslogan, y quien confirma
+            // tiene que saber que le estamos mostrando una suposición.
+            leido.append("\nEse nombre lo leímos de la caja, no lo teníamos"
+                + " en la lista. Revisá que esté bien escrito.");
         }
         if (!l.tieneDosis()) {
             leido.append("\nLa dosis no la encontramos: la elegís en el paso siguiente.");
@@ -503,9 +551,12 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
             AutoCompleteTextView etNombre = pasos[0].findViewById(R.id.et_nombre);
             etNombre.setText(l.nombre, false);   // false: no reabrir la lista
             etNombre.setSelection(l.nombre.length());
-            // Mismo camino que elegir del desplegable, así la precarga de
-            // presentación e instrucciones sale igual.
-            aplicarDatosDelCatalogo(l.nombre);
+
+            // La precarga de presentación e instrucciones sale del catálogo,
+            // así que solo corre cuando el nombre VINO del catálogo. Para un
+            // antigripal leído de la caja no hay datos habituales que
+            // precargar, y inventarlos sería peor que dejarlos vacíos.
+            if (l.delCatalogo != null) aplicarDatosDelCatalogo(l.nombre);
         }
         // La dosis leída pisa a la del catálogo: la caja que la persona
         // tiene en la mano manda sobre la presentación habitual.
