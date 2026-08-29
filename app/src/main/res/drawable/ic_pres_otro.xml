@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Otro: el sobrecito genérico. Es el que sale cuando la presentación no
+     es ninguna de las que la app conoce, así que no puede parecerse
+     demasiado a ninguna: mejor neutro que engañoso. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="1.9"
+        android:strokeLineJoin="round"
+        android:pathData="M4.4,4.6 L19.6,4.6 A1.6,1.6 0 0 1 21.2,6.2 L21.2,17.8 A1.6,1.6 0 0 1 19.6,19.4 L4.4,19.4 A1.6,1.6 0 0 1 2.8,17.8 L2.8,6.2 A1.6,1.6 0 0 1 4.4,4.6 Z" />
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="1.9"
+        android:strokeLineCap="round"
+        android:pathData="M8,12 L16,12 M12,8 L12,16" />
+</vector>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Gotas: gotero con una gota cayendo. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="1.9"
+        android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:pathData="M8.4,2.6 L15.6,2.6 M9.6,2.6 L9.6,7.6 L12,11.6 L14.4,7.6 L14.4,2.6" />
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M12,14 C12,14 8.8,17.4 8.8,19.4 A3.2,3.2 0 0 0 15.2,19.4 C15.2,17.4 12,14 12,14 Z" />
+</vector>

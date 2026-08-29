@@ -18,14 +18,16 @@
         android:layout_height="56dp"
         android:layout_marginEnd="16dp">
 
-        <TextView
-            android:id="@+id/tv_med_initial"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:gravity="center"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="#FFFFFF" />
+        <!-- El dibujo de la presentación, no la inicial del nombre: dos
+             medicamentos que empiezan con la misma letra daban dos círculos
+             idénticos. -->
+        <ImageView
+            android:id="@+id/iv_med_icono"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_gravity="center"
+            android:tint="#FFFFFF"
+            android:contentDescription="@null" />
     </FrameLayout>
 
     <!-- Nombre + dosis + instrucciones -->

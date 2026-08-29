@@ -20,6 +20,7 @@ import com.tesis.vimed.api.VimedRepo;
 import com.tesis.vimed.models.Horario;
 import com.tesis.vimed.models.Medicamento;
 import com.tesis.vimed.models.RegistroToma;
+import com.tesis.vimed.utils.MedicamentoUI;
 import com.tesis.vimed.utils.ModoPaciente;
 import com.tesis.vimed.utils.NavInferior;
 
@@ -302,13 +303,10 @@ public class DashboardActivity extends AppCompatActivity {
         for (EstadisticasProgreso.PorMedicamento m : p.porMedicamento) {
             View item = inflater.inflate(R.layout.item_med_progreso, cont, false);
 
-            TextView inicial = item.findViewById(R.id.tv_inicial);
-            inicial.setText(m.nombre.isEmpty()
-                ? "M" : m.nombre.substring(0, 1).toUpperCase(Locale.getDefault()));
-            GradientDrawable circulo = new GradientDrawable();
-            circulo.setShape(GradientDrawable.OVAL);
-            circulo.setColor(colorDeMedicamento(m.colorIcono));
-            inicial.setBackground(circulo);
+            ((android.widget.ImageView) item.findViewById(R.id.iv_med_icono))
+                .setImageResource(MedicamentoUI.iconoDePresentacion(m.presentacion));
+            item.findViewById(R.id.icono_container)
+                .setBackground(MedicamentoUI.circuloDe(m.colorIcono));
 
             ((TextView) item.findViewById(R.id.tv_nombre)).setText(m.nombre);
             ((TextView) item.findViewById(R.id.tv_detalle)).setText(
@@ -385,19 +383,6 @@ public class DashboardActivity extends AppCompatActivity {
         if (pct >= 80) return "Vas muy bien";
         if (pct >= 50) return "Buen ritmo, se puede mejorar";
         return "Se están perdiendo varias tomas";
-    }
-
-    private int colorDeMedicamento(String colorKey) {
-        if (colorKey == null) return ContextCompat.getColor(this, R.color.pill_morado);
-        switch (colorKey.toLowerCase(Locale.ROOT)) {
-            case "azul":     return ContextCompat.getColor(this, R.color.pill_azul);
-            case "verde":    return ContextCompat.getColor(this, R.color.pill_verde);
-            case "rojo":     return ContextCompat.getColor(this, R.color.pill_rojo);
-            case "amarillo": return ContextCompat.getColor(this, R.color.pill_amarillo);
-            case "morado":   return ContextCompat.getColor(this, R.color.pill_morado);
-            case "gris":     return ContextCompat.getColor(this, R.color.pill_gris);
-            default:         return ContextCompat.getColor(this, R.color.pill_morado);
-        }
     }
 
     // ═══ Helpers ═══════════════════════════════════════════════

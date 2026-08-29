@@ -147,7 +147,7 @@ public class MedsListActivity extends AppCompatActivity {
         TextView tvDosis = item.findViewById(R.id.tv_med_dosis);
         TextView tvInst = item.findViewById(R.id.tv_med_inst);
         TextView tvHorario = item.findViewById(R.id.tv_med_horario);
-        TextView tvInitial = item.findViewById(R.id.tv_med_initial);
+        android.widget.ImageView ivIcono = item.findViewById(R.id.iv_med_icono);
         TextView tvStock = item.findViewById(R.id.tv_med_stock);
         FrameLayout iconContainer = item.findViewById(R.id.med_icon_container);
 
@@ -202,14 +202,10 @@ public class MedsListActivity extends AppCompatActivity {
             }
         }
 
-        String nombre = med.getNombre();
-        tvInitial.setText(nombre.length() > 0 ? String.valueOf(nombre.charAt(0)).toUpperCase() : "M");
-
-        int bgColor = colorForMed(med.getColorIcono());
-        GradientDrawable circle = new GradientDrawable();
-        circle.setShape(GradientDrawable.OVAL);
-        circle.setColor(bgColor);
-        iconContainer.setBackground(circle);
+        ivIcono.setImageResource(
+            MedicamentoUI.iconoDePresentacion(med.getPresentacion()));
+        iconContainer.setBackground(
+            MedicamentoUI.circuloDe(med.getColorIcono()));
 
         // La tarjeta ahora responde al toque (antes la flecha no hacía nada)
         // Tocar abre la ficha completa. Antes abría un menú de dos opciones
@@ -221,19 +217,6 @@ public class MedsListActivity extends AppCompatActivity {
             i.putExtra(MedicamentoDetalleActivity.EXTRA_ID_MEDICAMENTO, med.getId());
             startActivity(i);
         });
-    }
-
-    private int colorForMed(String colorKey) {
-        if (colorKey == null) return Color.parseColor("#0d8b7d");
-        switch (colorKey.toLowerCase()) {
-            case "azul":     return Color.parseColor("#1e5ca8");
-            case "verde":    return Color.parseColor("#2e7d58");
-            case "rojo":     return Color.parseColor("#b3261e");
-            case "amarillo": return Color.parseColor("#b86a00");
-            case "morado":   return Color.parseColor("#6750A4");
-            case "gris":     return Color.parseColor("#9aa39f");
-            default:         return Color.parseColor("#0d8b7d");
-        }
     }
 
     private void setupBottomNav() {

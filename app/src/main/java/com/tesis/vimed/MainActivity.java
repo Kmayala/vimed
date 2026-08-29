@@ -25,6 +25,7 @@ import com.tesis.vimed.models.CitaMedica;
 import com.tesis.vimed.models.Horario;
 import com.tesis.vimed.models.Medicamento;
 import com.tesis.vimed.models.RegistroToma;
+import com.tesis.vimed.utils.MedicamentoUI;
 import com.tesis.vimed.utils.ModoPaciente;
 import com.tesis.vimed.utils.NavInferior;
 import com.tesis.vimed.utils.NotificationHelper;
@@ -572,7 +573,7 @@ public class MainActivity extends AppCompatActivity {
         TextView tvInst = item.findViewById(R.id.tv_instructions);
         TextView tvTime = item.findViewById(R.id.tv_time);
         TextView tvStatus = item.findViewById(R.id.tv_status);
-        TextView tvInitial = item.findViewById(R.id.tv_med_initial);
+        android.widget.ImageView ivIcono = item.findViewById(R.id.iv_med_icono);
         FrameLayout iconContainer = item.findViewById(R.id.med_icon_container);
 
         String nombre = dose.med.getNombre();
@@ -582,14 +583,11 @@ public class MainActivity extends AppCompatActivity {
         tvNameDose.setText(nombre + dosis);
         tvInst.setText(instruccionLegible(dose.med.getInstrucciones()));
         tvTime.setText(dose.hora);
-        tvInitial.setText(nombre.length() > 0 ? String.valueOf(nombre.charAt(0)).toUpperCase() : "M");
-
-        // Color del ícono
-        int bgColor = colorForMed(dose.med.getColorIcono());
-        GradientDrawable circle = new GradientDrawable();
-        circle.setShape(GradientDrawable.OVAL);
-        circle.setColor(bgColor);
-        iconContainer.setBackground(circle);
+        // El dibujo sale de la presentación que se eligió al cargarlo.
+        ivIcono.setImageResource(
+            MedicamentoUI.iconoDePresentacion(dose.med.getPresentacion()));
+        iconContainer.setBackground(
+            MedicamentoUI.circuloDe(dose.med.getColorIcono()));
 
         // Tilde de la derecha: verde lleno si está confirmada, gris si no
         // El tilde de la derecha acompaña al chip: verde si se tomó, rojo
@@ -701,19 +699,6 @@ public class MainActivity extends AppCompatActivity {
         // Esta es la pantalla de inicio del adulto mayor: cerrarla al
         // navegar lo dejaría sin nada atrás, de ahí el false.
         NavInferior.configurar(this, ModoPaciente.propio(), R.id.nav_home, false);
-    }
-
-    private int colorForMed(String colorKey) {
-        if (colorKey == null) return Color.parseColor("#0d8b7d");
-        switch (colorKey.toLowerCase()) {
-            case "azul":    return Color.parseColor("#1e5ca8");
-            case "verde":   return Color.parseColor("#2e7d58");
-            case "rojo":    return Color.parseColor("#b3261e");
-            case "amarillo":return Color.parseColor("#b86a00");
-            case "morado":  return Color.parseColor("#6750A4");
-            case "gris":    return Color.parseColor("#9aa39f");
-            default:        return Color.parseColor("#0d8b7d");
-        }
     }
 
     private String instruccionLegible(String tag) {

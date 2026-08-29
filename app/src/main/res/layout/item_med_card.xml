@@ -18,14 +18,13 @@
         android:layout_height="60dp"
         android:layout_marginEnd="16dp">
 
-        <TextView
-            android:id="@+id/tv_med_initial"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:gravity="center"
-            android:textSize="26sp"
-            android:textStyle="bold"
-            android:textColor="#FFFFFF" />
+        <ImageView
+            android:id="@+id/iv_med_icono"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center"
+            android:tint="#FFFFFF"
+            android:contentDescription="@null" />
     </FrameLayout>
 
     <!-- Info del medicamento -->

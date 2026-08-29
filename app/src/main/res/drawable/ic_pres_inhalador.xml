@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Inhalador: el cuerpo con la boquilla y el vapor saliendo. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="1.9"
+        android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:pathData="M8.6,2.4 L13.4,2.4 L13.4,6.4 L8.6,6.4 Z" />
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="1.9"
+        android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:pathData="M7.4,6.4 L14.6,6.4 A2.4,2.4 0 0 1 17,8.8 L17,19.2 A2.4,2.4 0 0 1 14.6,21.6 L7.4,21.6 A2.4,2.4 0 0 1 5,19.2 L5,8.8 A2.4,2.4 0 0 1 7.4,6.4 Z" />
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="1.7"
+        android:strokeLineCap="round"
+        android:pathData="M19.4,10.6 L21.6,10.6 M19.4,14 L22.4,14 M19.4,17.4 L21.6,17.4" />
+</vector>

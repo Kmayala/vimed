@@ -67,14 +67,20 @@
                 android:elevation="3dp"
                 android:padding="20dp">
 
-                <TextView
-                    android:id="@+id/tv_inicial"
+                <FrameLayout
+                    android:id="@+id/icono_container"
                     android:layout_width="62dp"
                     android:layout_height="62dp"
-                    android:gravity="center"
-                    android:textSize="27sp"
-                    android:textColor="@color/white"
-                    android:background="@drawable/shape_icon_purple" />
+                    android:background="@drawable/shape_icon_purple">
+
+                    <ImageView
+                        android:id="@+id/iv_med_icono"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_gravity="center"
+                        android:tint="@color/white"
+                        android:contentDescription="@null" />
+                </FrameLayout>
 
                 <LinearLayout
                     android:layout_width="0dp"

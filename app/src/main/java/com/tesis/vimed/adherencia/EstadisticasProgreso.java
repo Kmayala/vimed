@@ -51,12 +51,15 @@ public final class EstadisticasProgreso {
         public final int idMedicamento;
         public final String nombre;
         public final String colorIcono;
+        /** Para dibujar el ícono del círculo, igual que en las otras listas. */
+        public final String presentacion;
         public final int confirmadas, total;
 
         PorMedicamento(int idMedicamento, String nombre, String colorIcono,
-                       int confirmadas, int total) {
+                       String presentacion, int confirmadas, int total) {
             this.idMedicamento = idMedicamento; this.nombre = nombre;
             this.colorIcono = colorIcono;
+            this.presentacion = presentacion;
             this.confirmadas = confirmadas; this.total = total;
         }
         public int porcentaje() {
@@ -204,7 +207,7 @@ public final class EstadisticasProgreso {
             if (a == null || a[1] == 0) continue;
             out.add(new PorMedicamento(m.getId(),
                 m.getNombre() != null ? m.getNombre() : "Medicamento",
-                m.getColorIcono(), a[0], a[1]));
+                m.getColorIcono(), m.getPresentacion(), a[0], a[1]));
         }
         // Lo peor arriba: es lo que hay que mirar.
         Collections.sort(out, (a, b) -> Integer.compare(a.porcentaje(), b.porcentaje()));

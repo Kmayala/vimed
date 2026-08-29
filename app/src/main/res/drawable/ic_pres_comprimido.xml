@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Comprimido: pastilla redonda con la ranura de partir al medio. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="1.9"
+        android:pathData="M12,3.2 A8.8,8.8 0 1 1 12,20.8 A8.8,8.8 0 1 1 12,3.2 Z" />
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="1.9"
+        android:strokeLineCap="round"
+        android:pathData="M12,3.5 L12,20.5" />
+</vector>

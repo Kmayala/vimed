@@ -116,9 +116,12 @@ public class MedicamentoDetalleActivity extends AppCompatActivity {
             modo.esDeOtro() ? "De " + modo.primerNombre() : "Medicamento");
         ((TextView) findViewById(R.id.tv_nombre)).setText(nombre);
         ((TextView) findViewById(R.id.tv_dosis)).setText(MedicamentoUI.dosis(med));
-        ((TextView) findViewById(R.id.tv_inicial)).setText(
-            nombre.isEmpty() ? "M"
-                : String.valueOf(nombre.charAt(0)).toUpperCase(Locale.getDefault()));
+        ((android.widget.ImageView) findViewById(R.id.iv_med_icono))
+            .setImageResource(MedicamentoUI.iconoDePresentacion(med.getPresentacion()));
+        // El círculo toma el color elegido, igual que en la lista: es como la
+        // persona reconoce el medicamento de un vistazo.
+        findViewById(R.id.icono_container)
+            .setBackground(MedicamentoUI.circuloDe(med.getColorIcono()));
 
         pintarAlertaVencimiento();
         pintarFicha();

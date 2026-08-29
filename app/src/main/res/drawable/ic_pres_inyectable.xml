@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Inyectable: jeringa en diagonal, con el émbolo y la aguja. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="1.9"
+        android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:pathData="M14.4,4.2 L19.8,9.6 L10.6,18.8 L6.6,19.8 L5.2,18.4 L6.2,14.4 Z" />
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="1.9"
+        android:strokeLineCap="round"
+        android:pathData="M16.4,2.2 L21.8,7.6 M4.4,19.6 L2,22 M11,7.6 L16.4,13 M8.6,10 L14,15.4" />
+</vector>

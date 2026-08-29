@@ -1,5 +1,6 @@
 package com.tesis.vimed.utils;
 
+import com.tesis.vimed.R;
 import com.tesis.vimed.models.Horario;
 import com.tesis.vimed.models.Medicamento;
 
@@ -108,6 +109,74 @@ public final class MedicamentoUI {
             out.add(String.format(Locale.getDefault(), "%02d:%02d", hh, minuto));
         }
         return out;
+    }
+
+    /**
+     * El dibujo que le corresponde a la presentación elegida al cargarlo.
+     *
+     * Antes el círculo mostraba la inicial del nombre. Con dos medicamentos
+     * que empiezan con la misma letra —Carbonato de Calcio y Clonazepam, por
+     * ejemplo— quedaban dos círculos idénticos con una "C", y lo único que
+     * los distinguía era leer el nombre entero. La presentación sí dibuja
+     * algo distinto, y ya está guardada desde el paso 3 del formulario.
+     *
+     * Se compara sin acentos y en minúsculas porque el valor viene de la
+     * base y puede haberse guardado de cualquier forma. Lo que no reconoce
+     * cae en el sobrecito genérico, que a propósito no se parece a ninguna
+     * presentación concreta: un dibujo equivocado es peor que uno neutro.
+     */
+    public static int iconoDePresentacion(String presentacion) {
+        String p = sinAcentos(presentacion);
+        if (p.startsWith("comprimido") || p.startsWith("tableta")
+            || p.startsWith("pastilla"))       return R.drawable.ic_pres_comprimido;
+        if (p.startsWith("capsula"))           return R.drawable.ic_pres_capsula;
+        if (p.startsWith("jarabe")
+            || p.startsWith("suspension"))     return R.drawable.ic_pres_jarabe;
+        if (p.startsWith("inyectable")
+            || p.startsWith("ampolla"))        return R.drawable.ic_pres_inyectable;
+        if (p.startsWith("gotas"))             return R.drawable.ic_pres_gotas;
+        if (p.startsWith("parche"))            return R.drawable.ic_pres_parche;
+        if (p.startsWith("inhalador")
+            || p.startsWith("aerosol"))        return R.drawable.ic_pres_inhalador;
+        return R.drawable.ic_pres_otro;
+    }
+
+    private static String sinAcentos(String s) {
+        if (s == null) return "";
+        String limpio = java.text.Normalizer
+            .normalize(s.trim().toLowerCase(Locale.ROOT), java.text.Normalizer.Form.NFD)
+            .replaceAll("\\p{M}", "");
+        return limpio;
+    }
+
+    /**
+     * El color que la persona le eligió al medicamento.
+     *
+     * Estaba copiado igual en MainActivity, MedsListActivity y
+     * DashboardActivity. Tres copias del mismo switch es como termina
+     * pasando que un color se corrija en una pantalla y no en las otras
+     * dos, y el color es lo que la persona usa para reconocer la pastilla.
+     */
+    public static int colorDe(String colorKey) {
+        if (colorKey == null) return android.graphics.Color.parseColor("#0d8b7d");
+        switch (colorKey.toLowerCase(Locale.ROOT)) {
+            case "azul":     return android.graphics.Color.parseColor("#1e5ca8");
+            case "verde":    return android.graphics.Color.parseColor("#2e7d58");
+            case "rojo":     return android.graphics.Color.parseColor("#b3261e");
+            case "amarillo": return android.graphics.Color.parseColor("#b86a00");
+            case "morado":   return android.graphics.Color.parseColor("#6750A4");
+            case "gris":     return android.graphics.Color.parseColor("#9aa39f");
+            default:         return android.graphics.Color.parseColor("#0d8b7d");
+        }
+    }
+
+    /** El círculo de color que va detrás del ícono. */
+    public static android.graphics.drawable.GradientDrawable circuloDe(String colorKey) {
+        android.graphics.drawable.GradientDrawable circulo =
+            new android.graphics.drawable.GradientDrawable();
+        circulo.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+        circulo.setColor(colorDe(colorKey));
+        return circulo;
     }
 
     /** Cuántas veces al día se toma, según el intervalo. */
