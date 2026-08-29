@@ -143,6 +143,29 @@ dependencies {
     implementation platform(libs.firebase.bom)
     implementation libs.firebase.messaging
 
+    // Lector de texto de la caja del medicamento. Corre entero en el
+    // celular: la foto de una caja de medicación es un dato de salud y no
+    // tiene por qué salir del aparato.
+    //
+    // Esta variante deja el modelo en Google Play Services en vez de
+    // empaquetarlo. Medido sobre este APK:
+    //
+    //     empaquetado (com.google.mlkit:text-recognition)  48.8 MB
+    //     por Play Services (esta)                          8.3 MB
+    //
+    // Son 40 MB, y casi todos de una librería nativa que además viene para
+    // cuatro arquitecturas —x86 y x86_64 solo sirven en emuladores—. Esta
+    // app se distribuye por datos móviles a gente que la instala una vez;
+    // 40 MB ahí pesan mucho más que la comodidad de tenerlo adentro.
+    //
+    // Depender de Play Services no agrega nada nuevo: ya es obligatorio
+    // para el push de Firebase y para el login con Google. Y el modelo no
+    // se baja recién en el primer escaneo: el meta-data del manifiesto le
+    // pide a Play Services que lo traiga al instalar la app, así que para
+    // cuando alguien saque la primera foto ya está listo y funciona sin
+    // conexión.
+    implementation 'com.google.android.gms:play-services-mlkit-text-recognition:19.0.1'
+
     // Login con Google sin salir de la app (hoja de cuentas nativa).
     implementation 'androidx.credentials:credentials:1.3.0'
     implementation 'androidx.credentials:credentials-play-services-auth:1.3.0'

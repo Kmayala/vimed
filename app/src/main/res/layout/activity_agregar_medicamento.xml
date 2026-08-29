@@ -127,6 +127,29 @@
                     android:lineSpacingMultiplier="1.35"
                     android:layout_marginBottom="28dp" />
 
+                <!-- Leer la caja.
+                     Va ARRIBA del campo y no abajo: es el atajo, y puesto
+                     después del lugar donde escribir se descubre recién
+                     cuando ya se escribió el nombre a mano. -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_escanear"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minWidth="0dp"
+                    android:minHeight="56dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:layout_marginBottom="16dp"
+                    android:text="Sacarle una foto a la caja"
+                    android:textSize="16sp"
+                    android:textColor="@color/brand_600"
+                    app:icon="@drawable/ic_camara"
+                    app:iconTint="@color/brand_600"
+                    app:iconGravity="textStart"
+                    app:strokeColor="@color/brand_600"
+                    app:cornerRadius="16dp" />
+
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/til_nombre"
                     style="@style/CampoForm.Desplegable"

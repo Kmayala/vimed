@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dónde puede escribir la cámara del sistema.
+     Solo una subcarpeta del caché de la app: la foto de una caja de
+     medicación es un dato de salud, así que no va a la galería del
+     celular ni a un lugar que otras apps puedan leer. Se borra apenas
+     se termina de leer el texto. -->
+<paths>
+    <cache-path name="escaneos" path="escaneos/" />
+</paths>

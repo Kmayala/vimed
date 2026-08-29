@@ -85,6 +85,26 @@
         <activity android:name=".OlvidosActivity" android:exported="false" />
         <activity android:name=".MedicamentoDetalleActivity" android:exported="false" />
         <activity android:name=".EditarMedicamentoActivity" android:exported="false" />
+
+        <!-- Que Play Services baje el modelo del lector AL INSTALAR y no en
+             el primer escaneo. Sin esto, la primera foto —que es la que se
+             saca parada en la farmacia— tendría que esperar una descarga. -->
+        <meta-data
+            android:name="com.google.mlkit.vision.DEPENDENCIES"
+            android:value="ocr" />
+
+        <!-- Le presta a la cámara del sistema un lugar donde dejar la foto
+             de la caja. exported=false y grantUriPermissions: el permiso se
+             da por foto y se vence solo. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fotos"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/rutas_camara" />
+        </provider>
         <activity android:name=".AppointmentsActivity" android:exported="false" />
         <activity android:name=".DashboardActivity" android:exported="false" />
         <activity android:name=".AgregarCitaActivity" android:exported="false" />

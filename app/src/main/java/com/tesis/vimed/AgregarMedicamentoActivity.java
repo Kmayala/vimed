@@ -20,6 +20,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.tesis.vimed.api.CatalogoMatcher;
 import com.tesis.vimed.api.DosisChecker;
+import com.tesis.vimed.api.EscanerCaja;
 import com.tesis.vimed.api.InteraccionChecker;
 import com.tesis.vimed.api.SupabaseClient;
 import com.tesis.vimed.api.VimedRepo;
@@ -74,6 +75,10 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
 
     /** Vencimiento elegido, "yyyy-MM-dd", o null si la persona no lo cargó. */
     private String fechaVencimiento = null;
+
+    /** Dónde le pedimos a la cámara que deje la foto de la caja. */
+    private java.io.File fotoCaja;
+    private androidx.activity.result.ActivityResultLauncher<android.net.Uri> tomarFoto;
     // Nombre de color (no hex) — así lo interpreta MainActivity.colorForMed()
     private String colorIcono = "azul";
 
@@ -120,6 +125,15 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_agregar_medicamento);
+
+        // El lanzador se registra ANTES de que la Activity llegue a
+        // RESUMED; hacerlo dentro de un onClick tira IllegalStateException.
+        tomarFoto = registerForActivityResult(
+            new androidx.activity.result.contract.ActivityResultContracts.TakePicture(),
+            salioBien -> {
+                if (Boolean.TRUE.equals(salioBien)) leerLaFoto();
+                else borrarFoto();
+            });
 
         idUsuarioDestino = getIntent().getIntExtra(EXTRA_PARA_ID_USUARIO, -1);
         nombreDestino    = getIntent().getStringExtra(EXTRA_PARA_NOMBRE);
@@ -272,6 +286,8 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
             ocultarTeclado(etNombre);
         });
 
+        pasos[0].findViewById(R.id.btn_escanear).setOnClickListener(v -> escanearCaja());
+
         pasos[0].findViewById(R.id.btn_siguiente_1).setOnClickListener(v -> {
             nombre = etNombre.getText().toString().trim();
             if (!nombre.isEmpty()) mostrarPaso(1);
@@ -363,6 +379,153 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
                 + ". Podés cambiarlos en los próximos pasos.");
             aviso.setVisibility(View.VISIBLE);
         }
+    }
+
+    // ══ Leer la caja ═══════════════════════════════════════════
+
+    /**
+     * Abre la cámara del sistema para fotografiar la caja.
+     *
+     * Se usa la cámara del sistema y no una pantalla propia: es la que la
+     * persona ya sabe usar, trae su enfoque y su flash, y evita tener que
+     * pedir el permiso de cámara — el que saca la foto es el otro programa.
+     */
+    private void escanearCaja() {
+        try {
+            java.io.File dir = new java.io.File(getCacheDir(), "escaneos");
+            if (!dir.exists() && !dir.mkdirs()) throw new java.io.IOException("sin carpeta");
+            fotoCaja = new java.io.File(dir, "caja.jpg");
+
+            tomarFoto.launch(uriDeLaFoto());
+        } catch (Exception e) {
+            Toast.makeText(this, "No se pudo abrir la cámara en este celular",
+                Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private android.net.Uri uriDeLaFoto() {
+        return androidx.core.content.FileProvider.getUriForFile(
+            this, getPackageName() + ".fotos", fotoCaja);
+    }
+
+    /** Pasa la foto por el lector y muestra lo que se pudo sacar. */
+    private void leerLaFoto() {
+        MaterialButton btn = pasos[0].findViewById(R.id.btn_escanear);
+        if (btn != null) { btn.setEnabled(false); btn.setText("Leyendo la caja…"); }
+
+        try {
+            com.google.mlkit.vision.common.InputImage imagen =
+                com.google.mlkit.vision.common.InputImage.fromFilePath(this, uriDeLaFoto());
+
+            com.google.mlkit.vision.text.TextRecognition
+                .getClient(com.google.mlkit.vision.text.latin
+                    .TextRecognizerOptions.DEFAULT_OPTIONS)
+                .process(imagen)
+                .addOnSuccessListener(texto -> {
+                    restaurarBotonEscanear();
+                    borrarFoto();
+                    usarLoLeido(lineasDe(texto));
+                })
+                .addOnFailureListener(e -> {
+                    restaurarBotonEscanear();
+                    borrarFoto();
+                    Toast.makeText(this,
+                        "No se pudo leer la caja. Probá de nuevo con más luz.",
+                        Toast.LENGTH_LONG).show();
+                });
+        } catch (Exception e) {
+            restaurarBotonEscanear();
+            borrarFoto();
+            Toast.makeText(this, "No se pudo abrir la foto", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private List<String> lineasDe(com.google.mlkit.vision.text.Text texto) {
+        List<String> lineas = new ArrayList<>();
+        for (com.google.mlkit.vision.text.Text.TextBlock b : texto.getTextBlocks()) {
+            for (com.google.mlkit.vision.text.Text.Line l : b.getLines()) {
+                lineas.add(l.getText());
+            }
+        }
+        return lineas;
+    }
+
+    /**
+     * Muestra lo que se leyó y deja que la persona decida.
+     *
+     * NUNCA se carga solo. Un lector se equivoca con una caja arrugada o
+     * mal iluminada, y lo que está en juego es el nombre y la dosis de una
+     * medicación: la app propone y la persona confirma, igual que hace el
+     * chequeo de dosis, que tampoco decide nada por su cuenta.
+     */
+    private void usarLoLeido(List<String> lineas) {
+        EscanerCaja.Lectura l = EscanerCaja.leer(lineas, catalogo);
+
+        if (l.vacia()) {
+            new AlertDialog.Builder(this)
+                .setTitle("No se entendió la caja")
+                .setMessage("No pudimos reconocer el nombre ni la dosis. Probá"
+                    + " sacando la foto más de cerca, con buena luz y sin que"
+                    + " se vea movida. Escribirlo a mano también funciona.")
+                .setPositiveButton("Entendido", null)
+                .show();
+            return;
+        }
+
+        StringBuilder leido = new StringBuilder();
+        if (l.tieneNombre()) {
+            leido.append("Nombre: ").append(l.nombre).append("\n");
+        }
+        if (l.tieneDosis()) {
+            String d = l.dosis == (int) l.dosis
+                ? String.valueOf((int) l.dosis) : String.valueOf(l.dosis);
+            leido.append("Dosis: ").append(d).append(" ").append(l.unidad).append("\n");
+        }
+        // Se dice también qué NO se pudo leer: un cartel que solo muestra
+        // los aciertos deja creer que lo demás también se cargó.
+        if (!l.tieneNombre()) {
+            leido.append("\nEl nombre no lo reconocimos: cargalo vos.");
+        }
+        if (!l.tieneDosis()) {
+            leido.append("\nLa dosis no la encontramos: la elegís en el paso siguiente.");
+        }
+
+        new AlertDialog.Builder(this)
+            .setTitle("Esto leímos de la caja")
+            .setMessage(leido.toString().trim() + "\n\n¿Está bien?")
+            .setNegativeButton("No, lo cargo yo", null)
+            .setPositiveButton("Sí, usar", (d, w) -> aplicarLectura(l))
+            .show();
+    }
+
+    private void aplicarLectura(EscanerCaja.Lectura l) {
+        if (l.tieneNombre()) {
+            AutoCompleteTextView etNombre = pasos[0].findViewById(R.id.et_nombre);
+            etNombre.setText(l.nombre, false);   // false: no reabrir la lista
+            etNombre.setSelection(l.nombre.length());
+            // Mismo camino que elegir del desplegable, así la precarga de
+            // presentación e instrucciones sale igual.
+            aplicarDatosDelCatalogo(l.nombre);
+        }
+        // La dosis leída pisa a la del catálogo: la caja que la persona
+        // tiene en la mano manda sobre la presentación habitual.
+        if (l.tieneDosis()) {
+            dosis = l.dosis;
+            unidad = l.unidad;
+        }
+    }
+
+    private void restaurarBotonEscanear() {
+        MaterialButton btn = pasos[0].findViewById(R.id.btn_escanear);
+        if (btn != null) {
+            btn.setEnabled(true);
+            btn.setText("Sacarle una foto a la caja");
+        }
+    }
+
+    /** La foto se borra apenas se leyó: es un dato de salud, no un recuerdo. */
+    private void borrarFoto() {
+        if (fotoCaja != null && fotoCaja.exists()) fotoCaja.delete();
     }
 
     // ── Paso 2: Dosis ──────────────────────────────────────────
