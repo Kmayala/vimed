@@ -12,7 +12,6 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.tesis.vimed.api.VimedRepo;
 import com.tesis.vimed.api.auth.AuthPayloads;
-import com.tesis.vimed.api.auth.LoginGoogle;
 import com.tesis.vimed.api.auth.SupabaseAuthClient;
 import com.tesis.vimed.database.DatabaseHelper;
 import com.tesis.vimed.database.UsuarioDAO;
@@ -124,45 +123,26 @@ public class LoginActivity extends AppCompatActivity {
     private void entrarConGoogle() {
         setCargandoGoogle(true);
 
-        LoginGoogle.pedirToken(this, new LoginGoogle.Callback() {
-            @Override
-            public void onToken(String idToken, String nonce) {
-                SupabaseAuthClient.getService()
-                    .signInConIdToken(new AuthPayloads.IdTokenRequest(idToken, nonce))
-                    .enqueue(new Callback<AuthPayloads.AuthResponse>() {
-                        @Override
-                        public void onResponse(Call<AuthPayloads.AuthResponse> c,
-                                               Response<AuthPayloads.AuthResponse> r) {
-                            setCargandoGoogle(false);
-                            AuthPayloads.AuthResponse body = r.body();
-                            if (r.isSuccessful() && body != null && body.accessToken != null) {
-                                String correo = body.user != null && body.user.email != null
-                                    ? body.user.email : "";
-                                onLoginExitoso(correo, "", body);
-                            } else {
-                                mostrarErrorRespuesta(r);
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Call<AuthPayloads.AuthResponse> c, Throwable t) {
-                            setCargandoGoogle(false);
-                            Toast.makeText(LoginActivity.this,
-                                VimedRepo.mensajeDeFallo(t), Toast.LENGTH_LONG).show();
-                        }
-                    });
-            }
-
-            @Override
-            public void onError(String mensaje, boolean cancelado) {
-                setCargandoGoogle(false);
-                // Si cerró la hoja de cuentas a propósito, no es un error
-                // que haya que anunciarle.
-                if (!cancelado) {
+        com.tesis.vimed.api.auth.SesionGoogle.iniciar(this,
+            new com.tesis.vimed.api.auth.SesionGoogle.Callback() {
+                @Override public void onEntro(boolean tieneRol) {
+                    setCargandoGoogle(false);
+                    if (tieneRol) {
+                        goToHome();
+                    } else {
+                        startActivity(new Intent(LoginActivity.this,
+                            RoleSelectionActivity.class));
+                        finish();
+                    }
+                }
+                @Override public void onError(String mensaje) {
+                    setCargandoGoogle(false);
                     Toast.makeText(LoginActivity.this, mensaje, Toast.LENGTH_LONG).show();
                 }
-            }
-        });
+                @Override public void onCancelado() {
+                    setCargandoGoogle(false);
+                }
+            });
     }
 
     private void setCargandoGoogle(boolean cargando) {

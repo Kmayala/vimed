@@ -11,7 +11,6 @@
     <string name="btn_email_signin">Iniciar sesión con correo</string>
     <string name="lbl_or">o</string>
     <string name="tv_no_account">¿No tenés cuenta? Registrate</string>
-    <string name="google_soon">La integración con Google estará disponible próximamente</string>
 
     <!-- Login -->
     <string name="login_title">Iniciar sesión</string>
