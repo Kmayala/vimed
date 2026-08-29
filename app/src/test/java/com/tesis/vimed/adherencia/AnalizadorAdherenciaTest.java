@@ -1,6 +1,7 @@
 package com.tesis.vimed.adherencia;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.tesis.vimed.models.Horario;
@@ -41,6 +42,59 @@ public class AnalizadorAdherenciaTest {
         assertEquals(Sugerencia.Tipo.MOVER_HORA, s.get(0).tipo);
         assertEquals("08:25", s.get(0).horaSugerida);
         assertEquals(6, s.get(0).muestras);
+    }
+
+    /**
+     * Un medicamento de una sola toma diaria habla de UNA hora.
+     */
+    @Test
+    public void unaTomaAlDiaNombraSuHoraYNadaMas() {
+        List<Sugerencia> s = analizar("08:00", 24,
+            confirmadas("08:00", new int[]{25, 22, 28, 24, 26, 23}), null);
+
+        Sugerencia sug = s.get(0);
+        assertFalse(sug.afectaVariasTomas());
+        assertEquals(1, sug.tomasPorDia());
+        assertEquals("¿Movemos el recordatorio?", sug.titulo());
+        assertTrue(sug.detalle().contains("pase a las 08:25"));
+    }
+
+    /**
+     * El caso que estaba mal.
+     *
+     * La app guarda UNA hora de inicio por horario, así que un medicamento
+     * cada 6 horas tiene sus cuatro tomas derivadas de ese único valor:
+     * mover el recordatorio las mueve todas. El texto hablaba de una sola
+     * hora, y quien aceptaba se encontraba con las otras tres cambiadas.
+     */
+    @Test
+    public void variasTomasAlDiaLasNombraATodas() {
+        List<Sugerencia> s = analizar("00:20", 6,
+            confirmadas("00:20", new int[]{25, 22, 28, 24, 26, 23}), null);
+
+        Sugerencia sug = s.get(0);
+        assertTrue(sug.afectaVariasTomas());
+        assertEquals(4, sug.tomasPorDia());
+        assertEquals("¿Movemos los recordatorios?", sug.titulo());
+        assertEquals("Sí, moverlos", sug.textoAceptar());
+
+        // Las cuatro horas viejas y las cuatro nuevas, dichas en el cartel.
+        String detalle = sug.detalle();
+        for (String hora : new String[]{"00:20", "06:20", "12:20", "18:20"}) {
+            assertTrue("falta la hora vieja " + hora, detalle.contains(hora));
+        }
+        for (String hora : new String[]{"00:45", "06:45", "12:45", "18:45"}) {
+            assertTrue("falta la hora nueva " + hora, detalle.contains(hora));
+        }
+        assertTrue(detalle.contains("4 veces al día"));
+    }
+
+    /** Las horas del día se enumeran con "y" antes de la última. */
+    @Test
+    public void laUltimaHoraVaConY() {
+        List<Sugerencia> s = analizar("08:00", 8,
+            confirmadas("08:00", new int[]{25, 22, 28, 24, 26, 23}), null);
+        assertTrue(s.get(0).detalle().contains("y 00:25"));
     }
 
     @Test

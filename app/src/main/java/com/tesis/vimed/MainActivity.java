@@ -500,7 +500,11 @@ public class MainActivity extends AppCompatActivity {
                     com.tesis.vimed.utils.AlarmaSync.sincronizar(MainActivity.this);
                     ocultarSugerencia();
                     Toast.makeText(MainActivity.this,
-                        "Recordatorio movido a las " + s.horaSugerida,
+                        s.afectaVariasTomas()
+                            ? "Listo: las " + s.tomasPorDia() + " tomas del día"
+                                + " se movieron " + Math.abs(s.desfaseMinutos)
+                                + " minutos"
+                            : "Recordatorio movido a las " + s.horaSugerida,
                         Toast.LENGTH_LONG).show();
                     refrescarTomas();
                 }

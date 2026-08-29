@@ -188,8 +188,22 @@ public final class AnalizadorAdherencia {
         if (Math.abs(desplazamiento) < DESFASE_MIN_MINUTOS) return null;
 
         String nuevaHora = aHHmm(actualMin + desplazamiento);
+
+        // Las horas del día ANTES y DESPUÉS del cambio.
+        //
+        // Un medicamento cada 6 horas tiene UN solo horario guardado, con su
+        // hora de inicio, y las otras tres tomas salen de ahí. O sea que
+        // mover la hora mueve las CUATRO. El cartel hablaba de una sola y
+        // cambiaban todas sin avisar, que es la peor forma de cambiar el
+        // horario de una medicación.
+        //
+        // Se calculan las dos listas para que la propuesta pueda decir
+        // exactamente qué va a pasar.
+        int intervalo = h.getIntervaloHoras();
         return Sugerencia.moverHora(h.getId(), h.getIdMedicamento(), nombre,
-            h.getHoraInicio(), nuevaHora, desplazamiento, desfases.size());
+            h.getHoraInicio(), nuevaHora, desplazamiento, desfases.size(),
+            horasDelDia(h.getHoraInicio(), intervalo),
+            horasDelDia(nuevaHora, intervalo));
     }
 
     // ═══ Señal 2: historial de olvidos ═════════════════════════
@@ -314,6 +328,26 @@ public final class AnalizadorAdherencia {
         if (d > 720) d -= 1440;
         if (d < -720) d += 1440;
         return d;
+    }
+
+    /**
+     * Todas las horas del día que salen de una hora de inicio y un intervalo.
+     *
+     * Misma cuenta que hace el programador de alarmas, repetida acá en Java
+     * puro: esta clase se prueba sin Android y no puede depender de
+     * MedicamentoUI, que sí lo hace.
+     */
+    static java.util.List<String> horasDelDia(String horaInicio, int intervaloHoras) {
+        java.util.List<String> out = new ArrayList<>();
+        int inicio = aMinutos(horaInicio);
+        if (inicio < 0) return out;
+
+        int cantidad = (intervaloHoras > 0 && intervaloHoras <= 24)
+            ? 24 / intervaloHoras : 1;
+        for (int i = 0; i < cantidad; i++) {
+            out.add(aHHmm(inicio + intervaloHoras * 60 * i));
+        }
+        return out;
     }
 
     /** Redondea a múltiplos de 5: "8:23" como recordatorio no le dice nada a nadie. */
