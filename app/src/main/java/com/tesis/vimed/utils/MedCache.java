@@ -41,6 +41,9 @@ public final class MedCache {
     public static void guardar(Context ctx, Medicamento med) {
         if (med == null || med.getId() <= 0) return;
         prefs(ctx).edit()
+            // Guardar algo lo devuelve a la vida: si estaba marcado como
+            // borrado y volvió a existir, la marca no puede quedar.
+            .remove(clave(med.getId(), "borrado"))
             .putString(clave(med.getId(), "nombre"), med.getNombre())
             .putString(clave(med.getId(), "dosis"), dosisLegible(med))
             .putInt(clave(med.getId(), "usuario"), med.getIdUsuario())
@@ -89,13 +92,31 @@ public final class MedCache {
         return prefs(ctx).getInt(clave(idMedicamento, "usuario"), -1);
     }
 
-    public static void borrar(Context ctx, int idMedicamento) {
+    /**
+     * Deja anotado que este medicamento se dio de baja.
+     *
+     * Existe para que una alarma que quedó agendada de antes pueda cortarse
+     * SOLA, sin consultar la red. Sin esta marca, la única forma de saber si
+     * el medicamento sigue existiendo es preguntarle a Supabase, y eso pasa
+     * DESPUÉS de que la alarma ya sonó: la persona igual se despierta.
+     *
+     * No alcanza con mirar si hay nombre cacheado. "No está en la caché"
+     * también es lo que pasa la primera vez, antes de que la app sincronice,
+     * y confundir las dos cosas silenciaría medicación de verdad.
+     */
+    public static void marcarBorrado(Context ctx, int idMedicamento) {
+        if (idMedicamento <= 0) return;
         prefs(ctx).edit()
             .remove(clave(idMedicamento, "nombre"))
             .remove(clave(idMedicamento, "dosis"))
-            .remove(clave(idMedicamento, "usuario"))
             .remove(clave(idMedicamento, "stock"))
+            .putBoolean(clave(idMedicamento, "borrado"), true)
             .apply();
+    }
+
+    /** True solo si sabemos con certeza que se dio de baja. */
+    public static boolean estaBorrado(Context ctx, int idMedicamento) {
+        return prefs(ctx).getBoolean(clave(idMedicamento, "borrado"), false);
     }
 
     private static String clave(int idMedicamento, String campo) {

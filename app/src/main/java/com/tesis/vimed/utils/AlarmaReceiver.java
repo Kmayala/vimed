@@ -100,7 +100,26 @@ public class AlarmaReceiver extends BroadcastReceiver {
                         String hora, int indice) {
         if (idMedicamento == -1) return;
 
-        // 1) REAGENDAR PRIMERO, antes que cualquier otra cosa.
+        // 0) ¿ESTE MEDICAMENTO TODAVÍA EXISTE?
+        //
+        // Se pregunta ANTES de reagendar y antes de sonar, y se responde con
+        // la caché local para no depender de la red a esta hora.
+        //
+        // Una alarma que quedó agendada de antes —porque el borrado no llegó
+        // a cancelarla, o porque la agendó una versión anterior de la app— se
+        // reagenda sola cada vez que suena. Sin este corte, sonaría para
+        // siempre por algo que ya no existe, y no hay forma de apagarla desde
+        // la app porque el medicamento ya no aparece en ninguna lista.
+        //
+        // Solo corta con CERTEZA: estaBorrado() es una marca que se escribe
+        // al dar de baja, no "no encontré el nombre". Un medicamento que
+        // todavía no se sincronizó no está marcado, así que suena igual.
+        if (MedCache.estaBorrado(ctx, idMedicamento)) {
+            NotificationHelper.cancelarAlarmas(ctx, idMedicamento);
+            return;
+        }
+
+        // 1) REAGENDAR, antes que cualquier otra cosa.
         //    setExactAndAllowWhileIdle dispara una sola vez, así que la alarma
         //    de mañana nace acá. Si esto quedara al final, cualquier fallo de
         //    red más arriba se llevaba puesto el recordatorio PARA SIEMPRE.
@@ -155,6 +174,18 @@ public class AlarmaReceiver extends BroadcastReceiver {
 
         // 3) Recién ahora, lo que sí necesita conexión. Si falla, ya sonó.
         Medicamento med = VimedRepo.buscarMedicamentoSync(idMedicamento);
+
+        // Se dio de baja desde OTRO teléfono —el del cuidador, por ejemplo—,
+        // así que en este nunca se canceló nada. Recién ahora lo sabemos:
+        // esta sonó, pero es la última. Solo con respuesta del servidor; sin
+        // conexión, buscarMedicamentoSync devuelve null y ahí no se concluye
+        // nada, porque callar una medicación por falta de red sería peor.
+        if (med != null && !med.isActivo()) {
+            MedCache.marcarBorrado(ctx, idMedicamento);
+            NotificationHelper.cancelarAlarmas(ctx, idMedicamento);
+            return;
+        }
+
         if (med != null) {
             MedCache.guardar(ctx, med);   // refrescamos por si cambió la dosis
             // La alarma de la toma suena todos los días, así que este es el

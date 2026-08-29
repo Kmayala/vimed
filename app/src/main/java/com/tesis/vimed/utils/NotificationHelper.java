@@ -312,17 +312,39 @@ public class NotificationHelper {
 
     // ═══ Cancelar alarmas ══════════════════════════════════════
 
-    public static void cancelarAlarmas(Context context, int idMedicamento, int intervaloHoras) {
-        int cantidad = (intervaloHoras > 0 && intervaloHoras <= 24) ? 24 / intervaloHoras : 1;
+    /**
+     * Cancela TODAS las alarmas de un medicamento, sin preguntar cuántas eran.
+     *
+     * Antes recibía el intervalo y cancelaba 24/intervalo. Eso fallaba de dos
+     * maneras, las dos silenciosas:
+     *
+     *   · si los horarios no habían llegado de la red al momento de borrar,
+     *     la lista venía vacía y no se cancelaba NADA;
+     *   · si el intervalo había cambiado desde que se agendaron, se cancelaba
+     *     de menos y sobrevivían las de los índices más altos.
+     *
+     * Y una alarma que sobrevive no se muere sola: al dispararse se reagenda
+     * para el día siguiente, así que suena para siempre por un medicamento
+     * que ya no existe.
+     *
+     * El índice máximo posible es 24 (una toma por hora), así que recorrer
+     * los 24 cuesta nada y no deja nada colgado.
+     */
+    public static void cancelarAlarmas(Context context, int idMedicamento) {
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if (am == null) return;
-        for (int i = 0; i < cantidad; i++) {
+        for (int i = 0; i < 24; i++) {
             Intent intent = new Intent(context, com.tesis.vimed.utils.AlarmaReceiver.class);
             intent.setAction(ACTION_FIRE);
             PendingIntent pi = PendingIntent.getBroadcast(context,
                 requestCodeFor(idMedicamento, i), intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
             am.cancel(pi);
+
+            // Si además había una notificación en la barra, se va con la
+            // alarma: quedaba ahí, con sus botones, apuntando a una fila que
+            // ya no se puede confirmar.
+            cancelarNotificacion(context, idMedicamento, i);
         }
     }
 

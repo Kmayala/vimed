@@ -397,7 +397,7 @@ public class EditarMedicamentoActivity extends AppCompatActivity {
                     // otra cantidad de alarmas, así que las que sobran no se
                     // pisan solas y seguirían sonando a la hora vieja.
                     NotificationHelper.cancelarAlarmas(EditarMedicamentoActivity.this,
-                        idMedicamento, horario.getIntervaloHoras());
+                        idMedicamento);
                     NotificationHelper.programarAlarmas(EditarMedicamentoActivity.this,
                         idMedicamento, horario.getId(), horaInicio, intervaloHoras);
                     terminar();

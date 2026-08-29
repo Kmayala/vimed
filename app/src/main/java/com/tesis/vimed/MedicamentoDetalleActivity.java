@@ -270,12 +270,18 @@ public class MedicamentoDetalleActivity extends AppCompatActivity {
             .setPositiveButton("Eliminar", (d, w) -> {
                 // Cancelar las alarmas ANTES de dar de baja: si no, seguirían
                 // sonando para algo que ya no existe.
-                for (Horario h : horarios) {
-                    NotificationHelper.cancelarAlarmas(this, med.getId(), h.getIntervaloHoras());
-                }
+                //
+                // No se recorren los horarios: si la consulta que los trae no
+                // había llegado —o falló—, la lista está vacía y no se
+                // cancelaba nada. cancelarAlarmas se ocupa de todas.
+                NotificationHelper.cancelarAlarmas(this, idMedicamento);
+
                 VimedRepo.eliminarMedicamento(med.getId(), new VimedRepo.Cb<Void>() {
                     @Override public void onOk(Void v) {
-                        MedCache.borrar(MedicamentoDetalleActivity.this, idMedicamento);
+                        // marcarBorrado y no borrar: deja la marca que le
+                        // permite cortarse sola a cualquier alarma que haya
+                        // quedado agendada y no hayamos podido cancelar.
+                        MedCache.marcarBorrado(MedicamentoDetalleActivity.this, idMedicamento);
                         VencimientoChecker.olvidarAviso(
                             MedicamentoDetalleActivity.this, idMedicamento);
                         Toast.makeText(MedicamentoDetalleActivity.this,
