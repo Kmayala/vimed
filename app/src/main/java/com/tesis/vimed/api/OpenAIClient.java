@@ -56,7 +56,18 @@ public class OpenAIClient {
     private static final int MAX_TOKENS = 1200;
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
-    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+
+    /**
+     * Perezoso a propósito: construir un Handler necesita el Looper del
+     * hilo principal de Android, que en una JVM común no existe. Así el
+     * banco de pruebas puede usar responderSync sin arrastrar Android.
+     */
+    private Handler mainHandler;
+
+    private Handler handler() {
+        if (mainHandler == null) mainHandler = new Handler(Looper.getMainLooper());
+        return mainHandler;
+    }
 
     public interface Callback {
         void onRespuesta(String respuesta);
@@ -78,45 +89,58 @@ public class OpenAIClient {
                               Callback callback) {
         executor.execute(() -> {
             try {
-                // OpenAI lleva el prompt del sistema como PRIMER MENSAJE del
-                // array, no en un campo aparte como hacía Anthropic.
-                JSONArray messages = new JSONArray();
-                messages.put(new JSONObject()
-                    .put("role", "system")
-                    .put("content", systemPrompt));
-
-                for (MensajeChat msg : historial) {
-                    if (msg.getContenido() == null || msg.getContenido().isEmpty()) continue;
-                    messages.put(new JSONObject()
-                        .put("role", msg.esDelBot() ? "assistant" : "user")
-                        .put("content", msg.getContenido()));
-                }
-
-                JSONObject body = new JSONObject()
-                    .put("model", MODELO_CHAT)
-                    // max_completion_tokens y NO max_tokens: la familia GPT-5
-                    // rechaza el parámetro viejo con un 400.
-                    .put("max_completion_tokens", MAX_TOKENS)
-                    .put("messages", messages);
-
-                String respuesta = postJson(URL_CHAT, body.toString());
-                JSONObject json = new JSONObject(respuesta);
-                String texto = json.getJSONArray("choices")
-                    .getJSONObject(0)
-                    .getJSONObject("message")
-                    .getString("content")
-                    .trim();
-
+                String texto = responderSync(systemPrompt, historial, MODELO_CHAT);
                 if (texto.isEmpty()) {
                     fallar(callback, "El asistente no devolvió respuesta. Probá de nuevo.");
                     return;
                 }
-                mainHandler.post(() -> callback.onRespuesta(texto));
-
+                handler().post(() -> callback.onRespuesta(texto));
             } catch (Exception e) {
                 fallar(callback, mensajeDeError(e));
             }
         });
+    }
+
+    /**
+     * La llamada en crudo, sin hilos ni callbacks.
+     *
+     * Existe aparte para que el banco de pruebas pueda usarla: ese corre en
+     * una JVM común, donde el Handler del hilo principal de Android no
+     * existe. De paso deja el transporte separado de cómo se despacha, que
+     * es lo que corresponde igual.
+     *
+     * @param modelo se pasa suelto para poder correr las mismas preguntas
+     *               contra varios modelos y comparar.
+     */
+    public static String responderSync(String systemPrompt, List<MensajeChat> historial,
+                                String modelo) throws Exception {
+        // OpenAI lleva el prompt del sistema como PRIMER MENSAJE del array,
+        // no en un campo aparte como hacía Anthropic.
+        JSONArray messages = new JSONArray();
+        messages.put(new JSONObject()
+            .put("role", "system")
+            .put("content", systemPrompt));
+
+        for (MensajeChat msg : historial) {
+            if (msg.getContenido() == null || msg.getContenido().isEmpty()) continue;
+            messages.put(new JSONObject()
+                .put("role", msg.esDelBot() ? "assistant" : "user")
+                .put("content", msg.getContenido()));
+        }
+
+        JSONObject body = new JSONObject()
+            .put("model", modelo)
+            // max_completion_tokens y NO max_tokens: la familia GPT-5
+            // rechaza el parámetro viejo con un 400.
+            .put("max_completion_tokens", MAX_TOKENS)
+            .put("messages", messages);
+
+        JSONObject json = new JSONObject(postJson(URL_CHAT, body.toString()));
+        return json.getJSONArray("choices")
+            .getJSONObject(0)
+            .getJSONObject("message")
+            .getString("content")
+            .trim();
     }
 
     // ═══ Transcripción ═════════════════════════════════════════
@@ -157,7 +181,7 @@ public class OpenAIClient {
                         + " más cerca del micrófono.");
                     return;
                 }
-                mainHandler.post(() -> callback.onRespuesta(texto));
+                handler().post(() -> callback.onRespuesta(texto));
 
             } catch (Exception e) {
                 fallar(callback, mensajeDeError(e));
@@ -167,7 +191,7 @@ public class OpenAIClient {
 
     // ═══ Plomería HTTP ═════════════════════════════════════════
 
-    private HttpURLConnection abrir(String url) throws Exception {
+    private static HttpURLConnection abrir(String url) throws Exception {
         HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Authorization", "Bearer " + BuildConfig.OPENAI_API_KEY);
@@ -177,7 +201,7 @@ public class OpenAIClient {
         return conn;
     }
 
-    private String postJson(String url, String body) throws Exception {
+    private static String postJson(String url, String body) throws Exception {
         HttpURLConnection conn = abrir(url);
         conn.setRequestProperty("Content-Type", "application/json");
 
@@ -192,7 +216,7 @@ public class OpenAIClient {
         return cuerpo;
     }
 
-    private String leer(HttpURLConnection conn) throws Exception {
+    private static String leer(HttpURLConnection conn) throws Exception {
         int code = conn.getResponseCode();
         InputStream is = code == 200 ? conn.getInputStream() : conn.getErrorStream();
         if (is == null) return "";
@@ -227,7 +251,7 @@ public class OpenAIClient {
     }
 
     private void fallar(Callback cb, String msg) {
-        mainHandler.post(() -> cb.onError(msg));
+        handler().post(() -> cb.onError(msg));
     }
 
     /** El error, dicho de forma que se pueda actuar. */
@@ -244,7 +268,7 @@ public class OpenAIClient {
         return "No se pudo conectar con el asistente.";
     }
 
-    private String recorte(String s) {
+    private static String recorte(String s) {
         return s.length() > 200 ? s.substring(0, 200) : s;
     }
 }
