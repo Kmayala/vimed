@@ -32,6 +32,20 @@ def supabaseUrl = limpiar(localProps.getProperty('SUPABASE_URL')
 def supabaseAnonKey = limpiar(localProps.getProperty('SUPABASE_ANON_KEY')
     ?: System.getenv('SUPABASE_ANON_KEY'))
 
+// Clave de OpenAI: la usa Vita para responder y para transcribir el audio.
+//
+// OJO: termina DENTRO del APK y se puede extraer. Para la tesis alcanza,
+// pero si esto se distribuyera de verdad habría que ponerla detrás de una
+// Edge Function de Supabase y que la app le pegue ahí.
+def openAiKey = limpiar(localProps.getProperty('OPENAI_API_KEY')
+    ?: System.getenv('OPENAI_API_KEY'))
+
+// El modelo es configurable a propósito: durante las pruebas hay que
+// correr las mismas preguntas contra varios y comparar cuál respeta el
+// límite de no dar indicaciones médicas.
+def openAiModelo = (localProps.getProperty('OPENAI_MODELO')
+    ?: System.getenv('OPENAI_MODELO') ?: 'gpt-5-nano').trim()
+
 if (supabaseUrl.isEmpty() || supabaseAnonKey.isEmpty()) {
     logger.warn('⚠ SUPABASE_URL / SUPABASE_ANON_KEY vacías: ' +
         'la app compilará pero no va a poder conectarse.')
@@ -82,6 +96,9 @@ android {
         // No es secreto: identifica al proyecto, no autoriza nada por sí
         // solo. Google valida además el paquete y la huella de la firma.
         buildConfigField "String", "GOOGLE_WEB_CLIENT_ID", "\"131576549722-130uhd6v0208a9009h34c6ddknr6sfvd.apps.googleusercontent.com\""
+
+        buildConfigField "String", "OPENAI_API_KEY",   "\"${openAiKey}\""
+        buildConfigField "String", "OPENAI_MODELO",    "\"${openAiModelo}\""
 
         buildConfigField "String", "SUPABASE_URL",      "\"${supabaseUrl}\""
         buildConfigField "String", "SUPABASE_ANON_KEY", "\"${supabaseAnonKey}\""

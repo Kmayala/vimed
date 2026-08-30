@@ -10,6 +10,11 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
+    <!-- Para que Vita escuche. Se pide en el momento de tocar el micrófono,
+         no al abrir la app: pedir permisos antes de que se entienda para
+         qué sirven es la forma más rápida de que los nieguen. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
     <!-- Permite abrir el diálogo de "quitar optimización de batería" para
          ESTA app, en vez de mandar a la persona a una lista del sistema
          donde tiene que encontrarla.

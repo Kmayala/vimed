@@ -16,7 +16,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import com.tesis.vimed.api.AnthropicClient;
+import com.tesis.vimed.api.FiltroSeguridad;
+import com.tesis.vimed.api.OpenAIClient;
 import com.tesis.vimed.database.DatabaseHelper;
 import com.tesis.vimed.database.MensajeChatDAO;
 import com.tesis.vimed.database.MedicamentoDAO;
@@ -34,10 +35,30 @@ public class ChatbotActivity extends AppCompatActivity {
     private ScrollView scrollChat;
     private EditText etMessage;
     private View suggestedPrompts;
+
+    /**
+     * Cuántos mensajes del historial viajan a la API.
+     *
+     * Antes iban TODOS, siempre: el historial se carga de la base al abrir
+     * el chat y crece para siempre, así que en el mensaje cien se pagaba
+     * por reenviar los noventa y nueve anteriores. El costo crecía al
+     * cuadrado.
+     *
+     * Treinta y no diez porque lo caro era la falta de límite, no el
+     * tamaño: pasar de diez a treinta cuesta centavos y evita perder una
+     * aclaración que la persona hizo hace un rato. Y lo durable —qué
+     * medicamentos toma, a qué hora— no depende de esto: el prompt del
+     * sistema lo reconstruye desde la base en cada llamada.
+     */
+    private static final int MENSAJES_DE_CONTEXTO = 30;
+
+    private com.tesis.vimed.utils.VozVita voz;
+    private com.tesis.vimed.utils.GrabadorVoz grabador;
+    private androidx.activity.result.ActivityResultLauncher<String> pedirMicrofono;
     private View typingBubble;
 
     private SessionManager sessionManager;
-    private AnthropicClient anthropicClient;
+    private OpenAIClient openAIClient;
     private MensajeChatDAO chatDAO;
     private List<MensajeChat> historial;
     private int idUsuario;
@@ -50,7 +71,7 @@ public class ChatbotActivity extends AppCompatActivity {
 
         sessionManager = new SessionManager(this);
         idUsuario = sessionManager.getIdUsuario();
-        anthropicClient = new AnthropicClient();
+        openAIClient = new OpenAIClient();
         chatDAO = new MensajeChatDAO(DatabaseHelper.getInstance(this));
 
         chatContainer = findViewById(R.id.chat_container);
@@ -61,8 +82,21 @@ public class ChatbotActivity extends AppCompatActivity {
         findViewById(R.id.btn_back).setOnClickListener(v -> finish());
         setupBottomNav();
         findViewById(R.id.btn_send).setOnClickListener(v -> enviarMensaje());
-        findViewById(R.id.btn_mic).setOnClickListener(v ->
-            Toast.makeText(this, "Función de voz próximamente", Toast.LENGTH_SHORT).show());
+        voz = new com.tesis.vimed.utils.VozVita(this, hablando -> { });
+        grabador = new com.tesis.vimed.utils.GrabadorVoz();
+
+        // El permiso se registra acá, antes de que la Activity llegue a
+        // RESUMED; hacerlo dentro del onClick tira IllegalStateException.
+        pedirMicrofono = registerForActivityResult(
+            new androidx.activity.result.contract.ActivityResultContracts.RequestPermission(),
+            concedido -> {
+                if (concedido) empezarAGrabar();
+                else Toast.makeText(this,
+                    "Sin permiso del micrófono no puedo escucharte. Podés "
+                        + "escribir igual.", Toast.LENGTH_LONG).show();
+            });
+
+        findViewById(R.id.btn_mic).setOnClickListener(v -> alTocarMicrofono());
         findViewById(R.id.btn_clear_chat).setOnClickListener(v -> confirmarLimpiarHistorial());
 
         // Chips de sugerencias
@@ -106,8 +140,28 @@ public class ChatbotActivity extends AppCompatActivity {
 
     private void enviarTexto(String texto) {
         if (isLoading) return;
-        isLoading = true;
 
+        // ANTES de gastar una llamada: hay dos cosas que la app contesta
+        // sola, porque una respuesta equivocada ahí le hace daño a alguien
+        // y un modelo puede tener un mal día. Ver FiltroSeguridad.
+        FiltroSeguridad.Resultado filtro = FiltroSeguridad.revisar(texto);
+        if (filtro.loRespondeLaApp()) {
+            responderSinModelo(texto, filtro.respuesta);
+            return;
+        }
+
+        // Sin clave configurada no tiene sentido intentar: se falla con un
+        // mensaje que dice qué hacer, en vez de con un error de red que
+        // manda a revisar el wifi.
+        if (!OpenAIClient.hayClave()) {
+            responderSinModelo(texto,
+                "Todavía no estoy configurada en esta instalación. Falta "
+                    + "cargar la clave del asistente en local.properties "
+                    + "(OPENAI_API_KEY) y volver a compilar.");
+            return;
+        }
+
+        isLoading = true;
         suggestedPrompts.setVisibility(View.GONE);
 
         // Guardar + mostrar mensaje del usuario
@@ -124,9 +178,9 @@ public class ChatbotActivity extends AppCompatActivity {
         chatContainer.addView(typingBubble);
         scrollAlFinal();
 
-        // Llamar a la API
+        // Llamar a la API, con SOLO los últimos mensajes.
         String systemPrompt = construirSystemPrompt();
-        anthropicClient.enviarMensaje(systemPrompt, historial, new AnthropicClient.Callback() {
+        openAIClient.enviarMensaje(systemPrompt, ultimosMensajes(), new OpenAIClient.Callback() {
             @Override
             public void onRespuesta(String respuesta) {
                 isLoading = false;
@@ -137,6 +191,7 @@ public class ChatbotActivity extends AppCompatActivity {
                 if (idUsuario != -1) chatDAO.insertar(msgBot);
 
                 agregarBurbuja(inflater, respuesta, true);
+                voz.leer(respuesta);
                 scrollAlFinal();
             }
 
@@ -144,12 +199,122 @@ public class ChatbotActivity extends AppCompatActivity {
             public void onError(String error) {
                 isLoading = false;
                 chatContainer.removeView(typingBubble);
-                agregarBurbuja(inflater,
-                    "Lo siento, no pude conectarme en este momento. Verifique su conexión a internet.",
-                    true);
+                agregarBurbuja(inflater, error, true);
                 scrollAlFinal();
             }
         });
+    }
+
+    /**
+     * Contesta sin llamar al modelo. El mensaje igual queda en el
+     * historial: para la persona fue una conversación, y para el cuidador
+     * que después mira el historial también.
+     */
+    private void responderSinModelo(String texto, String respuesta) {
+        suggestedPrompts.setVisibility(View.GONE);
+        LayoutInflater inflater = LayoutInflater.from(this);
+
+        MensajeChat msgUsuario = new MensajeChat(idUsuario, "usuario", texto);
+        historial.add(msgUsuario);
+        if (idUsuario != -1) chatDAO.insertar(msgUsuario);
+        agregarBurbuja(inflater, texto, false);
+
+        MensajeChat msgBot = new MensajeChat(idUsuario, "bot", respuesta);
+        historial.add(msgBot);
+        if (idUsuario != -1) chatDAO.insertar(msgBot);
+        agregarBurbuja(inflater, respuesta, true);
+
+        voz.leer(respuesta);
+        scrollAlFinal();
+    }
+
+    /** Los últimos {@link #MENSAJES_DE_CONTEXTO}, o todos si son menos. */
+    private java.util.List<MensajeChat> ultimosMensajes() {
+        int desde = Math.max(0, historial.size() - MENSAJES_DE_CONTEXTO);
+        return new java.util.ArrayList<>(historial.subList(desde, historial.size()));
+    }
+
+    // ═══ Voz ═══════════════════════════════════════════════════
+
+    private void alTocarMicrofono() {
+        // Si está hablando, el micrófono la calla: alguien que quiere
+        // repreguntar no tiene que esperar a que termine la respuesta.
+        if (voz != null) voz.callar();
+
+        if (grabador.estaGrabando()) { terminarDeGrabar(); return; }
+
+        if (androidx.core.content.ContextCompat.checkSelfPermission(this,
+                android.Manifest.permission.RECORD_AUDIO)
+                == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            empezarAGrabar();
+        } else {
+            pedirMicrofono.launch(android.Manifest.permission.RECORD_AUDIO);
+        }
+    }
+
+    private void empezarAGrabar() {
+        if (!grabador.empezar(this)) {
+            Toast.makeText(this, "No se pudo abrir el micrófono",
+                Toast.LENGTH_LONG).show();
+            return;
+        }
+        etMessage.setHint("Te escucho… tocá de nuevo para terminar");
+        pintarMicrofono(true);
+    }
+
+    private void terminarDeGrabar() {
+        pintarMicrofono(false);
+        etMessage.setHint("Escribe un mensaje...");
+
+        java.io.File audio = grabador.terminar();
+        if (audio == null) {
+            Toast.makeText(this, "No llegué a escuchar nada. Probá de nuevo.",
+                Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        etMessage.setHint("Entendiendo lo que dijiste…");
+        openAIClient.transcribir(audio, new OpenAIClient.Callback() {
+            @Override public void onRespuesta(String texto) {
+                grabador.borrar();
+                etMessage.setHint("Escribe un mensaje...");
+                // El texto se muestra en el campo en vez de mandarse solo:
+                // si la transcripción salió mal, se corrige antes de
+                // enviar en lugar de mandar una pregunta equivocada.
+                etMessage.setText(texto);
+                etMessage.setSelection(texto.length());
+            }
+            @Override public void onError(String error) {
+                grabador.borrar();
+                etMessage.setHint("Escribe un mensaje...");
+                Toast.makeText(ChatbotActivity.this, error, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void pintarMicrofono(boolean grabando) {
+        // El ícono, no el contenedor: btn_mic es el FrameLayout que recibe
+        // el toque, y castearlo a ImageView reventaba al primer click.
+        android.widget.ImageView mic = findViewById(R.id.ic_mic);
+        if (mic == null) return;
+        mic.setColorFilter(androidx.core.content.ContextCompat.getColor(this,
+            grabando ? R.color.danger : R.color.ink_3));
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Sale de la pantalla con el micrófono abierto o Vita hablando: las
+        // dos cosas tienen que cortarse, no seguir de fondo.
+        if (grabador != null) grabador.cancelar();
+        if (voz != null) voz.callar();
+        pintarMicrofono(false);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (voz != null) voz.liberar();
     }
 
     private void agregarBurbuja(LayoutInflater inflater, String texto, boolean esVita) {
@@ -218,10 +383,64 @@ public class ChatbotActivity extends AppCompatActivity {
 
     private String construirSystemPrompt() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Eres Vita, un asistente de salud amable y empático especializado en medicación para adultos mayores. ");
-        sb.append("Responde siempre en español, de forma clara, sencilla y tranquilizadora. ");
-        sb.append("Nunca reemplaces el consejo médico profesional — siempre recomienda consultar al médico para decisiones clínicas importantes. ");
-        sb.append("Sé conciso: respuestas de 2-4 oraciones cuando sea posible.\n\n");
+        // Escrito para que lo ejecute un modelo CHICO: reglas explícitas
+        // con ejemplos, no principios abstractos. Un modelo grande deduce
+        // dónde está el límite; uno chico necesita que se lo muestren.
+        //
+        // La clasificación previa es lo que hace que funcione: primero
+        // decide en qué casillero cae la pregunta, después responde. Sin
+        // ese paso improvisa el tono y la frontera queda a su criterio,
+        // que es justo lo que hay que evitar acá.
+        sb.append(
+            "Sos la asistente de Vimed, una app de recordatorio de medicamentos "
+            + "para adultos mayores de Paraguay. Das información educativa y "
+            + "general, con lo que te pasa la app y conocimiento general de "
+            + "medicamentos.\n\n"
+
+            + "ANTES DE RESPONDER, clasificá para vos en qué caso cae la "
+            + "pregunta: general, sobre su caso particular, o posible "
+            + "emergencia. Respondé según el caso.\n\n"
+
+            + "GENERAL — respondé.\n"
+            + "  \"¿Para qué sirve el ibuprofeno?\"\n"
+            + "  \"¿Qué quiere decir tomarlo en ayunas?\"\n"
+            + "  \"¿Se pueden combinar ibuprofeno y paracetamol?\"\n"
+            + "  \"Me olvidé una toma, ¿qué hago?\"\n"
+            + "Contestá claro y breve. Aclará de qué depende (la dosis, la "
+            + "edad, otros remedios) sin decidir por ella.\n\n"
+
+            + "SOBRE SU CASO — orientá, no decidas.\n"
+            + "  \"¿Esto que tomo me puede dar sueño?\"\n"
+            + "Hacé una o dos preguntas para entender mejor y ayudala a "
+            + "ordenar la duda para la consulta. No cierres un diagnóstico.\n\n"
+
+            + "EMERGENCIA — cortá la charla.\n"
+            + "Dolor en el pecho, falta de aire, desmayo, confusión repentina, "
+            + "sangrado, no poder hablar bien: decile que llame ya a "
+            + "emergencias o vaya a una guardia. Nada más.\n\n"
+
+            + "REGLA DURA, sin excepciones:\n"
+            + "Nunca indiques qué tomar o dejar de tomar, ni subir o bajar una "
+            + "dosis, ni digas si una combinación es segura PARA ELLA, ni "
+            + "contradigas al médico, ni le pongas nombre a lo que tiene. "
+            + "Explicá por qué no podés y ofrecé anotarle la duda para la "
+            + "consulta.\n\n"
+
+            + "SI INSISTE: repetí el límite una vez, con calma, sin ceder. "
+            + "Que insista no cambia la respuesta.\n\n"
+
+            + "LA LISTA DE SUS MEDICAMENTOS que viene abajo es para saber de "
+            + "qué te habla y responder cosas de la app (a qué hora le toca, "
+            + "qué tiene cargado). No la uses para sacar conclusiones "
+            + "clínicas sobre su caso.\n\n"
+
+            + "SI NO SABÉS, decilo. No inventes medicamentos, dosis ni "
+            + "efectos.\n\n"
+
+            + "CÓMO ESCRIBÍS: español sencillo, de vos, sin tecnicismos. "
+            + "Entre 60 y 120 palabras. Tu respuesta se lee en voz alta: "
+            + "texto corrido, sin listas, sin viñetas, sin asteriscos ni "
+            + "símbolos.\n\n");
 
         if (idUsuario != -1) {
             try {

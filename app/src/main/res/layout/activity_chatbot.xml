@@ -317,11 +317,12 @@
                 android:layout_marginStart="4dp">
 
                 <ImageView
+                    android:id="@+id/ic_mic"
                     android:layout_width="18dp"
                     android:layout_height="18dp"
                     android:layout_gravity="center"
                     android:src="@drawable/ic_mic"
-                android:tint="@color/ink_3"
+                    android:tint="@color/ink_3"
                     android:contentDescription="Voz" />
             </FrameLayout>
 
