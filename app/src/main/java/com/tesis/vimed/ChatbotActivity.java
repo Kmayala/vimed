@@ -393,7 +393,15 @@ public class ChatbotActivity extends AppCompatActivity {
                 MedicamentoDAO medDAO = new MedicamentoDAO(DatabaseHelper.getInstance(this));
                 HorarioDAO horDAO = new HorarioDAO(DatabaseHelper.getInstance(this));
                 List<Medicamento> meds = medDAO.listarPorUsuario(idUsuario);
-                if (!meds.isEmpty()) {
+                if (meds.isEmpty()) {
+                    // Decirlo es mejor que callarlo: si abajo no hay nada, el
+                    // modelo asume que la lista no le llegó y se pone a
+                    // pedírsela a la persona, que es justo lo que la app
+                    // existe para evitar.
+                    sb.append("El usuario NO tiene ningún medicamento cargado "
+                        + "en la app todavía. No se los pidas: ofrecele "
+                        + "cargarlos desde la pantalla de Medicamentos.\n");
+                } else {
                     sb.append("Medicamentos actuales del usuario:\n");
                     for (Medicamento med : meds) {
                         sb.append("- ").append(med.getNombre());
