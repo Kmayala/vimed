@@ -21,6 +21,8 @@ import com.tesis.vimed.api.OpenAIClient;
 import com.tesis.vimed.api.PromptVita;
 import com.tesis.vimed.database.DatabaseHelper;
 import com.tesis.vimed.database.MensajeChatDAO;
+import com.tesis.vimed.utils.ModoPaciente;
+import com.tesis.vimed.utils.NavInferior;
 import com.tesis.vimed.models.Horario;
 import com.tesis.vimed.models.MensajeChat;
 import com.tesis.vimed.models.Medicamento;
@@ -85,6 +87,12 @@ public class ChatbotActivity extends AppCompatActivity {
      */
     private boolean medicamentosCargados = false;
 
+    /**
+     * De quién es la medicación de la que habla Vita. Puede ser la del
+     * paciente cuando abre el chat el cuidador.
+     */
+    private ModoPaciente modo = ModoPaciente.propio();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,6 +100,7 @@ public class ChatbotActivity extends AppCompatActivity {
 
         sessionManager = new SessionManager(this);
         idUsuario = sessionManager.getIdUsuario();
+        modo = ModoPaciente.de(this);
         openAIClient = new OpenAIClient();
         chatDAO = new MensajeChatDAO(DatabaseHelper.getInstance(this));
 
@@ -150,7 +159,7 @@ public class ChatbotActivity extends AppCompatActivity {
     private void cargarMedicamentos() {
         if (idUsuario == -1) { medicamentosCargados = true; return; }
 
-        com.tesis.vimed.api.VimedRepo.listarMedicamentos(this,
+        com.tesis.vimed.api.VimedRepo.Cb<List<Medicamento>> cb =
             new com.tesis.vimed.api.VimedRepo.Cb<List<Medicamento>>() {
                 @Override public void onOk(List<Medicamento> meds) {
                     misMedicamentos.clear();
@@ -183,7 +192,17 @@ public class ChatbotActivity extends AppCompatActivity {
                 @Override public void onError(String msg) {
                     medicamentosCargados = true;
                 }
-            });
+            };
+
+        // Abierto por el cuidador, Vita tiene que hablar de la medicación
+        // DEL PACIENTE. Antes cargaba siempre la de la cuenta logueada, así
+        // que a la hija le contestaba que no tenía nada cargado mientras su
+        // madre tenía cinco medicamentos.
+        if (modo.esDeOtro()) {
+            com.tesis.vimed.api.VimedRepo.listarMedicamentosDe(modo.idUsuario, cb);
+        } else {
+            com.tesis.vimed.api.VimedRepo.listarMedicamentos(this, cb);
+        }
     }
 
     private void cargarHistorial() {
@@ -422,36 +441,19 @@ public class ChatbotActivity extends AppCompatActivity {
             .show();
     }
 
+    /**
+     * Barra de abajo, delegada en {@link NavInferior} como el resto de las
+     * pantallas compartidas.
+     *
+     * Antes esta era la ÚNICA que la armaba a mano, y por eso se salteaba
+     * el modo cuidador: mandaba siempre a MainActivity y a las pantallas
+     * del adulto mayor, sin arrastrar el id del paciente. El cuidador
+     * entraba a Vita, tocaba "Inicio" y aterrizaba en el home del adulto
+     * —vacío, porque es su propia cuenta— con la sensación de que el
+     * paciente vinculado había desaparecido.
+     */
     private void setupBottomNav() {
-        BottomNavigationView nav = findViewById(R.id.bottom_nav);
-        nav.setSelectedItemId(R.id.nav_vita);
-        nav.setOnItemSelectedListener(item -> {
-            int id = item.getItemId();
-            if (id == R.id.nav_vita) {
-                return true;
-            } else if (id == R.id.nav_home) {
-                startActivity(new Intent(this, MainActivity.class));
-                overridePendingTransition(0, 0);
-                finish();
-                return true;
-            } else if (id == R.id.nav_meds) {
-                startActivity(new Intent(this, MedsListActivity.class));
-                overridePendingTransition(0, 0);
-                finish();
-                return true;
-            } else if (id == R.id.nav_appointments) {
-                startActivity(new Intent(this, AppointmentsActivity.class));
-                overridePendingTransition(0, 0);
-                finish();
-                return true;
-            } else if (id == R.id.nav_stats) {
-                startActivity(new Intent(this, DashboardActivity.class));
-                overridePendingTransition(0, 0);
-                finish();
-                return true;
-            }
-            return false;
-        });
+        NavInferior.configurar(this, modo, R.id.nav_vita, true);
     }
 
     /**
@@ -461,6 +463,12 @@ public class ChatbotActivity extends AppCompatActivity {
      * lista cambia: el primer mensaje puede salir mientras la consulta al
      * servidor todavía viaja.
      */
+    /** Nombre de quien escribe, para que Vita sepa a quién le habla. */
+    private String nombreDelCuidador() {
+        String n = sessionManager.getNombre();
+        return n == null || n.isEmpty() ? "un familiar" : n.split(" ")[0];
+    }
+
     private String construirSystemPrompt() {
         StringBuilder sb = new StringBuilder();
         // Las reglas viven en PromptVita para que el banco de pruebas
@@ -486,24 +494,92 @@ public class ChatbotActivity extends AppCompatActivity {
             return sb.toString();
         }
 
-        sb.append("Medicamentos actuales del usuario:\n");
+        // Con quién está hablando. Sin esto, abierto por el cuidador, Vita
+        // le habla de "tus medicamentos" a alguien que no toma ninguno.
+        if (modo.esDeOtro()) {
+            sb.append("ATENCIÓN: no estás hablando con el paciente. Estás "
+                + "hablando con ").append(nombreDelCuidador()).append(", que "
+                + "cuida a ").append(modo.primerNombre().isEmpty()
+                    ? "esta persona" : modo.primerNombre())
+              .append(". Los medicamentos de abajo son DEL PACIENTE, no de "
+                + "quien te escribe. Hablá del paciente en tercera persona: "
+                + "\"toma\", \"le toca\", \"su médico\" — nunca \"tomás\" ni "
+                + "\"tu médico\". Los mismos límites siguen valiendo: podés "
+                + "contar lo que está cargado, no indicar cambios.\n\n");
+        }
+
+        sb.append(modo.esDeOtro()
+            ? "Medicamentos del paciente:\n"
+            : "Medicamentos actuales del usuario:\n");
         for (Medicamento med : misMedicamentos) {
             sb.append("- ").append(med.getNombre());
             if (med.getDosis() > 0) {
                 sb.append(" ").append((int) med.getDosis())
                   .append(" ").append(med.getUnidad() != null ? med.getUnidad() : "");
             }
-            List<Horario> horarios = misHorarios.get(med.getId());
-            if (horarios != null && !horarios.isEmpty()) {
-                Horario h = horarios.get(0);
-                sb.append(", desde las ").append(h.getHoraInicio())
-                  .append(" cada ").append(h.getIntervaloHoras()).append("h");
-            }
-            if (med.getInstrucciones() != null && !med.getInstrucciones().isEmpty()) {
-                sb.append(". Instrucciones: ").append(med.getInstrucciones());
+            // Las horas CONCRETAS, no "desde las 17:00 cada 8h". La
+            // pregunta más frecuente es "¿a qué hora tomo?", y obligar al
+            // modelo a hacer la cuenta es pedirle que se equivoque.
+            String horas = horasDe(med);
+            if (!horas.isEmpty()) sb.append(", a las ").append(horas);
+
+            String inst = instruccionLegible(med.getInstrucciones());
+            if (!inst.isEmpty()) sb.append(" (").append(inst).append(")");
+
+            if (med.getStockActual() > 0) {
+                sb.append(", quedan ").append(med.getStockActual());
             }
             sb.append("\n");
         }
         return sb.toString();
+    }
+
+    /** "17:00, 01:00 y 09:00" — todas las tomas del día. */
+    private String horasDe(Medicamento med) {
+        List<Horario> horarios = misHorarios.get(med.getId());
+        if (horarios == null || horarios.isEmpty()) return "";
+
+        List<String> todas = new ArrayList<>();
+        for (Horario h : horarios) {
+            String inicio = h.getHoraInicio();
+            if (inicio == null || inicio.length() < 5) continue;
+
+            int intervalo = h.getIntervaloHoras();
+            int cantidad = (intervalo > 0 && intervalo <= 24) ? 24 / intervalo : 1;
+            try {
+                int hora   = Integer.parseInt(inicio.substring(0, 2));
+                int minuto = Integer.parseInt(inicio.substring(3, 5));
+                for (int i = 0; i < cantidad; i++) {
+                    String t = String.format(java.util.Locale.getDefault(),
+                        "%02d:%02d", (hora + intervalo * i) % 24, minuto);
+                    if (!todas.contains(t)) todas.add(t);
+                }
+            } catch (NumberFormatException e) {
+                todas.add(inicio);
+            }
+        }
+        if (todas.isEmpty()) return "";
+        java.util.Collections.sort(todas);
+
+        // "y" antes de la última: el texto se lee en voz alta.
+        if (todas.size() == 1) return todas.get(0);
+        return android.text.TextUtils.join(", ", todas.subList(0, todas.size() - 1))
+            + " y " + todas.get(todas.size() - 1);
+    }
+
+    /** Los tags de instrucciones no se le mandan crudos al modelo. */
+    private String instruccionLegible(String tag) {
+        if (tag == null || tag.isEmpty()) return "";
+        switch (tag) {
+            case "despues_comer": return "después de comer";
+            case "antes_comer":   return "antes de comer";
+            case "ayunas":        return "en ayunas";
+            case "con_agua":      return "con agua";
+            case "con_leche":     return "con leche";
+            case "antes_dormir":  return "antes de dormir";
+            case "al_despertar":  return "al despertar";
+            case "sin_restriccion": return "";
+            default: return tag;
+        }
     }
 }
