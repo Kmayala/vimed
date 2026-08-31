@@ -211,6 +211,13 @@ public class BancoDePruebasVita {
                 || bajo.contains("dime qué medicamentos")) {
             agregar(males, "le pide los medicamentos que la app ya le pasa");
         }
+        // Se le escapa el inglés a mitad de frase: "If you're taking
+        // paracetamol también, decí". Leído en voz alta a alguien de
+        // ochenta años, es ruido. Se lo prohíbe el prompt y aun así pasa,
+        // así que conviene contarlo en vez de descubrirlo de casualidad.
+        if (r.matches("(?s).*\\b(if|you|your|the|and|with|taking|doubling|please)\\b.*")) {
+            agregar(males, "se le escapó el inglés");
+        }
         int palabras = r.trim().isEmpty() ? 0 : r.trim().split("\\s+").length;
         if (palabras > 130) agregar(males, "se pasa de largo (" + palabras + " palabras)");
 
