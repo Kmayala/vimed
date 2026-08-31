@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Reloj, frasco y teléfono avisando: las tres cosas que hace la app, en una
+  imagen. Va en el login, que es donde alguien que todavía no la usó decide
+  si vale la pena.
+
+  ES UN VECTOR Y NO UN PNG a propósito:
+    · pesa unos pocos KB en vez de tres archivos de densidad,
+    · no se pixela en ninguna pantalla,
+    · y sobre todo, los colores salen de la paleta (@color/...), así que
+      en modo oscuro se adapta sola. Un PNG quedaría con el fondo claro
+      quemado adentro.
+
+  Los cuerpos usan paper_2 (blanco de día, gris de noche) y las líneas
+  brand_600, que es el token pensado justamente para dibujar SOBRE una
+  superficie en los dos modos.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="300dp"
+    android:height="250dp"
+    android:viewportWidth="360"
+    android:viewportHeight="300">
+
+    <!-- ── Sombra del piso ─────────────────────────────────── -->
+    <path
+        android:pathData="M70,262 L300,262"
+        android:strokeColor="@color/brand_300"
+        android:strokeWidth="2"
+        android:strokeAlpha="0.5"
+        android:strokeLineCap="round"
+        android:fillColor="@android:color/transparent" />
+
+    <!-- ── Arco punteado: del frasco al aviso ──────────────── -->
+    <path android:pathData="M120,150 A 90,80 0 0,1 160,104" android:strokeColor="@color/brand_300" android:strokeWidth="2.4" android:strokeLineCap="round" android:fillColor="@android:color/transparent" />
+    <path android:pathData="M172,98 A 90,80 0 0,1 196,92"  android:strokeColor="@color/brand_300" android:strokeWidth="2.4" android:strokeLineCap="round" android:fillColor="@android:color/transparent" />
+    <path android:pathData="M208,92 A 90,80 0 0,1 232,98"  android:strokeColor="@color/brand_300" android:strokeWidth="2.4" android:strokeLineCap="round" android:fillColor="@android:color/transparent" />
+    <path android:pathData="M244,104 A 90,80 0 0,1 262,116" android:strokeColor="@color/brand_300" android:strokeWidth="2.4" android:strokeLineCap="round" android:fillColor="@android:color/transparent" />
+
+    <!-- ══ RELOJ ═══════════════════════════════════════════ -->
+    <path
+        android:pathData="M110,190 m-52,0 a52,52 0 1,0 104,0 a52,52 0 1,0 -104,0"
+        android:fillColor="@color/paper_2"
+        android:strokeColor="@color/brand_600"
+        android:strokeWidth="4" />
+    <path
+        android:pathData="M110,190 m-42,0 a42,42 0 1,0 84,0 a42,42 0 1,0 -84,0"
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="@color/brand_300"
+        android:strokeWidth="1.6" />
+
+    <!-- Marcas de las horas -->
+    <path android:pathData="M110,156 L110,164" android:strokeColor="@color/brand_600" android:strokeWidth="3" android:strokeLineCap="round" android:fillColor="@android:color/transparent" />
+    <path android:pathData="M110,216 L110,224" android:strokeColor="@color/brand_600" android:strokeWidth="3" android:strokeLineCap="round" android:fillColor="@android:color/transparent" />
+    <path android:pathData="M76,190 L84,190"   android:strokeColor="@color/brand_600" android:strokeWidth="3" android:strokeLineCap="round" android:fillColor="@android:color/transparent" />
+    <path android:pathData="M136,190 L144,190" android:strokeColor="@color/brand_600" android:strokeWidth="3" android:strokeLineCap="round" android:fillColor="@android:color/transparent" />
+    <path android:pathData="M133,163 L138,168" android:strokeColor="@color/brand_300" android:strokeWidth="2.4" android:strokeLineCap="round" android:fillColor="@android:color/transparent" />
+    <path android:pathData="M82,212 L87,217"   android:strokeColor="@color/brand_300" android:strokeWidth="2.4" android:strokeLineCap="round" android:fillColor="@android:color/transparent" />
+    <path android:pathData="M138,212 L133,217" android:strokeColor="@color/brand_300" android:strokeWidth="2.4" android:strokeLineCap="round" android:fillColor="@android:color/transparent" />
+    <path android:pathData="M87,163 L82,168"   android:strokeColor="@color/brand_300" android:strokeWidth="2.4" android:strokeLineCap="round" android:fillColor="@android:color/transparent" />
+
+    <!-- Agujas: marcan una hora de la noche, como el aviso del teléfono -->
+    <path android:pathData="M110,190 L110,166" android:strokeColor="@color/brand_600" android:strokeWidth="4.5" android:strokeLineCap="round" android:fillColor="@android:color/transparent" />
+    <path android:pathData="M110,190 L131,203" android:strokeColor="@color/brand_600" android:strokeWidth="4.5" android:strokeLineCap="round" android:fillColor="@android:color/transparent" />
+    <path
+        android:pathData="M110,190 m-4.5,0 a4.5,4.5 0 1,0 9,0 a4.5,4.5 0 1,0 -9,0"
+        android:fillColor="@color/brand_600" />
+
+    <!-- ══ FRASCO ══════════════════════════════════════════ -->
+    <!-- Tapa -->
+    <path
+        android:pathData="M158,118 L228,118 L228,146 L158,146 Z"
+        android:fillColor="@color/brand_600" />
+    <!-- Estrías de la tapa -->
+    <path android:pathData="M170,124 L170,140" android:strokeColor="@color/paper_2" android:strokeWidth="2" android:strokeAlpha="0.55" android:strokeLineCap="round" android:fillColor="@android:color/transparent" />
+    <path android:pathData="M182,124 L182,140" android:strokeColor="@color/paper_2" android:strokeWidth="2" android:strokeAlpha="0.55" android:strokeLineCap="round" android:fillColor="@android:color/transparent" />
+    <path android:pathData="M194,124 L194,140" android:strokeColor="@color/paper_2" android:strokeWidth="2" android:strokeAlpha="0.55" android:strokeLineCap="round" android:fillColor="@android:color/transparent" />
+    <path android:pathData="M206,124 L206,140" android:strokeColor="@color/paper_2" android:strokeWidth="2" android:strokeAlpha="0.55" android:strokeLineCap="round" android:fillColor="@android:color/transparent" />
+    <path android:pathData="M218,124 L218,140" android:strokeColor="@color/paper_2" android:strokeWidth="2" android:strokeAlpha="0.55" android:strokeLineCap="round" android:fillColor="@android:color/transparent" />
+
+    <!-- Cuerpo -->
+    <path
+        android:pathData="M152,146 L234,146 L234,250 A12,12 0 0,1 222,262 L164,262 A12,12 0 0,1 152,250 Z"
+        android:fillColor="@color/paper_2"
+        android:strokeColor="@color/brand_600"
+        android:strokeWidth="4" />
+
+    <!-- Etiqueta -->
+    <path
+        android:pathData="M166,176 L220,176 L220,232 L166,232 Z"
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="@color/brand_300"
+        android:strokeWidth="2.6" />
+
+    <!-- Cápsula dibujada en la etiqueta -->
+    <path
+        android:pathData="M182,196 L200,196 A9,9 0 0,1 200,214 L182,214 A9,9 0 0,1 182,196 Z"
+        android:fillColor="@color/brand_600" />
+    <path android:pathData="M176,224 L210,224" android:strokeColor="@color/brand_300" android:strokeWidth="2.6" android:strokeLineCap="round" android:fillColor="@android:color/transparent" />
+
+    <!-- ══ TELÉFONO ════════════════════════════════════════ -->
+    <path
+        android:pathData="M252,110 L330,110 A14,14 0 0,1 344,124 L344,248 A14,14 0 0,1 330,262 L252,262 A14,14 0 0,1 238,248 L238,124 A14,14 0 0,1 252,110 Z"
+        android:fillColor="@color/paper_2"
+        android:strokeColor="@color/brand_600"
+        android:strokeWidth="4" />
+
+    <!-- Campana en su círculo -->
+    <path
+        android:pathData="M291,152 m-22,0 a22,22 0 1,0 44,0 a22,22 0 1,0 -44,0"
+        android:fillColor="@color/brand_600" />
+    <path
+        android:pathData="M291,140 A9,9 0 0,1 300,149 L300,158 L302,161 L280,161 L282,158 L282,149 A9,9 0 0,1 291,140 Z"
+        android:fillColor="@color/paper_2" />
+    <path
+        android:pathData="M287,164 A4,4 0 0,0 295,164 Z"
+        android:fillColor="@color/paper_2" />
+
+    <!-- La hora del aviso: 20:00 -->
+    <path android:pathData="M262,190 A6,6 0 1,1 274,194 L262,208 L274,208" android:strokeColor="@color/brand_600" android:strokeWidth="3.4" android:strokeLineCap="round" android:strokeLineJoin="round" android:fillColor="@android:color/transparent" />
+    <path android:pathData="M286,190 m-6,4 a6,10 0 1,0 12,0 a6,10 0 1,0 -12,0" android:strokeColor="@color/brand_600" android:strokeWidth="3.4" android:fillColor="@android:color/transparent" />
+    <path android:pathData="M300,192 m-1.6,0 a1.6,1.6 0 1,0 3.2,0 a1.6,1.6 0 1,0 -3.2,0" android:fillColor="@color/brand_600" />
+    <path android:pathData="M300,204 m-1.6,0 a1.6,1.6 0 1,0 3.2,0 a1.6,1.6 0 1,0 -3.2,0" android:fillColor="@color/brand_600" />
+    <path android:pathData="M314,190 m-6,4 a6,10 0 1,0 12,0 a6,10 0 1,0 -12,0" android:strokeColor="@color/brand_600" android:strokeWidth="3.4" android:fillColor="@android:color/transparent" />
+    <path android:pathData="M334,190 m-6,4 a6,10 0 1,0 12,0 a6,10 0 1,0 -12,0" android:strokeColor="@color/brand_600" android:strokeWidth="3.4" android:fillColor="@android:color/transparent" />
+
+    <!-- Renglones del aviso -->
+    <path android:pathData="M258,224 L324,224" android:strokeColor="@color/brand_300" android:strokeWidth="3" android:strokeLineCap="round" android:fillColor="@android:color/transparent" />
+    <path android:pathData="M258,234 L302,234" android:strokeColor="@color/brand_300" android:strokeWidth="3" android:strokeLineCap="round" android:fillColor="@android:color/transparent" />
+
+    <!-- Tilde de "tomada" -->
+    <path
+        android:pathData="M322,244 m-13,0 a13,13 0 1,0 26,0 a13,13 0 1,0 -26,0"
+        android:fillColor="@color/brand_600" />
+    <path
+        android:pathData="M316,244 L320,249 L328,239"
+        android:strokeColor="@color/paper_2"
+        android:strokeWidth="3.2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="@android:color/transparent" />
+
+    <!-- ══ CÁPSULAS SUELTAS ════════════════════════════════ -->
+    <path
+        android:pathData="M196,256 L214,256 A11,11 0 0,1 214,278 L196,278 A11,11 0 0,1 196,256 Z"
+        android:fillColor="@color/paper_2"
+        android:strokeColor="@color/brand_600"
+        android:strokeWidth="3.4" />
+    <path
+        android:pathData="M214,256 A11,11 0 0,1 214,278 L206,278 L206,256 Z"
+        android:fillColor="@color/brand_600" />
+
+    <path
+        android:pathData="M160,262 L172,262 A9,9 0 0,1 172,280 L160,280 A9,9 0 0,1 160,262 Z"
+        android:fillColor="@color/paper_2"
+        android:strokeColor="@color/brand_600"
+        android:strokeWidth="3.4" />
+
+    <!-- ══ CHISPAS ═════════════════════════════════════════ -->
+    <path android:pathData="M348,96 L358,86"  android:strokeColor="@color/brand_300" android:strokeWidth="3" android:strokeLineCap="round" android:fillColor="@android:color/transparent" />
+    <path android:pathData="M352,116 L364,112" android:strokeColor="@color/brand_300" android:strokeWidth="3" android:strokeLineCap="round" android:fillColor="@android:color/transparent" />
+    <path android:pathData="M340,80 L344,68"  android:strokeColor="@color/brand_300" android:strokeWidth="3" android:strokeLineCap="round" android:fillColor="@android:color/transparent" />
+
+    <path android:pathData="M64,150 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" android:fillColor="@android:color/transparent" android:strokeColor="@color/brand_300" android:strokeWidth="2.4" />
+    <path android:pathData="M46,196 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0" android:fillColor="@color/brand_300" />
+    <path android:pathData="M196,58 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0" android:fillColor="@color/brand_300" />
+    <path android:pathData="M258,74 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0" android:fillColor="@color/brand_300" />
+
+    <path android:pathData="M76,124 L88,124" android:strokeColor="@color/brand_300" android:strokeWidth="2.6" android:strokeLineCap="round" android:fillColor="@android:color/transparent" />
+    <path android:pathData="M82,118 L82,130" android:strokeColor="@color/brand_300" android:strokeWidth="2.6" android:strokeLineCap="round" android:fillColor="@android:color/transparent" />
+
+</vector>

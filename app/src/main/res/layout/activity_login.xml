@@ -95,7 +95,22 @@
                 android:textSize="18sp"
                 android:textColor="@color/ink_3"
                 android:lineSpacingMultiplier="1.35"
-                android:layout_marginBottom="36dp" />
+                android:layout_marginBottom="12dp" />
+
+            <!-- Ilustración: reloj, frasco y aviso. Dice de qué se trata la
+                 app antes de que la persona escriba nada.
+
+                 adjustViewBounds + un alto acotado: la pantalla es un
+                 formulario y en un celular chico la ilustración no puede
+                 empujar los campos fuera de la vista. -->
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="170dp"
+                android:adjustViewBounds="true"
+                android:src="@drawable/ilustracion_medicacion"
+                android:layout_marginBottom="24dp"
+                android:importantForAccessibility="no"
+                android:contentDescription="@null" />
 
             <!-- Campo de correo -->
             <com.google.android.material.textfield.TextInputLayout
