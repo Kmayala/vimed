@@ -659,7 +659,10 @@ public class MainActivity extends AppCompatActivity {
                     .format(new Date());
                 CitaMedica proxima = null;
                 for (CitaMedica c : citas) {
-                    if (c.getFechaHora() != null && c.getFechaHora().compareTo(ahora) >= 0) {
+                    // esProxima descarta además las canceladas y las ya
+                    // asistidas: antes una cita cancelada de mañana seguía
+                    // ocupando la tarjeta de "próxima cita".
+                    if (c.esProxima(ahora)) {
                         proxima = c;
                         break;
                     }

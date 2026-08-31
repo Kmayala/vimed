@@ -774,7 +774,18 @@ public class CuidadorActivity extends AppCompatActivity {
         citasContainer.removeAllViews();
         View vacio = findViewById(R.id.tv_citas_empty);
 
-        if (citas.isEmpty()) {
+        // La sección se llama "Próximas citas" y listaba TODAS. Como el
+        // endpoint las trae ordenadas de la más vieja a la más nueva y acá
+        // se cortan las primeras cinco, lo que se veía eran las cinco citas
+        // más antiguas — justo las que ya pasaron.
+        String hoy = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            .format(new Date());
+        List<CitaMedica> proximas = new ArrayList<>();
+        for (CitaMedica c : citas) {
+            if (c.esProxima(hoy)) proximas.add(c);
+        }
+
+        if (proximas.isEmpty()) {
             vacio.setVisibility(View.VISIBLE);
             return;
         }
@@ -782,7 +793,7 @@ public class CuidadorActivity extends AppCompatActivity {
 
         LayoutInflater inflater = LayoutInflater.from(this);
         int mostradas = 0;
-        for (CitaMedica c : citas) {
+        for (CitaMedica c : proximas) {
             if (mostradas++ >= 5) break;
 
             View item = inflater.inflate(R.layout.item_actividad, citasContainer, false);

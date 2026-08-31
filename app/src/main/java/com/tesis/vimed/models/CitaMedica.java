@@ -101,6 +101,30 @@ public class CitaMedica {
             ? fechaHora.substring(0, 10) : "";
     }
 
+    /**
+     * True si esta cita cuenta como "próxima": todavía no pasó el día y no
+     * está resuelta.
+     *
+     * Vive acá y no en cada pantalla porque el panel del cuidador se
+     * olvidaba de filtrar y listaba las cinco más viejas —ordenadas por
+     * fecha ascendente— bajo el título "Próximas citas". Las de verdad
+     * próximas quedaban fuera del corte.
+     *
+     * Se compara por DÍA y no por hora: una cita de hoy a las 8, mirada a
+     * las 14, sigue siendo la de hoy y conviene tenerla a la vista para
+     * marcar si se fue o no.
+     *
+     * @param hoyYMD la fecha de hoy en "yyyy-MM-dd". Entra por parámetro
+     *               para poder probarlo sin depender del reloj.
+     */
+    public boolean esProxima(String hoyYMD) {
+        String dia = fechaYMD();
+        if (dia.isEmpty() || hoyYMD == null) return false;
+        if (dia.compareTo(hoyYMD) < 0) return false;
+        // Cancelada o ya asistida no es algo que esté por venir.
+        return !estaCancelada() && !estaAsistida();
+    }
+
     /** Hora "HH:mm" tolerando "yyyy-MM-dd HH:mm" e ISO "…THH:mm:ss+00". */
     public String horaHM() {
         return fechaHora != null && fechaHora.length() >= 16
