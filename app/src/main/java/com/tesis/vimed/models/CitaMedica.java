@@ -15,6 +15,16 @@ public class CitaMedica {
     private String notas;
     private boolean recordatorioEnviado;
 
+    /**
+     * Coordenadas del lugar, si se eligió en el mapa. 0 = no se eligió.
+     *
+     * Double y no double: Gson omite los null al serializar, así que una
+     * cita sin ubicación no escribe un 0,0 en la base — que además cae en
+     * el Golfo de Guinea y abriría el mapa ahí.
+     */
+    private Double latitud;
+    private Double longitud;
+
     /** pendiente | confirmada | cancelada */
     private String estado;
 
@@ -54,6 +64,17 @@ public class CitaMedica {
     public void setRecordatorioEnviado(boolean r) { this.recordatorioEnviado = r; }
     public String getEstado() { return estado != null ? estado : ESTADO_PENDIENTE; }
     public void setEstado(String estado) { this.estado = estado; }
+    public Double getLatitud()  { return latitud; }
+    public Double getLongitud() { return longitud; }
+    public void setLatitud(Double v)  { this.latitud = v; }
+    public void setLongitud(Double v) { this.longitud = v; }
+
+    /** True si la cita tiene un punto elegido en el mapa. */
+    public boolean tieneUbicacion() {
+        return latitud != null && longitud != null
+            && (latitud != 0 || longitud != 0);
+    }
+
     public boolean estaConfirmada() { return ESTADO_CONFIRMADA.equals(getEstado()); }
 
     /** Fecha "yyyy-MM-dd" tolerando ambos formatos (local e ISO de Postgres). */

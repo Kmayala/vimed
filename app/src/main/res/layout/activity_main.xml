@@ -677,7 +677,10 @@
                 android:background="@drawable/shape_card"
                 android:padding="18dp"
                 android:visibility="gone"
-                android:elevation="3dp">
+                android:elevation="3dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground">
 
                 <!-- Badge de fecha: mes + día -->
                 <LinearLayout
@@ -778,6 +781,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
                 android:gravity="center"
                 android:padding="28dp"
                 android:background="@drawable/shape_dose_card"

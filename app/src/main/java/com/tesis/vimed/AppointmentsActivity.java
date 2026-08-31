@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.content.Intent;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -99,8 +100,9 @@ public class AppointmentsActivity extends AppCompatActivity {
         findViewById(R.id.card_tip_recordatorios).setOnClickListener(v ->
             new AlertDialog.Builder(this)
                 .setTitle("Recordatorios de citas")
-                .setMessage("Los recordatorios de medicación ya están activos. "
-                    + "El aviso previo a cada cita médica todavía está en desarrollo.")
+                .setMessage("Cada cita te avisa dos veces: el día anterior y "
+                    + "dos horas antes. Se programan solas al guardarla, no "
+                    + "hay que activar nada.")
                 .setPositiveButton("Entendido", null)
                 .show());
 
@@ -302,6 +304,59 @@ public class AppointmentsActivity extends AppCompatActivity {
         fondo.setBackground(circulo);
     }
 
+    /**
+     * Hace que la fila del lugar abra el mapa del celular en esa ubicación.
+     *
+     * Va con un Intent {@code geo:} y no con una pantalla de mapa propia:
+     * así lo abre la app de mapas que la persona ya tenga instalada y ya
+     * sepa usar —Google Maps, Waze, OsmAnd—, con sus favoritos y su modo
+     * de navegación. Meter un mapa adentro de Vimed sería reimplementar
+     * peor algo que el teléfono ya hace bien.
+     *
+     * Si no hay ninguna app de mapas, la fila no responde en vez de
+     * romper: un ActivityNotFoundException acá cerraría la pantalla de
+     * citas entera.
+     */
+    private void cablearMapa(View item, CitaMedica cita) {
+        View fila = item.findViewById(R.id.fila_lugar);
+        if (fila == null) return;
+
+        String lugar = cita.getLugar();
+        boolean hayTexto = lugar != null && !lugar.trim().isEmpty();
+        boolean hayPunto = cita.tieneUbicacion();
+        fila.setClickable(hayTexto || hayPunto);
+
+        if (!hayTexto && !hayPunto) { fila.setOnClickListener(null); return; }
+
+        fila.setOnClickListener(v -> {
+            // Con coordenadas se abre EXACTAMENTE ese punto; el nombre va
+            // entre paréntesis solo como etiqueta del pin. Buscar por texto
+            // es el respaldo para las citas viejas, cargadas antes de que
+            // existiera el mapa: ahí el resultado depende de qué tan bien
+            // escrita esté la dirección.
+            String destino;
+            if (hayPunto) {
+                String etiqueta = android.net.Uri.encode(
+                    hayTexto ? lugar.trim() : "Cita médica");
+                destino = String.format(java.util.Locale.US,
+                    "geo:%f,%f?q=%f,%f(%s)",
+                    cita.getLatitud(), cita.getLongitud(),
+                    cita.getLatitud(), cita.getLongitud(), etiqueta);
+            } else {
+                destino = "geo:0,0?q=" + android.net.Uri.encode(lugar.trim());
+            }
+
+            Intent i = new Intent(Intent.ACTION_VIEW, android.net.Uri.parse(destino));
+            if (i.resolveActivity(getPackageManager()) != null) {
+                startActivity(i);
+            } else {
+                Toast.makeText(this,
+                    "No hay ninguna app de mapas instalada en este celular.",
+                    Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
     private void bindCard(View item, CitaMedica cita, boolean mostrarFecha) {
         TextView tvEsp    = item.findViewById(R.id.tv_appt_especialidad);
         TextView tvDoctor = item.findViewById(R.id.tv_appt_doctor);
@@ -316,6 +371,7 @@ public class AppointmentsActivity extends AppCompatActivity {
         tvDoctor.setText(cita.getMedico() != null ? cita.getMedico() : "");
         tvLugar.setText(cita.getLugar() != null ? cita.getLugar() : "Sin lugar");
         tvTime.setText(cita.horaHM() + " hs");
+        cablearMapa(item, cita);
 
         switch (cita.getEstado()) {
             case CitaMedica.ESTADO_CONFIRMADA:

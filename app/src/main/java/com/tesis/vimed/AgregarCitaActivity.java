@@ -1,6 +1,7 @@
 package com.tesis.vimed;
 
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.app.TimePickerDialog;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
@@ -37,6 +38,10 @@ public class AgregarCitaActivity extends AppCompatActivity {
     /** -1 = la cita es para mí. */
     private int idUsuarioDestino = -1;
     private String nombreDestino = null;
+
+    /** Punto elegido en el mapa, o null si la persona no lo abrió. */
+    private Double latitudElegida = null;
+    private Double longitudElegida = null;
 
     /** Especialidad elegida en la grilla, o null si todavía ninguna. */
     private Especialidad especialidadElegida = null;
@@ -194,8 +199,60 @@ public class AgregarCitaActivity extends AppCompatActivity {
         // fecha no, porque elegirla es obligatorio y hay que notarlo.
         etHora.setText(String.format(Locale.getDefault(), "%02d:%02d", selHour, selMinute));
 
+        findViewById(R.id.btn_elegir_mapa).setOnClickListener(v -> abrirMapa());
+
         findViewById(R.id.btn_back).setOnClickListener(v -> finish());
         findViewById(R.id.btn_save).setOnClickListener(v -> guardarCita());
+    }
+
+    // ═══ Ubicación en el mapa ══════════════════════════════════
+
+    /**
+     * Abre el selector de mapa. Le pasa lo que ya haya: las coordenadas si
+     * la persona vuelve a entrar, o el texto que escribió a mano, que el
+     * mapa usa como primera búsqueda en vez de abrir en cualquier lado.
+     */
+    private void abrirMapa() {
+        Intent i = new Intent(this, SeleccionarUbicacionActivity.class);
+        if (latitudElegida != null && longitudElegida != null) {
+            i.putExtra(SeleccionarUbicacionActivity.EXTRA_LAT, latitudElegida);
+            i.putExtra(SeleccionarUbicacionActivity.EXTRA_LNG, longitudElegida);
+        }
+        i.putExtra(SeleccionarUbicacionActivity.EXTRA_TEXTO,
+            etLugar.getText() != null ? etLugar.getText().toString() : "");
+        selectorDeMapa.launch(i);
+    }
+
+    /**
+     * Vuelta del selector: se completan el campo de texto y las
+     * coordenadas juntos. El texto es lo que la persona va a leer en la
+     * lista de citas; las coordenadas, lo que abre el mapa después.
+     */
+    private final androidx.activity.result.ActivityResultLauncher<Intent> selectorDeMapa =
+        registerForActivityResult(
+            new androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult(),
+            resultado -> {
+                if (resultado.getResultCode() != RESULT_OK || resultado.getData() == null) return;
+                Intent datos = resultado.getData();
+
+                latitudElegida  = datos.getDoubleExtra(SeleccionarUbicacionActivity.RESULT_LAT, 0);
+                longitudElegida = datos.getDoubleExtra(SeleccionarUbicacionActivity.RESULT_LNG, 0);
+
+                String direccion = datos.getStringExtra(
+                    SeleccionarUbicacionActivity.RESULT_DIRECCION);
+                if (direccion != null && !direccion.isEmpty()) {
+                    etLugar.setText(direccion);
+                }
+                pintarUbicacionElegida();
+            });
+
+    private void pintarUbicacionElegida() {
+        TextView aviso = findViewById(R.id.tv_ubicacion_elegida);
+        if (aviso == null) return;
+
+        boolean hay = latitudElegida != null && longitudElegida != null;
+        aviso.setVisibility(hay ? View.VISIBLE : View.GONE);
+        if (hay) aviso.setText("✓ Ubicación marcada en el mapa");
     }
 
     private void mostrarDatePicker() {

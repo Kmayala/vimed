@@ -675,13 +675,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void pintarCita(CitaMedica proxima) {
+        View tarjeta = findViewById(R.id.appointment_card);
+        View vacio   = findViewById(R.id.empty_appointments);
+
+        // La tarjeta y el cartel de "sin citas" llevan una flecha que
+        // invitaba a tocar y no hacía nada: el listener nunca se había
+        // conectado. Los dos abren la pantalla de Citas.
+        View.OnClickListener irACitas = v ->
+            startActivity(new Intent(MainActivity.this, AppointmentsActivity.class));
+        tarjeta.setOnClickListener(irACitas);
+        vacio.setOnClickListener(irACitas);
+
         if (proxima == null) {
-            findViewById(R.id.appointment_card).setVisibility(View.GONE);
-            findViewById(R.id.empty_appointments).setVisibility(View.VISIBLE);
+            tarjeta.setVisibility(View.GONE);
+            vacio.setVisibility(View.VISIBLE);
             return;
         }
-        findViewById(R.id.appointment_card).setVisibility(View.VISIBLE);
-        findViewById(R.id.empty_appointments).setVisibility(View.GONE);
+        tarjeta.setVisibility(View.VISIBLE);
+        vacio.setVisibility(View.GONE);
         try {
             // Puede venir "yyyy-MM-dd HH:mm:ss" o ISO "yyyy-MM-ddTHH:mm:ss+00:00"
             String soloFecha = proxima.getFechaHora().substring(0, 10);

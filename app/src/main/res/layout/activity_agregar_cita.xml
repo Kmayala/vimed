@@ -212,6 +212,36 @@
                         android:textColor="@color/ink" />
                 </com.google.android.material.textfield.TextInputLayout>
 
+                <!-- Elegir en el mapa. Va DEBAJO del campo y no lo
+                     reemplaza: escribir "Consultorio del Dr. Pérez" sigue
+                     siendo válido, y hay lugares que no están en ningún
+                     mapa. El mapa es una ayuda, no un requisito. -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_elegir_mapa"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="54dp"
+                    android:text="Elegir en el mapa"
+                    android:textSize="16sp"
+                    android:textColor="@color/brand_600"
+                    android:textAllCaps="false"
+                    app:strokeColor="@color/brand_200"
+                    app:strokeWidth="1.5dp"
+                    app:cornerRadius="16dp"
+                    app:icon="@drawable/ic_map_pin"
+                    app:iconTint="@color/brand_600"
+                    app:iconGravity="textStart"
+                    android:layout_marginTop="10dp" />
+
+                <TextView
+                    android:id="@+id/tv_ubicacion_elegida"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textColor="@color/verde_700"
+                    android:layout_marginTop="8dp"
+                    android:visibility="gone" />
+
                 <com.google.android.material.textfield.TextInputLayout
                     style="@style/CampoForm"
                     android:hint="Notas (opcional)"

@@ -36,6 +36,17 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
+    <!-- Desde Android 11 una app no ve qué otras apps hay instaladas salvo
+         que lo declare. Sin esto, resolveActivity() para un enlace geo:
+         devuelve null aunque el celular tenga Google Maps, y la fila del
+         lugar de la cita contestaría siempre "no hay app de mapas". -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="geo" />
+        </intent>
+    </queries>
+
     <application
         android:name=".VimedApp"
         android:allowBackup="true"
@@ -114,6 +125,12 @@
         <activity android:name=".DashboardActivity" android:exported="false" />
         <activity android:name=".AgregarCitaActivity" android:exported="false" />
         <activity android:name=".VincularFamiliarActivity" android:exported="false" />
+
+        <!-- Selector de ubicación: mapa de OpenStreetMap en un WebView. -->
+        <activity
+            android:name=".SeleccionarUbicacionActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".ChatbotActivity"
             android:exported="false"

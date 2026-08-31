@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="leaflet.css">
+<style>
+  html, body, #mapa { margin:0; padding:0; height:100%; width:100%; background:#f6f5fc; }
+
+  /* El pin NO es un marcador de Leaflet: está fijo al centro de la
+     pantalla y el mapa se mueve por debajo. Es el gesto que la gente ya
+     conoce de pedir un viaje, y evita tener que acertarle con el dedo a
+     un punto de 20px sobre un mapa que se puede arrastrar. */
+  #pin {
+    position:absolute; left:50%; top:50%; z-index:500;
+    width:34px; height:46px; margin-left:-17px; margin-top:-46px;
+    pointer-events:none; transition:transform .12s ease-out;
+  }
+  #pin.arrastrando { transform:translateY(-8px); }
+
+  /* Sombra en el suelo: sin esto el pin flota y no se entiende a qué
+     punto exacto apunta. */
+  #sombra {
+    position:absolute; left:50%; top:50%; z-index:499;
+    width:14px; height:6px; margin-left:-7px; margin-top:-3px;
+    border-radius:50%; background:rgba(0,0,0,.28); pointer-events:none;
+  }
+
+  .leaflet-control-attribution {
+    font-size:10px; background:rgba(255,255,255,.82);
+  }
+</style>
+</head>
+<body>
+
+<div id="mapa"></div>
+
+<div id="sombra"></div>
+<svg id="pin" viewBox="0 0 24 32" xmlns="http://www.w3.org/2000/svg">
+  <path d="M12 0C5.4 0 0 5.4 0 12c0 8.4 12 20 12 20s12-11.6 12-20C24 5.4 18.6 0 12 0z"
+        fill="#5b34e8"/>
+  <circle cx="12" cy="12" r="4.6" fill="#ffffff"/>
+</svg>
+
+<script src="leaflet.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  // Arranca en Asunción hasta que Android diga otra cosa.
+  var mapa = L.map('mapa', { zoomControl:false, attributionControl:true })
+              .setView([-25.2637, -57.5759], 13);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap'
+  }).addTo(mapa);
+
+  var pin = document.getElementById('pin');
+
+  mapa.on('movestart', function () { pin.classList.add('arrastrando'); });
+
+  mapa.on('moveend', function () {
+    pin.classList.remove('arrastrando');
+    avisarCentro();
+  });
+
+  function avisarCentro() {
+    var c = mapa.getCenter();
+    if (window.Android && window.Android.centroCambio) {
+      window.Android.centroCambio(c.lat, c.lng);
+    }
+  }
+
+  // ── Lo que Android puede pedirle al mapa ──────────────────
+
+  window.irA = function (lat, lng, zoom) {
+    mapa.setView([lat, lng], zoom || 17);
+    avisarCentro();
+  };
+
+  // El mapa ya está listo: Android puede empezar a moverlo.
+  if (window.Android && window.Android.mapaListo) {
+    window.Android.mapaListo();
+  }
+  avisarCentro();
+})();
+</script>
+</body>
+</html>
