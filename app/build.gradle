@@ -32,6 +32,19 @@ def supabaseUrl = limpiar(localProps.getProperty('SUPABASE_URL')
 def supabaseAnonKey = limpiar(localProps.getProperty('SUPABASE_ANON_KEY')
     ?: System.getenv('SUPABASE_ANON_KEY'))
 
+// Clave del mapa (Maps SDK for Android).
+//
+// Mostrar el mapa en Android NO se factura: el SDK no cobra por carga de
+// mapa. Lo que se paga es Places, y esta app no lo usa — la búsqueda por
+// nombre va con el Geocoder del sistema, que no pide clave ni cuenta.
+// Aun así Google exige una cuenta de facturación para habilitar la clave.
+//
+// Restringila en Google Cloud a este paquete (com.tesis.vimed) y a la
+// huella SHA-1 de tu firma: la clave viaja dentro del APK y se puede
+// extraer, y esa restricción es lo único que impide que otro la use.
+def mapsApiKey = limpiar(localProps.getProperty('MAPS_API_KEY')
+    ?: System.getenv('MAPS_API_KEY'))
+
 // Clave de OpenAI: la usa Vita para responder y para transcribir el audio.
 //
 // OJO: termina DENTRO del APK y se puede extraer. Para la tesis alcanza,
@@ -102,6 +115,20 @@ android {
 
         buildConfigField "String", "SUPABASE_URL",      "\"${supabaseUrl}\""
         buildConfigField "String", "SUPABASE_ANON_KEY", "\"${supabaseAnonKey}\""
+
+        // Además del placeholder del manifest, la clave se expone acá para
+        // que la pantalla del mapa pueda avisar cuando falta, en vez de
+        // mostrar un rectángulo gris sin explicación.
+        buildConfigField "String", "MAPS_API_KEY", "\"${mapsApiKey}\""
+
+        // Clave del mapa. Va como placeholder del manifest y no como
+        // BuildConfig porque el SDK de Maps la lee de ahí.
+        //
+        // Sin clave la app COMPILA igual y el mapa se abre en gris: es a
+        // propósito, para que quien clone el repo sin la clave no se
+        // encuentre con un build roto sino con una pantalla que se explica
+        // sola (ver el aviso en SeleccionarUbicacionActivity).
+        manifestPlaceholders = [MAPS_API_KEY: mapsApiKey]
     }
 
     buildFeatures {
@@ -182,6 +209,10 @@ dependencies {
     // cuando alguien saque la primera foto ya está listo y funciona sin
     // conexión.
     implementation 'com.google.android.gms:play-services-mlkit-text-recognition:19.0.1'
+
+    // Mapa para elegir la ubicación de una cita. Solo el SDK del mapa: la
+    // búsqueda por nombre usa el Geocoder de Android, que no se factura.
+    implementation 'com.google.android.gms:play-services-maps:19.0.0'
 
     // Login con Google sin salir de la app (hoja de cuentas nativa).
     implementation 'androidx.credentials:credentials:1.3.0'

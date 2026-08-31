@@ -102,6 +102,12 @@
         <activity android:name=".MedicamentoDetalleActivity" android:exported="false" />
         <activity android:name=".EditarMedicamentoActivity" android:exported="false" />
 
+        <!-- Clave del Maps SDK. Sale de MAPS_API_KEY en local.properties
+             (o de la variable de entorno en CI); ver app/build.gradle. -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${MAPS_API_KEY}" />
+
         <!-- Que Play Services baje el modelo del lector AL INSTALAR y no en
              el primer escaneo. Sin esto, la primera foto —que es la que se
              saca parada en la farmacia— tendría que esperar una descarga. -->

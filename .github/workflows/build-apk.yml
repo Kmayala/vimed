@@ -51,6 +51,12 @@ jobs:
           # Vienen de Settings → Secrets and variables → Actions
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          # Si el secret no existe, la variable llega vacía y el build no
+          # se rompe: el mapa queda gris con su cartel y Vita avisa que le
+          # falta la clave. Es a propósito — un APK a medias se puede
+          # probar, un build caído no.
+          MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: ./gradlew assembleDebug --no-daemon
 
       # Siempre queda descargable desde la pestaña Actions

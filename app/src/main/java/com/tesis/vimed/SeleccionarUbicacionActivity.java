@@ -1,7 +1,8 @@
 package com.tesis.vimed;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -9,9 +10,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.webkit.JavascriptInterface;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -19,34 +17,43 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.material.textfield.TextInputEditText;
-import com.tesis.vimed.api.NominatimClient;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Elegir un lugar en el mapa y devolverlo a quien la abrió.
  *
- * CÓMO ESTÁ HECHA. El mapa es OpenStreetMap dibujado con Leaflet dentro de
- * un WebView; los archivos de Leaflet están empaquetados en assets, así que
- * no se descarga una librería de un CDN en cada apertura. La búsqueda por
- * nombre va a Nominatim (ver {@link NominatimClient}).
+ * CÓMO ESTÁ HECHA. Mapa con el SDK de Google Maps para Android y búsqueda
+ * con el {@link Geocoder} del sistema.
  *
- * POR QUÉ NO GOOGLE MAPS. El SDK de Maps y la API de Places piden una clave
- * con facturación activa y cobran por consulta. OpenStreetMap no pide clave
- * ni tarjeta, y para encontrar un hospital o una calle alcanza de sobra.
+ * QUÉ SE FACTURA DE ESTO: nada. El Maps SDK no cobra por carga de mapa en
+ * Android, y el Geocoder lo resuelve el sistema operativo, no una API web
+ * con cuota. Lo que sí cuesta es Places, y esta pantalla no lo usa. Google
+ * igual exige una cuenta de facturación para emitir la clave.
+ *
+ * SIN CLAVE LA APP NO SE ROMPE. El mapa queda gris y aparece un cartel que
+ * lo explica; el campo de texto sigue sirviendo para escribir la dirección
+ * a mano. Que alguien clone el repo sin la clave no tiene por qué dejarlo
+ * con una pantalla muda.
  *
  * EL PIN NO SE TOCA, SE MUEVE EL MAPA. El pin está fijo al centro de la
  * pantalla y lo que se arrastra es el mapa por debajo. Es el gesto que la
  * gente ya conoce de pedir un viaje, y evita tener que acertarle con el
  * dedo a un punto chiquito sobre una superficie que además se desplaza.
  */
-public class SeleccionarUbicacionActivity extends AppCompatActivity {
+public class SeleccionarUbicacionActivity extends AppCompatActivity
+        implements OnMapReadyCallback {
 
     /** Extras de entrada: dónde abrir el mapa, si ya se sabe. */
     public static final String EXTRA_LAT    = "lat";
@@ -58,7 +65,11 @@ public class SeleccionarUbicacionActivity extends AppCompatActivity {
     public static final String RESULT_LNG       = "lng";
     public static final String RESULT_DIRECCION = "direccion";
 
-    private WebView mapa;
+    /** Asunción, mientras no haya nada mejor a dónde apuntar. */
+    private static final LatLng ASUNCION = new LatLng(-25.2637, -57.5759);
+    private static final float ZOOM_LUGAR = 16.5f;
+
+    private GoogleMap mapa;
     private TextView tvDireccion;
     private TextInputEditText etBuscar;
     private ProgressBar cargando;
@@ -68,20 +79,19 @@ public class SeleccionarUbicacionActivity extends AppCompatActivity {
     /** Centro actual del mapa. Es lo que se devuelve al confirmar. */
     private double lat, lng;
 
-    /** Dirección del centro, resuelta por Nominatim. Puede quedar vacía. */
+    /** Dirección del centro. Puede quedar vacía y no pasa nada. */
     private String direccion = "";
-
-    /** El mapa recién acepta órdenes cuando el HTML terminó de cargar. */
-    private boolean mapaListo = false;
 
     private final Handler enPantalla = new Handler(Looper.getMainLooper());
 
+    /** El Geocoder bloquea, así que nunca se lo llama en el hilo principal. */
+    private final ExecutorService fondo = Executors.newSingleThreadExecutor();
+
     /**
-     * Consultar la dirección en CADA movimiento del mapa dispararía una
-     * llamada por cada píxel arrastrado, y Nominatim pide explícitamente no
-     * hacer eso. Se espera a que la mano se quede quieta.
+     * Geocodificar en CADA movimiento del mapa dispararía una consulta por
+     * píxel arrastrado. Se espera a que la mano se quede quieta.
      */
-    private static final long ESPERA_ANTES_DE_CONSULTAR_MS = 700;
+    private static final long ESPERA_ANTES_DE_CONSULTAR_MS = 600;
     private Runnable consultaPendiente;
 
     @Override
@@ -89,7 +99,6 @@ public class SeleccionarUbicacionActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_seleccionar_ubicacion);
 
-        mapa                = findViewById(R.id.mapa);
         tvDireccion         = findViewById(R.id.tv_direccion);
         etBuscar            = findViewById(R.id.et_buscar);
         cargando            = findViewById(R.id.cargando);
@@ -108,22 +117,36 @@ public class SeleccionarUbicacionActivity extends AppCompatActivity {
             return false;
         });
 
-        // Si la cita ya tenía un lugar escrito pero sin coordenadas, se usa
-        // como primera búsqueda: es lo que la persona ya había tipeado.
+        // Si la cita ya tenía un lugar escrito, se usa como primera búsqueda:
+        // es lo que la persona ya había tipeado.
         String textoPrevio = getIntent().getStringExtra(EXTRA_TEXTO);
         if (textoPrevio != null && !textoPrevio.trim().isEmpty()) {
             etBuscar.setText(textoPrevio.trim());
         }
 
-        prepararMapa();
+        if (BuildConfig.MAPS_API_KEY == null || BuildConfig.MAPS_API_KEY.isEmpty()) {
+            // Sin clave el mapa se dibuja en gris y sin decir por qué. Se
+            // avisa y se deja el resto de la pantalla usable: escribir la
+            // dirección a mano sigue siendo una forma válida de cargarla.
+            findViewById(R.id.tv_sin_clave).setVisibility(View.VISIBLE);
+            // El pin queda flotando sobre el cartel si no se lo esconde.
+            findViewById(R.id.pin).setVisibility(View.GONE);
+            findViewById(R.id.btn_buscar).setEnabled(false);
+            tvDireccion.setText("Escribí la dirección en el campo de arriba");
+            return;
+        }
+
+        SupportMapFragment frag =
+            (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mapa);
+        if (frag != null) frag.getMapAsync(this);
     }
 
     @Override
     public void onBackPressed() {
-        // Con la lista de resultados abierta, "atrás" tiene que cerrarla y
-        // volver al mapa, no salir de la pantalla.
+        // Con la lista de resultados abierta, "atrás" cierra la lista y
+        // vuelve al mapa, no sale de la pantalla.
         if (panelResultados.getVisibility() == View.VISIBLE) {
-            cerrarResultados();
+            panelResultados.setVisibility(View.GONE);
             return;
         }
         super.onBackPressed();
@@ -131,51 +154,38 @@ public class SeleccionarUbicacionActivity extends AppCompatActivity {
 
     // ═══ El mapa ═══════════════════════════════════════════════
 
-    @SuppressLint("SetJavaScriptEnabled")
-    private void prepararMapa() {
-        // JavaScript es la única forma de que Leaflet funcione. El WebView
-        // solo carga un archivo nuestro de assets y los tiles de OSM; no
-        // navega a ningún lado que escriba la persona.
-        mapa.getSettings().setJavaScriptEnabled(true);
-        mapa.getSettings().setDomStorageEnabled(true);
-        mapa.addJavascriptInterface(new PuenteMapa(), "Android");
+    @Override
+    public void onMapReady(GoogleMap google) {
+        mapa = google;
+        mapa.getUiSettings().setMapToolbarEnabled(false);
+        mapa.getUiSettings().setZoomControlsEnabled(true);
 
-        mapa.setWebViewClient(new WebViewClient());
-        mapa.loadUrl("file:///android_asset/mapa/mapa.html");
-    }
+        boolean hayPunto = lat != 0 || lng != 0;
+        mapa.moveCamera(CameraUpdateFactory.newLatLngZoom(
+            hayPunto ? new LatLng(lat, lng) : ASUNCION,
+            hayPunto ? ZOOM_LUGAR : 12f));
 
-    /** Lo que el mapa puede contarle a Android. */
-    private class PuenteMapa {
+        // Al soltar el mapa, el centro es la ubicación elegida.
+        mapa.setOnCameraIdleListener(() -> {
+            LatLng c = mapa.getCameraPosition().target;
+            lat = c.latitude;
+            lng = c.longitude;
+            programarConsultaDeDireccion();
+        });
 
-        @JavascriptInterface
-        public void mapaListo() {
-            enPantalla.post(() -> {
-                mapaListo = true;
-                if (lat != 0 || lng != 0) {
-                    moverMapaA(lat, lng);
-                } else if (etBuscar.getText() != null
-                        && etBuscar.getText().length() > 0) {
-                    // Sin coordenadas pero con texto: se busca solo, para
-                    // que el mapa no abra en un lugar cualquiera.
-                    buscar();
-                }
-            });
-        }
-
-        @JavascriptInterface
-        public void centroCambio(double nuevaLat, double nuevaLng) {
-            enPantalla.post(() -> {
-                lat = nuevaLat;
-                lng = nuevaLng;
-                programarConsultaDeDireccion();
-            });
+        if (hayPunto) {
+            programarConsultaDeDireccion();
+        } else if (etBuscar.getText() != null && etBuscar.getText().length() > 0) {
+            // Sin coordenadas pero con texto: se busca solo, para no abrir
+            // en un lugar cualquiera.
+            buscar();
         }
     }
 
     private void moverMapaA(double aLat, double aLng) {
-        if (!mapaListo) return;
-        mapa.evaluateJavascript(
-            String.format(Locale.US, "window.irA(%f, %f, 17);", aLat, aLng), null);
+        if (mapa == null) return;
+        mapa.animateCamera(CameraUpdateFactory.newLatLngZoom(
+            new LatLng(aLat, aLng), ZOOM_LUGAR));
     }
 
     // ═══ De coordenadas a dirección ════════════════════════════
@@ -190,36 +200,56 @@ public class SeleccionarUbicacionActivity extends AppCompatActivity {
     }
 
     private void consultarDireccion() {
-        NominatimClient.get().direccionDe(lat, lng, "es")
-            .enqueue(new Callback<NominatimClient.Lugar>() {
-                @Override
-                public void onResponse(Call<NominatimClient.Lugar> c,
-                                       Response<NominatimClient.Lugar> r) {
-                    if (r.isSuccessful() && r.body() != null
-                            && r.body().nombreCompleto != null) {
-                        direccion = r.body().nombreCompleto;
-                        tvDireccion.setText(direccion);
-                    } else {
-                        sinDireccion();
-                    }
-                }
+        final double aLat = lat, aLng = lng;
 
-                @Override
-                public void onFailure(Call<NominatimClient.Lugar> c, Throwable t) {
-                    sinDireccion();
-                }
+        fondo.execute(() -> {
+            String encontrada = "";
+            try {
+                Geocoder geo = new Geocoder(this, new Locale("es"));
+                List<Address> r = geo.getFromLocation(aLat, aLng, 1);
+                if (r != null && !r.isEmpty()) encontrada = textoDe(r.get(0));
+            } catch (IOException | IllegalArgumentException e) {
+                // Sin servicio de geocoding o sin red: se muestran las
+                // coordenadas. No es motivo para bloquear nada.
+            }
+
+            final String resultado = encontrada;
+            enPantalla.post(() -> {
+                // Si el mapa se siguió moviendo, esta respuesta ya no
+                // corresponde al punto que está en pantalla.
+                if (aLat != lat || aLng != lng) return;
+
+                direccion = resultado;
+                tvDireccion.setText(resultado.isEmpty()
+                    ? String.format(Locale.getDefault(),
+                        "Punto en el mapa (%.5f, %.5f)", aLat, aLng)
+                    : resultado);
             });
+        });
     }
 
-    /**
-     * Sin conexión o sin resultado, el punto igual sirve: se muestran las
-     * coordenadas y se puede confirmar. Bloquear el botón por no haber
-     * conseguido un nombre sería perder una ubicación que ya está elegida.
-     */
-    private void sinDireccion() {
-        direccion = "";
-        tvDireccion.setText(String.format(Locale.getDefault(),
-            "Punto en el mapa (%.5f, %.5f)", lat, lng));
+    /** Arma una línea legible con lo que el Geocoder haya traído. */
+    private String textoDe(Address a) {
+        if (a.getMaxAddressLineIndex() >= 0) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i <= a.getMaxAddressLineIndex(); i++) {
+                if (sb.length() > 0) sb.append(", ");
+                sb.append(a.getAddressLine(i));
+            }
+            return sb.toString();
+        }
+        // Sin línea armada, se junta lo que haya suelto.
+        StringBuilder sb = new StringBuilder();
+        if (a.getFeatureName() != null)  sb.append(a.getFeatureName());
+        if (a.getThoroughfare() != null) agregar(sb, a.getThoroughfare());
+        if (a.getLocality() != null)     agregar(sb, a.getLocality());
+        if (a.getCountryName() != null)  agregar(sb, a.getCountryName());
+        return sb.toString();
+    }
+
+    private void agregar(StringBuilder sb, String parte) {
+        if (sb.length() > 0) sb.append(", ");
+        sb.append(parte);
     }
 
     // ═══ Búsqueda por nombre ═══════════════════════════════════
@@ -231,65 +261,71 @@ public class SeleccionarUbicacionActivity extends AppCompatActivity {
         esconderTeclado();
         cargando.setVisibility(View.VISIBLE);
 
-        // Sesgado a Paraguay, sin excluir al resto: es donde está el 99% de
-        // lo que va a buscar quien usa esto.
-        NominatimClient.get().buscar(q, "es", "py")
-            .enqueue(new Callback<List<NominatimClient.Lugar>>() {
-                @Override
-                public void onResponse(Call<List<NominatimClient.Lugar>> c,
-                                       Response<List<NominatimClient.Lugar>> r) {
-                    cargando.setVisibility(View.GONE);
-                    List<NominatimClient.Lugar> lugares =
-                        r.isSuccessful() && r.body() != null ? r.body() : null;
+        fondo.execute(() -> {
+            final List<Address> encontrados = new ArrayList<>();
+            String error = null;
+            try {
+                Geocoder geo = new Geocoder(this, new Locale("es"));
+                List<Address> r = geo.getFromLocationName(q, 8);
+                if (r != null) encontrados.addAll(r);
+            } catch (IOException e) {
+                error = "No se pudo buscar: revisá la conexión.";
+            } catch (IllegalArgumentException e) {
+                error = "No se entendió lo que escribiste.";
+            }
 
-                    if (lugares == null || lugares.isEmpty()) {
-                        Toast.makeText(SeleccionarUbicacionActivity.this,
-                            "No encontramos ese lugar. Probá con menos palabras,"
-                                + " o movés el mapa a mano.",
-                            Toast.LENGTH_LONG).show();
-                        return;
-                    }
-                    // Un solo resultado no merece una lista de una fila.
-                    if (lugares.size() == 1) { elegir(lugares.get(0)); return; }
-                    mostrarResultados(lugares);
+            final String elError = error;
+            enPantalla.post(() -> {
+                cargando.setVisibility(View.GONE);
+
+                if (elError != null) {
+                    Toast.makeText(this, elError, Toast.LENGTH_LONG).show();
+                    return;
                 }
-
-                @Override
-                public void onFailure(Call<List<NominatimClient.Lugar>> c, Throwable t) {
-                    cargando.setVisibility(View.GONE);
-                    Toast.makeText(SeleccionarUbicacionActivity.this,
-                        "No se pudo buscar: revisá la conexión.",
+                if (encontrados.isEmpty()) {
+                    Toast.makeText(this,
+                        "No encontramos ese lugar. Probá con menos palabras,"
+                            + " o movés el mapa a mano.",
                         Toast.LENGTH_LONG).show();
+                    return;
                 }
+                // Un solo resultado no merece una lista de una fila.
+                if (encontrados.size() == 1) { elegir(encontrados.get(0)); return; }
+                mostrarResultados(encontrados);
             });
+        });
     }
 
-    private void mostrarResultados(List<NominatimClient.Lugar> lugares) {
+    private void mostrarResultados(List<Address> lugares) {
         resultadosContainer.removeAllViews();
         LayoutInflater inflater = LayoutInflater.from(this);
 
-        for (NominatimClient.Lugar lugar : lugares) {
+        for (Address lugar : lugares) {
+            String completo = textoDe(lugar);
+            if (completo.isEmpty()) continue;
+
             View fila = inflater.inflate(R.layout.item_resultado_lugar,
                 resultadosContainer, false);
-            ((TextView) fila.findViewById(R.id.tv_lugar_titulo)).setText(lugar.titulo());
-            ((TextView) fila.findViewById(R.id.tv_lugar_detalle)).setText(lugar.detalle());
+
+            int coma = completo.indexOf(',');
+            ((TextView) fila.findViewById(R.id.tv_lugar_titulo)).setText(
+                coma > 0 ? completo.substring(0, coma).trim() : completo);
+            ((TextView) fila.findViewById(R.id.tv_lugar_detalle)).setText(
+                coma > 0 ? completo.substring(coma + 1).trim() : "");
+
             fila.setOnClickListener(v -> elegir(lugar));
             resultadosContainer.addView(fila);
         }
         panelResultados.setVisibility(View.VISIBLE);
     }
 
-    private void elegir(NominatimClient.Lugar lugar) {
-        cerrarResultados();
-        lat = lugar.latitud();
-        lng = lugar.longitud();
-        direccion = lugar.nombreCompleto;
+    private void elegir(Address lugar) {
+        panelResultados.setVisibility(View.GONE);
+        lat = lugar.getLatitude();
+        lng = lugar.getLongitude();
+        direccion = textoDe(lugar);
         tvDireccion.setText(direccion);
         moverMapaA(lat, lng);
-    }
-
-    private void cerrarResultados() {
-        panelResultados.setVisibility(View.GONE);
     }
 
     private void esconderTeclado() {
@@ -326,7 +362,7 @@ public class SeleccionarUbicacionActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         if (consultaPendiente != null) enPantalla.removeCallbacks(consultaPendiente);
-        if (mapa != null) mapa.destroy();
+        fondo.shutdownNow();
         super.onDestroy();
     }
 }

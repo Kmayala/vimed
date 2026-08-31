@@ -92,10 +92,42 @@
         android:layout_weight="1"
         android:minHeight="240dp">
 
-        <WebView
+        <fragment
             android:id="@+id/mapa"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
+
+        <!-- Aviso de que falta la clave. El mapa sin clave se dibuja en
+             gris y sin explicación; esto lo dice. -->
+        <TextView
+            android:id="@+id/tv_sin_clave"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:padding="32dp"
+            android:background="@color/paper"
+            android:text="El mapa no está configurado en esta compilación.
+
+Podés escribir la dirección a mano en el campo de arriba y usarla igual."
+            android:textSize="16sp"
+            android:textColor="@color/ink_3"
+            android:lineSpacingMultiplier="1.35"
+            android:visibility="gone" />
+
+        <!-- El pin va FIJO al centro y lo que se arrastra es el mapa. Es el
+             gesto de pedir un viaje, y evita tener que acertarle con el dedo
+             a un punto chico sobre una superficie que se desplaza.
+             translationY: la punta del pin, no su centro, es lo que tiene
+             que quedar sobre el centro exacto del mapa. -->
+        <ImageView
+            android:id="@+id/pin"
+            android:layout_width="36dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center"
+            android:translationY="-24dp"
+            android:src="@drawable/ic_pin_mapa"
+            android:contentDescription="Ubicación elegida" />
 
         <ProgressBar
             android:id="@+id/cargando"
