@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Detalle de una cita: todo lo cargado, el estado, y las acciones.
+
+     Las acciones se agrupan por consecuencia: arriba las que solo cambian
+     el estado (van y vienen), abajo las que modifican o borran. Eliminar
+     queda al final y en rojo porque es la única que no se puede deshacer. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/bg_welcome_gradient">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingLeft="16dp"
+        android:paddingRight="20dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp">
+
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_arrow_back"
+            android:background="@drawable/shape_neutral_icon_container"
+            android:scaleType="center"
+            android:tint="@color/ink_2"
+            android:contentDescription="Volver" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Detalle de la cita"
+            android:textSize="24sp"
+            android:fontFamily="@font/atkinson"
+            android:textStyle="bold"
+            android:textColor="@color/ink"
+            android:letterSpacing="-0.02"
+            android:layout_marginStart="12dp" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:paddingBottom="28dp">
+
+            <!-- Encabezado: especialidad, médico y estado -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/shape_card"
+                android:padding="20dp"
+                android:elevation="3dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <FrameLayout
+                        android:id="@+id/icono_fondo"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:layout_marginEnd="14dp">
+
+                        <ImageView
+                            android:id="@+id/iv_especialidad"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="@null" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tv_especialidad"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textSize="22sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/ink" />
+
+                        <TextView
+                            android:id="@+id/tv_medico"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textSize="17sp"
+                            android:textColor="@color/ink_3"
+                            android:layout_marginTop="2dp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tv_estado"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:paddingLeft="14dp"
+                    android:paddingRight="14dp"
+                    android:paddingTop="7dp"
+                    android:paddingBottom="7dp"
+                    android:layout_marginTop="16dp" />
+            </LinearLayout>
+
+            <!-- Cuándo -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/shape_card"
+                android:padding="18dp"
+                android:elevation="3dp"
+                android:layout_marginTop="12dp">
+
+                <FrameLayout
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:background="@drawable/shape_brand_icon_container"
+                    android:layout_marginEnd="14dp">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_nav_calendar"
+                        android:tint="@color/brand_600"
+                        android:contentDescription="@null" />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="CUÁNDO"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.1"
+                        android:textColor="@color/ink_4" />
+
+                    <TextView
+                        android:id="@+id/tv_cuando"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="17sp"
+                        android:textColor="@color/ink"
+                        android:layout_marginTop="3dp" />
+
+                    <TextView
+                        android:id="@+id/tv_falta"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="14sp"
+                        android:textColor="@color/brand_600"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Dónde -->
+            <LinearLayout
+                android:id="@+id/card_lugar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/shape_card"
+                android:padding="18dp"
+                android:elevation="3dp"
+                android:layout_marginTop="12dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <FrameLayout
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:background="@drawable/shape_brand_icon_container"
+                    android:layout_marginEnd="14dp">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_map_pin"
+                        android:tint="@color/brand_600"
+                        android:contentDescription="@null" />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="DÓNDE"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.1"
+                        android:textColor="@color/ink_4" />
+
+                    <TextView
+                        android:id="@+id/tv_lugar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="17sp"
+                        android:textColor="@color/ink"
+                        android:layout_marginTop="3dp" />
+
+                    <TextView
+                        android:id="@+id/tv_abrir_mapa"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Tocá para abrirlo en el mapa"
+                        android:textSize="14sp"
+                        android:textColor="@color/brand_600"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Notas -->
+            <LinearLayout
+                android:id="@+id/card_notas"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/shape_card"
+                android:padding="18dp"
+                android:elevation="3dp"
+                android:layout_marginTop="12dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="NOTAS"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.1"
+                    android:textColor="@color/ink_4" />
+
+                <TextView
+                    android:id="@+id/tv_notas"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="17sp"
+                    android:textColor="@color/ink"
+                    android:lineSpacingMultiplier="1.35"
+                    android:layout_marginTop="3dp" />
+            </LinearLayout>
+
+            <!-- ── Acciones de estado ── -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="¿QUÉ PASÓ CON ESTA CITA?"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.1"
+                android:textColor="@color/ink_4"
+                android:layout_marginTop="28dp"
+                android:layout_marginBottom="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_asistida"
+                style="@style/Boton.Principal"
+                android:layout_width="match_parent"
+                android:layout_height="58dp"
+                android:text="Ya fui a esta cita"
+                android:textSize="17sp"
+                app:cornerRadius="18dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_confirmar"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Confirmar que sigue en pie"
+                android:textSize="16sp"
+                android:textColor="@color/ink"
+                android:textAllCaps="false"
+                app:strokeColor="@color/ink_6"
+                app:strokeWidth="1.5dp"
+                app:cornerRadius="18dp"
+                android:layout_marginTop="10dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_cancelar_cita"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Se canceló"
+                android:textSize="16sp"
+                android:textColor="@color/ink"
+                android:textAllCaps="false"
+                app:strokeColor="@color/ink_6"
+                app:strokeWidth="1.5dp"
+                app:cornerRadius="18dp"
+                android:layout_marginTop="10dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_reabrir"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Volver a dejarla pendiente"
+                android:textSize="16sp"
+                android:textColor="@color/ink"
+                android:textAllCaps="false"
+                app:strokeColor="@color/ink_6"
+                app:strokeWidth="1.5dp"
+                app:cornerRadius="18dp"
+                android:layout_marginTop="10dp"
+                android:visibility="gone" />
+
+            <!-- ── Modificar ── -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="MODIFICAR"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.1"
+                android:textColor="@color/ink_4"
+                android:layout_marginTop="28dp"
+                android:layout_marginBottom="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_editar"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Editar la cita"
+                android:textSize="16sp"
+                android:textColor="@color/brand_600"
+                android:textAllCaps="false"
+                app:strokeColor="@color/brand_200"
+                app:strokeWidth="1.5dp"
+                app:cornerRadius="18dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_eliminar"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Eliminar la cita"
+                android:textSize="16sp"
+                android:textColor="@color/danger"
+                android:textAllCaps="false"
+                app:strokeColor="@color/danger"
+                app:strokeWidth="1.5dp"
+                app:cornerRadius="18dp"
+                android:layout_marginTop="10dp" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

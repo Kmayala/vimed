@@ -373,19 +373,18 @@ public class AppointmentsActivity extends AppCompatActivity {
         tvTime.setText(cita.horaHM() + " hs");
         cablearMapa(item, cita);
 
+        tvEstado.setText(cita.estadoLegible());
         switch (cita.getEstado()) {
             case CitaMedica.ESTADO_CONFIRMADA:
-                tvEstado.setText("Confirmada");
+            case CitaMedica.ESTADO_ASISTIDA:
                 tvEstado.setBackgroundResource(R.drawable.shape_chip_success);
                 tvEstado.setTextColor(getColor(R.color.success));
                 break;
             case CitaMedica.ESTADO_CANCELADA:
-                tvEstado.setText("Cancelada");
                 tvEstado.setBackgroundResource(R.drawable.shape_chip_danger);
                 tvEstado.setTextColor(getColor(R.color.danger));
                 break;
             default:
-                tvEstado.setText("Pendiente");
                 tvEstado.setBackgroundResource(R.drawable.shape_chip_pending);
                 tvEstado.setTextColor(getColor(R.color.warn));
                 break;
@@ -399,67 +398,16 @@ public class AppointmentsActivity extends AppCompatActivity {
             tvFecha.setVisibility(View.GONE);
         }
 
-        item.setOnClickListener(v -> mostrarOpcionesCita(cita));
-    }
-
-    private void mostrarOpcionesCita(CitaMedica cita) {
-        String[] opciones = {
-            "Marcar como confirmada",
-            "Marcar como pendiente",
-            "Marcar como cancelada",
-            "Eliminar cita"
-        };
-        String[] estados = {
-            CitaMedica.ESTADO_CONFIRMADA,
-            CitaMedica.ESTADO_PENDIENTE,
-            CitaMedica.ESTADO_CANCELADA
-        };
-
-        new AlertDialog.Builder(this)
-            .setTitle(cita.getEspecialidad() != null && !cita.getEspecialidad().isEmpty()
-                ? cita.getEspecialidad() : "Cita médica")
-            .setItems(opciones, (d, which) -> {
-                if (which < estados.length) cambiarEstado(cita, estados[which]);
-                else                        confirmarEliminar(cita);
-            })
-            .setNegativeButton("Cancelar", null)
-            .show();
-    }
-
-    private void cambiarEstado(CitaMedica cita, String nuevo) {
-        VimedRepo.actualizarEstadoCita(cita.getId(), nuevo, new VimedRepo.Cb<Void>() {
-            @Override public void onOk(Void v) {
-                // Una cita cancelada no tiene que seguir avisando; si vuelve a
-                // pendiente, cargarCitas() la reprograma.
-                if (CitaMedica.ESTADO_CANCELADA.equals(nuevo)) {
-                    RecordatorioCita.cancelar(AppointmentsActivity.this, cita.getId());
-                }
-                cargarCitas();
-            }
-            @Override public void onError(String msg) {
-                Toast.makeText(AppointmentsActivity.this, msg, Toast.LENGTH_LONG).show();
-            }
+        // Antes esto abría un menú de tres opciones. Ahora abre el detalle:
+        // el menú no mostraba las notas ni el lugar, y no había forma de
+        // corregir una cita mal cargada más que borrarla y rehacerla.
+        item.setOnClickListener(v -> {
+            Intent i = new Intent(this, CitaDetalleActivity.class);
+            i.putExtra(CitaDetalleActivity.EXTRA_ID_CITA, cita.getId());
+            startActivity(i);
         });
     }
 
-    private void confirmarEliminar(CitaMedica cita) {
-        new AlertDialog.Builder(this)
-            .setTitle("Eliminar cita")
-            .setMessage("¿Eliminar esta cita médica?")
-            .setNegativeButton("Cancelar", null)
-            .setPositiveButton("Eliminar", (d, w) ->
-                VimedRepo.eliminarCita(cita.getId(), new VimedRepo.Cb<Void>() {
-                    @Override public void onOk(Void v) {
-                        // Sin esto seguiría avisando de una cita que ya no está.
-                        RecordatorioCita.cancelar(AppointmentsActivity.this, cita.getId());
-                        cargarCitas();
-                    }
-                    @Override public void onError(String msg) {
-                        Toast.makeText(AppointmentsActivity.this, msg, Toast.LENGTH_LONG).show();
-                    }
-                }))
-            .show();
-    }
 
     // ═══════════════════════════════════════════════════════════
     //  Vista Calendario

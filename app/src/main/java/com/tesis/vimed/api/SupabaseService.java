@@ -151,6 +151,10 @@ public interface SupabaseService {
         @Query("order")      String order
     );
 
+    /** Una cita puntual, para la pantalla de detalle. */
+    @GET("citas_medicas")
+    Call<List<CitaMedica>> getCitaPorId(@Query("id_cita") String idEq);
+
     @POST("citas_medicas")
     Call<List<CitaMedica>> crearCita(@Body CitaMedica nueva);
 

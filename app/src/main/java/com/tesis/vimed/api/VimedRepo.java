@@ -70,6 +70,18 @@ public final class VimedRepo {
         String estado;
     }
 
+    /** Los campos que edita el formulario de cita; el estado va aparte. */
+    private static class CitaEdicion {
+        String medico;
+        String especialidad;
+        @com.google.gson.annotations.SerializedName("fecha_hora")
+        String fechaHora;
+        String lugar;
+        String notas;
+        Double latitud;
+        Double longitud;
+    }
+
     private static class HorarioPatch {
         @com.google.gson.annotations.SerializedName("hora_inicio")
         String horaInicio;
@@ -661,7 +673,50 @@ public final class VimedRepo {
             });
     }
 
-    /** @param estado pendiente | confirmada | cancelada */
+    /**
+     * Guarda los cambios de una cita editada.
+     *
+     * No manda la cita entera: un POST completo pisaría id_usuario y estado
+     * con lo que traiga el objeto en memoria, y el estado se cambia por otro
+     * camino (los botones del detalle). Solo viajan los campos del
+     * formulario.
+     */
+    public static void actualizarCita(int idCita, CitaMedica cambios, Cb<Void> cb) {
+        CitaEdicion patch = new CitaEdicion();
+        patch.medico       = cambios.getMedico();
+        patch.especialidad = cambios.getEspecialidad();
+        patch.fechaHora    = cambios.getFechaHora();
+        patch.lugar        = cambios.getLugar();
+        patch.notas        = cambios.getNotas();
+        patch.latitud      = cambios.getLatitud();
+        patch.longitud     = cambios.getLongitud();
+
+        SupabaseClient.getService()
+            .actualizarCita("eq." + idCita, patch)
+            .enqueue(VimedRepo.<CitaMedica>voidCb(cb));
+    }
+
+    /** Una cita puntual, para la pantalla de detalle. */
+    public static void buscarCita(int idCita, Cb<CitaMedica> cb) {
+        SupabaseClient.getService().getCitaPorId("eq." + idCita)
+            .enqueue(new Callback<List<CitaMedica>>() {
+                @Override
+                public void onResponse(Call<List<CitaMedica>> c,
+                                       Response<List<CitaMedica>> r) {
+                    if (r.isSuccessful() && r.body() != null && !r.body().isEmpty()) {
+                        cb.onOk(r.body().get(0));
+                    } else {
+                        cb.onError("No se encontró la cita");
+                    }
+                }
+                @Override
+                public void onFailure(Call<List<CitaMedica>> c, Throwable t) {
+                    cb.onError("Sin conexión: " + t.getMessage());
+                }
+            });
+    }
+
+    /** @param estado pendiente | confirmada | asistida | cancelada */
     public static void actualizarEstadoCita(int idCita, String estado, Cb<Void> cb) {
         CitaPatch cambios = new CitaPatch();
         cambios.estado = estado;

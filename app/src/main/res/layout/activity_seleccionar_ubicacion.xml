@@ -84,10 +84,13 @@
     </LinearLayout>
 
     <!-- Mapa + resultados de la búsqueda encima -->
+    <!-- minHeight: aunque el teclado no comprima nada, en pantallas
+         chicas el mapa no puede quedar reducido a una franja. -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:minHeight="240dp">
 
         <WebView
             android:id="@+id/mapa"

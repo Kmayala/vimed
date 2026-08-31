@@ -30,6 +30,12 @@ public class CitaMedica {
 
     public static final String ESTADO_PENDIENTE  = "pendiente";
     public static final String ESTADO_CONFIRMADA = "confirmada";
+    /**
+     * La persona fue a la cita. Es distinto de CONFIRMADA: esa dice que la
+     * cita está en pie, esta que ya ocurrió. Antes no existía y "ya fui" no
+     * se podía anotar en ningún lado.
+     */
+    public static final String ESTADO_ASISTIDA   = "asistida";
     public static final String ESTADO_CANCELADA  = "cancelada";
 
     public CitaMedica() {}
@@ -76,6 +82,18 @@ public class CitaMedica {
     }
 
     public boolean estaConfirmada() { return ESTADO_CONFIRMADA.equals(getEstado()); }
+    public boolean estaAsistida()  { return ESTADO_ASISTIDA.equals(getEstado()); }
+    public boolean estaCancelada() { return ESTADO_CANCELADA.equals(getEstado()); }
+
+    /** Etiqueta para mostrar en pantalla. */
+    public String estadoLegible() {
+        switch (getEstado()) {
+            case ESTADO_CONFIRMADA: return "Confirmada";
+            case ESTADO_ASISTIDA:   return "Ya asististe";
+            case ESTADO_CANCELADA:  return "Cancelada";
+            default:                return "Pendiente";
+        }
+    }
 
     /** Fecha "yyyy-MM-dd" tolerando ambos formatos (local e ISO de Postgres). */
     public String fechaYMD() {

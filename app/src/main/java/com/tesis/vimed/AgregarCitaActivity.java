@@ -39,6 +39,15 @@ public class AgregarCitaActivity extends AppCompatActivity {
     private int idUsuarioDestino = -1;
     private String nombreDestino = null;
 
+    /**
+     * Id de la cita que se está editando, o -1 si es una cita nueva.
+     * La pantalla es la misma para las dos cosas: los campos, las
+     * validaciones y el selector de mapa son idénticos, y lo único que
+     * cambia es si al final se hace un POST o un PATCH.
+     */
+    public static final String EXTRA_ID_CITA = "id_cita";
+    private int idCitaEditando = -1;
+
     /** Punto elegido en el mapa, o null si la persona no lo abrió. */
     private Double latitudElegida = null;
     private Double longitudElegida = null;
@@ -199,10 +208,101 @@ public class AgregarCitaActivity extends AppCompatActivity {
         // fecha no, porque elegirla es obligatorio y hay que notarlo.
         etHora.setText(String.format(Locale.getDefault(), "%02d:%02d", selHour, selMinute));
 
+        idCitaEditando = getIntent().getIntExtra(EXTRA_ID_CITA, -1);
+        if (editando()) cargarParaEditar();
+
         findViewById(R.id.btn_elegir_mapa).setOnClickListener(v -> abrirMapa());
 
         findViewById(R.id.btn_back).setOnClickListener(v -> finish());
         findViewById(R.id.btn_save).setOnClickListener(v -> guardarCita());
+    }
+
+    // ═══ Modo edición ══════════════════════════════════════════
+
+    private boolean editando() { return idCitaEditando > 0; }
+
+    /**
+     * Trae la cita del servidor y llena el formulario con lo que ya tenía.
+     *
+     * Se consulta en vez de recibirla por Intent: la pantalla de detalle
+     * podría estar mostrando datos viejos, y editar sobre datos viejos
+     * significa pisar con ellos lo que esté guardado.
+     */
+    private void cargarParaEditar() {
+        ((TextView) findViewById(R.id.tv_titulo_pantalla)).setText("Editar cita");
+
+        com.tesis.vimed.api.VimedRepo.buscarCita(idCitaEditando,
+            new com.tesis.vimed.api.VimedRepo.Cb<CitaMedica>() {
+                @Override public void onOk(CitaMedica c) { llenarCon(c); }
+                @Override public void onError(String msg) {
+                    Toast.makeText(AgregarCitaActivity.this, msg, Toast.LENGTH_LONG).show();
+                    finish();
+                }
+            });
+    }
+
+    private void llenarCon(CitaMedica c) {
+        etMedico.setText(c.getMedico());
+        etLugar.setText(c.getLugar());
+        etNotas.setText(c.getNotas());
+
+        // La especialidad puede ser una de la grilla o un texto libre; si no
+        // coincide con ninguna, se marca "Otra" y se muestra el campo.
+        Especialidad e = Especialidad.desdeNombre(c.getEspecialidad());
+        if (e != null) {
+            elegirEspecialidad(e);
+        } else if (c.getEspecialidad() != null && !c.getEspecialidad().isEmpty()) {
+            for (Especialidad otra : Especialidad.values()) {
+                if (otra.esOtra()) { elegirEspecialidad(otra); break; }
+            }
+            etEspecialidad.setText(c.getEspecialidad());
+        }
+
+        try {
+            String[] ymd = c.fechaYMD().split("-");
+            selYear  = Integer.parseInt(ymd[0]);
+            selMonth = Integer.parseInt(ymd[1]) - 1;
+            selDay   = Integer.parseInt(ymd[2]);
+            fechaSeleccionada = true;
+            etFecha.setText(String.format(Locale.getDefault(),
+                "%02d/%02d/%d", selDay, selMonth + 1, selYear));
+
+            String[] hm = c.horaHM().split(":");
+            selHour   = Integer.parseInt(hm[0]);
+            selMinute = Integer.parseInt(hm[1]);
+            etHora.setText(c.horaHM());
+        } catch (Exception ignored) {
+            // Fecha ilegible: queda la de hoy y la persona la vuelve a elegir.
+        }
+
+        if (c.tieneUbicacion()) {
+            latitudElegida  = c.getLatitud();
+            longitudElegida = c.getLongitud();
+            pintarUbicacionElegida();
+        }
+    }
+
+    private void guardarEdicion(CitaMedica cambios) {
+        com.tesis.vimed.api.VimedRepo.actualizarCita(idCitaEditando, cambios,
+            new com.tesis.vimed.api.VimedRepo.Cb<Void>() {
+                @Override public void onOk(Void v) {
+                    // La fecha pudo haber cambiado: los avisos viejos apuntan
+                    // al día anterior y hay que rehacerlos, no sumarlos.
+                    cambios.setId(idCitaEditando);
+                    com.tesis.vimed.utils.RecordatorioCita
+                        .cancelar(AgregarCitaActivity.this, idCitaEditando);
+                    if (idUsuarioDestino <= 0) {
+                        com.tesis.vimed.utils.RecordatorioCita
+                            .programar(AgregarCitaActivity.this, cambios);
+                    }
+                    Toast.makeText(AgregarCitaActivity.this,
+                        "Cambios guardados", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+                @Override public void onError(String msg) {
+                    Toast.makeText(AgregarCitaActivity.this, msg, Toast.LENGTH_LONG).show();
+                }
+            });
     }
 
     // ═══ Ubicación en el mapa ══════════════════════════════════
@@ -277,12 +377,16 @@ public class AgregarCitaActivity extends AppCompatActivity {
         // en el pasado no tiene sentido y no habría nada que recordar. Se
         // resta un segundo porque setMinDate, recibiendo exactamente la
         // medianoche, en algunos equipos redondea al día siguiente.
-        Calendar hoy = Calendar.getInstance();
-        hoy.set(Calendar.HOUR_OF_DAY, 0);
-        hoy.set(Calendar.MINUTE, 0);
-        hoy.set(Calendar.SECOND, 0);
-        hoy.set(Calendar.MILLISECOND, 0);
-        dlg.getDatePicker().setMinDate(hoy.getTimeInMillis() - 1000);
+        // El tope de "no antes de hoy" no aplica al editar: la fecha
+        // original puede ser pasada y hay que poder volver a elegirla.
+        if (!editando()) {
+            Calendar hoy = Calendar.getInstance();
+            hoy.set(Calendar.HOUR_OF_DAY, 0);
+            hoy.set(Calendar.MINUTE, 0);
+            hoy.set(Calendar.SECOND, 0);
+            hoy.set(Calendar.MILLISECOND, 0);
+            dlg.getDatePicker().setMinDate(hoy.getTimeInMillis() - 1000);
+        }
         dlg.show();
     }
 
@@ -355,7 +459,10 @@ public class AgregarCitaActivity extends AppCompatActivity {
         // elige aparte, así que "hoy a las 08:00" a las 10 de la mañana pasa
         // el filtro del día pero sigue siendo pasado. Y si la pantalla quedó
         // abierta cruzando la medianoche, la fecha elegida ayer ya venció.
-        if (yaPaso()) {
+        // Editando NO se bloquea: una cita vieja se corrige justamente
+        // después de que pasó —el nombre del médico, el lugar, una nota— y
+        // exigirle una fecha futura obligaría a inventar una.
+        if (!editando() && yaPaso()) {
             Toast.makeText(this,
                 "No se puede agendar una cita en el pasado. "
                     + "Elegí una fecha y hora futuras.",
@@ -370,6 +477,10 @@ public class AgregarCitaActivity extends AppCompatActivity {
         // El id_usuario lo completa el repositorio con el de public.usuarios
         CitaMedica cita = new CitaMedica(0, medico, especialidad, fechaHora, lugar, notas);
         cita.setEstado(CitaMedica.ESTADO_PENDIENTE);
+        cita.setLatitud(latitudElegida);
+        cita.setLongitud(longitudElegida);
+
+        if (editando()) { guardarEdicion(cita); return; }
 
         com.tesis.vimed.api.VimedRepo.Cb<CitaMedica> alGuardar =
             new com.tesis.vimed.api.VimedRepo.Cb<CitaMedica>() {
