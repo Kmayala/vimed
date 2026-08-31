@@ -21,8 +21,6 @@ import com.tesis.vimed.api.OpenAIClient;
 import com.tesis.vimed.api.PromptVita;
 import com.tesis.vimed.database.DatabaseHelper;
 import com.tesis.vimed.database.MensajeChatDAO;
-import com.tesis.vimed.database.MedicamentoDAO;
-import com.tesis.vimed.database.HorarioDAO;
 import com.tesis.vimed.models.Horario;
 import com.tesis.vimed.models.MensajeChat;
 import com.tesis.vimed.models.Medicamento;
@@ -64,6 +62,28 @@ public class ChatbotActivity extends AppCompatActivity {
     private List<MensajeChat> historial;
     private int idUsuario;
     private boolean isLoading = false;
+
+    /**
+     * Los medicamentos que Vita conoce, traídos del servidor.
+     *
+     * ANTES SE LEÍAN DE LA BASE LOCAL y por eso Vita nunca veía ninguno:
+     * los medicamentos viven en Supabase, y todas las demás pantallas los
+     * piden por VimedRepo. La tabla local de medicamentos no se llena
+     * nunca. El chat era el único que la miraba, así que contestaba
+     * "decime qué medicamentos tomás" a alguien que los tenía cargados
+     * hacía meses.
+     *
+     * Se traen una vez al abrir la pantalla y quedan acá: armar el prompt
+     * pasa en el hilo principal y no puede esperar a la red.
+     */
+    private final List<Medicamento> misMedicamentos = new ArrayList<>();
+    private final java.util.Map<Integer, List<Horario>> misHorarios = new java.util.HashMap<>();
+
+    /**
+     * Si la consulta al servidor todavía no volvió, es distinto de que no
+     * haya medicamentos, y al modelo hay que decirle cuál de las dos es.
+     */
+    private boolean medicamentosCargados = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,6 +132,58 @@ public class ChatbotActivity extends AppCompatActivity {
 
         // Cargar historial existente
         cargarHistorial();
+        cargarMedicamentos();
+    }
+
+    /**
+     * Trae del servidor los medicamentos y sus horarios, para que Vita sepa
+     * de qué le hablan.
+     *
+     * Se pide una sola vez al abrir el chat y no antes de cada mensaje: la
+     * lista no cambia mientras se conversa, y una consulta por mensaje
+     * sumaría espera a cada respuesta.
+     *
+     * Si falla, el chat sigue andando sin la lista. Vita responde igual las
+     * preguntas generales, que son la mayoría; quedarse sin chat porque no
+     * se pudo leer la lista sería peor que quedarse sin la lista.
+     */
+    private void cargarMedicamentos() {
+        if (idUsuario == -1) { medicamentosCargados = true; return; }
+
+        com.tesis.vimed.api.VimedRepo.listarMedicamentos(this,
+            new com.tesis.vimed.api.VimedRepo.Cb<List<Medicamento>>() {
+                @Override public void onOk(List<Medicamento> meds) {
+                    misMedicamentos.clear();
+                    misMedicamentos.addAll(meds);
+                    if (meds.isEmpty()) { medicamentosCargados = true; return; }
+
+                    List<Integer> ids = new ArrayList<>();
+                    for (Medicamento m : meds) ids.add(m.getId());
+
+                    com.tesis.vimed.api.VimedRepo.listarHorariosDe(ids,
+                        new com.tesis.vimed.api.VimedRepo.Cb<List<Horario>>() {
+                            @Override public void onOk(List<Horario> horarios) {
+                                for (Horario h : horarios) {
+                                    List<Horario> del = misHorarios.get(h.getIdMedicamento());
+                                    if (del == null) {
+                                        del = new ArrayList<>();
+                                        misHorarios.put(h.getIdMedicamento(), del);
+                                    }
+                                    del.add(h);
+                                }
+                                medicamentosCargados = true;
+                            }
+                            // Sin horarios igual sirve: sabe qué toma
+                            // aunque no sepa a qué hora.
+                            @Override public void onError(String msg) {
+                                medicamentosCargados = true;
+                            }
+                        });
+                }
+                @Override public void onError(String msg) {
+                    medicamentosCargados = true;
+                }
+            });
     }
 
     private void cargarHistorial() {
@@ -382,48 +454,56 @@ public class ChatbotActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Las reglas de Vita más la lista de medicamentos de esta persona.
+     *
+     * Se arma en cada mensaje y no una sola vez porque el estado de la
+     * lista cambia: el primer mensaje puede salir mientras la consulta al
+     * servidor todavía viaja.
+     */
     private String construirSystemPrompt() {
         StringBuilder sb = new StringBuilder();
         // Las reglas viven en PromptVita para que el banco de pruebas
         // corra exactamente las mismas. Ver la nota de esa clase.
         sb.append(PromptVita.REGLAS);
 
-        if (idUsuario != -1) {
-            try {
-                MedicamentoDAO medDAO = new MedicamentoDAO(DatabaseHelper.getInstance(this));
-                HorarioDAO horDAO = new HorarioDAO(DatabaseHelper.getInstance(this));
-                List<Medicamento> meds = medDAO.listarPorUsuario(idUsuario);
-                if (meds.isEmpty()) {
-                    // Decirlo es mejor que callarlo: si abajo no hay nada, el
-                    // modelo asume que la lista no le llegó y se pone a
-                    // pedírsela a la persona, que es justo lo que la app
-                    // existe para evitar.
-                    sb.append("El usuario NO tiene ningún medicamento cargado "
-                        + "en la app todavía. No se los pidas: ofrecele "
-                        + "cargarlos desde la pantalla de Medicamentos.\n");
-                } else {
-                    sb.append("Medicamentos actuales del usuario:\n");
-                    for (Medicamento med : meds) {
-                        sb.append("- ").append(med.getNombre());
-                        if (med.getDosis() > 0) {
-                            sb.append(" ").append((int) med.getDosis())
-                              .append(" ").append(med.getUnidad() != null ? med.getUnidad() : "");
-                        }
-                        List<Horario> horarios = horDAO.listarPorMedicamento(med.getId());
-                        if (!horarios.isEmpty()) {
-                            Horario h = horarios.get(0);
-                            sb.append(", desde las ").append(h.getHoraInicio())
-                              .append(" cada ").append(h.getIntervaloHoras()).append("h");
-                        }
-                        if (med.getInstrucciones() != null && !med.getInstrucciones().isEmpty()) {
-                            sb.append(". Instrucciones: ").append(med.getInstrucciones());
-                        }
-                        sb.append("\n");
-                    }
-                }
-            } catch (Exception ignored) {}
+        if (!medicamentosCargados) {
+            // Distinto de "no tiene ninguno": acá todavía no sabemos. Se lo
+            // decimos así para que no afirme que no tiene nada cargado.
+            sb.append("La lista de medicamentos todavía se está cargando. Si "
+                + "te preguntan por ella, pedí que prueben de nuevo en un "
+                + "momento. No digas que no tiene ninguno.\n");
+            return sb.toString();
         }
 
+        if (misMedicamentos.isEmpty()) {
+            // Decirlo es mejor que callarlo: sin nada abajo, el modelo
+            // asume que la lista no le llegó y se pone a pedírsela a la
+            // persona, que es justo lo que la app existe para evitar.
+            sb.append("El usuario NO tiene ningún medicamento cargado en la "
+                + "app todavía. No se los pidas: ofrecele cargarlos desde la "
+                + "pantalla de Medicamentos.\n");
+            return sb.toString();
+        }
+
+        sb.append("Medicamentos actuales del usuario:\n");
+        for (Medicamento med : misMedicamentos) {
+            sb.append("- ").append(med.getNombre());
+            if (med.getDosis() > 0) {
+                sb.append(" ").append((int) med.getDosis())
+                  .append(" ").append(med.getUnidad() != null ? med.getUnidad() : "");
+            }
+            List<Horario> horarios = misHorarios.get(med.getId());
+            if (horarios != null && !horarios.isEmpty()) {
+                Horario h = horarios.get(0);
+                sb.append(", desde las ").append(h.getHoraInicio())
+                  .append(" cada ").append(h.getIntervaloHoras()).append("h");
+            }
+            if (med.getInstrucciones() != null && !med.getInstrucciones().isEmpty()) {
+                sb.append(". Instrucciones: ").append(med.getInstrucciones());
+            }
+            sb.append("\n");
+        }
         return sb.toString();
     }
 }
