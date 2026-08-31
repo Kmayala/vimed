@@ -135,6 +135,24 @@ android {
         buildConfig = true
     }
 
+    testOptions {
+        unitTests.all {
+            // Las banderas -D que se escriben en la linea de comandos las
+            // recibe el JVM de Gradle, no el de los tests. Sin este puente,
+            // -Dvimed.banco=true se pierde y el banco de pruebas se saltea
+            // solo diciendo que esta apagado: parece que corrio y no corrio.
+            ['vimed.banco', 'vimed.modelo'].each { bandera ->
+                if (System.getProperty(bandera) != null) {
+                    systemProperty bandera, System.getProperty(bandera)
+                }
+            }
+            // El banco llama a la API de verdad; su resultado depende del
+            // modelo, no de los archivos. Sin esto Gradle lo da por
+            // UP-TO-DATE y no lo vuelve a correr.
+            outputs.upToDateWhen { System.getProperty('vimed.banco') == null }
+        }
+    }
+
     // Clave de firma COMPARTIDA entre tu máquina y GitHub Actions.
     // Sin esto cada entorno firma con su propia clave de debug y los APK
     // no se pueden instalar uno encima del otro (Android los ve como apps
@@ -223,6 +241,11 @@ dependencies {
     // implementation 'com.google.android.gms:play-services-auth:21.0.0'
 
     testImplementation libs.junit
+
+    // org.json viene VACIO en el android.jar de los tests: cada metodo tira
+    // "not mocked". Esta es la implementacion de verdad, solo para tests, y
+    // la necesita el banco de pruebas, que arma el JSON del pedido a OpenAI.
+    testImplementation 'org.json:json:20240303'
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
 }

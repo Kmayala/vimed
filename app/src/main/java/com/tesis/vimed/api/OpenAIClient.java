@@ -49,11 +49,28 @@ public class OpenAIClient {
 
     /**
      * Los GPT-5 son modelos de razonamiento: los tokens que "piensan"
-     * cuentan como salida. Con un techo apretado, el razonamiento se come
-     * el presupuesto y la respuesta llega cortada o vacía. 1200 deja aire
-     * de sobra para una respuesta de 120 palabras.
+     * cuentan como salida y se gastan ANTES de escribir. 1200 alcanza de
+     * sobra para una respuesta de 120 palabras más el razonamiento
+     * acotado que se pide abajo.
      */
     private static final int MAX_TOKENS = 1200;
+
+    /**
+     * Cuánto puede pensar antes de contestar.
+     *
+     * SIN ESTO LA APP NO FUNCIONA. Por omisión nano razona en "medium", y
+     * con eso un simple "Hola" gastó los 1200 tokens íntegros pensando: la
+     * API devolvió 200, finish_reason "length" y el contenido VACÍO. En
+     * pantalla se veía "el asistente no devolvió respuesta", que no dice
+     * nada de la causa real.
+     *
+     * "low" y no "minimal": el prompt le pide clasificar la pregunta antes
+     * de responder —general, sobre su caso, o emergencia— y esa
+     * clasificación es toda la seguridad del chat. Con "minimal" el modelo
+     * no piensa nada y la frontera queda librada al reflejo. Sesenta y
+     * pico de tokens de razonamiento cuestan una centésima de centavo.
+     */
+    private static final String ESFUERZO = "low";
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
@@ -133,14 +150,22 @@ public class OpenAIClient {
             // max_completion_tokens y NO max_tokens: la familia GPT-5
             // rechaza el parámetro viejo con un 400.
             .put("max_completion_tokens", MAX_TOKENS)
+            .put("reasoning_effort", ESFUERZO)
             .put("messages", messages);
 
         JSONObject json = new JSONObject(postJson(URL_CHAT, body.toString()));
-        return json.getJSONArray("choices")
-            .getJSONObject(0)
-            .getJSONObject("message")
-            .getString("content")
-            .trim();
+        JSONObject eleccion = json.getJSONArray("choices").getJSONObject(0);
+
+        // Si el razonamiento agotó el presupuesto, la respuesta viene vacía
+        // con un 200 y sin campo de error. Se distingue acá para que el
+        // problema se lea, en vez de aparecer como "no devolvió respuesta".
+        String texto = eleccion.getJSONObject("message").optString("content", "").trim();
+        if (texto.isEmpty() && "length".equals(eleccion.optString("finish_reason"))) {
+            throw new Exception("RESPUESTA_CORTADA: el modelo gastó el presupuesto "
+                + "de tokens razonando y no llegó a escribir. Subir MAX_TOKENS o "
+                + "bajar ESFUERZO.");
+        }
+        return texto;
     }
 
     // ═══ Transcripción ═════════════════════════════════════════
@@ -264,7 +289,17 @@ public class OpenAIClient {
         }
         String m = e.getMessage() != null ? e.getMessage() : "";
         if (m.contains("HTTP 401")) return "La clave del asistente no es válida.";
-        if (m.contains("HTTP 429")) return "El asistente está saturado. Esperá un momento.";
+        if (m.contains("HTTP 429")) {
+            // 429 es tanto "muchas consultas juntas" como "se acabó el
+            // saldo", y son cosas distintas: una se destraba esperando y la
+            // otra no. El cuerpo del error trae cuál de las dos es.
+            return m.contains("insufficient_quota")
+                ? "El asistente se quedó sin crédito. Avisale a quien administra la app."
+                : "El asistente está saturado. Esperá un momento.";
+        }
+        if (m.contains("RESPUESTA_CORTADA")) {
+            return "El asistente se quedó sin espacio para responder. Probá de nuevo.";
+        }
         return "No se pudo conectar con el asistente.";
     }
 
