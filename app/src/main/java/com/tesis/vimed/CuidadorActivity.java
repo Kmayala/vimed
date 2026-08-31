@@ -188,7 +188,7 @@ public class CuidadorActivity extends AppCompatActivity {
 
             @Override
             public void onError(String msg) {
-                mostrarVacio();
+                mostrarVacio(msg);
                 Toast.makeText(CuidadorActivity.this, msg, Toast.LENGTH_LONG).show();
             }
         });
@@ -292,8 +292,39 @@ public class CuidadorActivity extends AppCompatActivity {
     }
 
     private void mostrarVacio() {
+        mostrarVacio(null);
+    }
+
+    /**
+     * @param error mensaje cuando la consulta FALLÓ, o null cuando de
+     *        verdad no hay ningún paciente vinculado.
+     *
+     * La distinción importa: los dos casos mostraban el mismo cartel de
+     * "todavía no cuidás a nadie", así que un corte de red o una sesión
+     * vencida se leían como que el vínculo se había perdido. Y el remedio
+     * es el opuesto — en un caso hay que agregar un paciente, en el otro
+     * hay que esperar y reintentar.
+     */
+    private void mostrarVacio(String error) {
         emptyPaciente.setVisibility(View.VISIBLE);
         contentPaciente.setVisibility(View.GONE);
+
+        boolean fallo = error != null;
+        TextView titulo  = findViewById(R.id.tv_vacio_titulo);
+        TextView detalle = findViewById(R.id.tv_vacio_detalle);
+
+        titulo.setText(fallo
+            ? "No pudimos cargar tus pacientes"
+            : "Todavía no cuidás a nadie");
+        detalle.setText(fallo
+            ? "Revisá la conexión y volvé a intentar. Tus pacientes vinculados"
+                + " siguen ahí."
+            : "Agregá a tu paciente con el correo de su cuenta de Vimed."
+                + " También puede vincularte él desde su app.");
+
+        // Con un fallo de red, el botón de agregar no es lo que hace falta.
+        findViewById(R.id.btn_vincular_paciente).setVisibility(
+            fallo ? View.GONE : View.VISIBLE);
     }
 
     private void cargarPaciente() {

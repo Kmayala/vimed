@@ -112,6 +112,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:id="@+id/tv_vacio_titulo"
                     android:text="Todavía no cuidás a nadie"
                     android:textSize="20sp"
                     android:textStyle="bold"
@@ -121,6 +122,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:id="@+id/tv_vacio_detalle"
                     android:text="Agregá a tu paciente con el correo de su cuenta de Vimed. También puede vincularte él desde su app."
                     android:textSize="16sp"
                     android:textColor="@color/ink_3"
