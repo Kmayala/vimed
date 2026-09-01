@@ -131,6 +131,7 @@
         <activity android:name=".DashboardActivity" android:exported="false" />
         <activity android:name=".AgregarCitaActivity" android:exported="false" />
         <activity android:name=".CitaDetalleActivity" android:exported="false" />
+        <activity android:name=".NotificacionesActivity" android:exported="false" />
         <activity android:name=".VincularFamiliarActivity" android:exported="false" />
 
         <!-- Selector de ubicación: mapa de OpenStreetMap en un WebView.

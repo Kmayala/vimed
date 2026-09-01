@@ -152,6 +152,12 @@ public class MainActivity extends AppCompatActivity {
         tvDate.setText(fecha);
 
         // Icono de perfil → menú de opciones
+        // La campana se dibujaba y se podía tocar sin hacer nada. Los avisos
+        // ya se venían guardando en public.notificaciones —el cuidador los
+        // veía en su panel—; el dueño era el único sin dónde mirarlos.
+        findViewById(R.id.btn_alerts).setOnClickListener(v ->
+            startActivity(new Intent(this, NotificacionesActivity.class)));
+
         findViewById(R.id.btn_profile).setOnClickListener(v -> {
             String[] opciones = {"Vincular familiar", "Configuración", "Cerrar sesión"};
             new AlertDialog.Builder(this)

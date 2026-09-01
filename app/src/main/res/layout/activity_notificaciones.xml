@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Historial de avisos: lo que la app fue anotando —tomas confirmadas,
+     stock que se acaba, recordatorios de cita—. Es lo que abre la campana
+     del inicio, que hasta ahora no llevaba a ningún lado. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/bg_welcome_gradient">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingLeft="16dp"
+        android:paddingRight="20dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp">
+
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_arrow_back"
+            android:background="@drawable/shape_neutral_icon_container"
+            android:scaleType="center"
+            android:tint="@color/ink_2"
+            android:contentDescription="Volver" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Avisos"
+            android:textSize="26sp"
+            android:fontFamily="@font/atkinson"
+            android:textStyle="bold"
+            android:textColor="@color/ink"
+            android:letterSpacing="-0.02"
+            android:layout_marginStart="12dp" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:paddingBottom="28dp">
+
+            <TextView
+                android:id="@+id/tv_subtitulo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:textColor="@color/ink_3"
+                android:lineSpacingMultiplier="1.35"
+                android:layout_marginBottom="18dp" />
+
+            <!-- Estado vacío -->
+            <LinearLayout
+                android:id="@+id/vacio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="@drawable/shape_card"
+                android:paddingTop="40dp"
+                android:paddingBottom="40dp"
+                android:paddingLeft="24dp"
+                android:paddingRight="24dp"
+                android:elevation="3dp"
+                android:visibility="gone">
+
+                <FrameLayout
+                    android:layout_width="96dp"
+                    android:layout_height="96dp"
+                    android:background="@drawable/shape_day_selected"
+                    android:layout_marginBottom="18dp">
+
+                    <ImageView
+                        android:layout_width="46dp"
+                        android:layout_height="46dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_bell"
+                        android:tint="@color/brand_500"
+                        android:contentDescription="@null" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tv_vacio_titulo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Todavía no hay avisos"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/ink"
+                    android:gravity="center" />
+
+                <TextView
+                    android:id="@+id/tv_vacio_detalle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Acá van a aparecer las tomas que confirmes, los medicamentos que se estén acabando y los recordatorios de tus citas."
+                    android:textSize="16sp"
+                    android:textColor="@color/ink_3"
+                    android:gravity="center"
+                    android:lineSpacingMultiplier="1.4"
+                    android:layout_marginTop="8dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/lista"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>
