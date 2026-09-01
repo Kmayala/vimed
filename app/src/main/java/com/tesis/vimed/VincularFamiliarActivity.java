@@ -1,10 +1,8 @@
 package com.tesis.vimed;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -20,9 +18,9 @@ import com.tesis.vimed.api.VimedRepo;
 import com.tesis.vimed.models.UsuarioSupabase;
 import com.tesis.vimed.models.Vinculacion;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Random;
 
 public class VincularFamiliarActivity extends AppCompatActivity {
 
@@ -33,20 +31,12 @@ public class VincularFamiliarActivity extends AppCompatActivity {
      */
     public static final String EXTRA_IR_AL_HOME = "ir_al_home_al_salir";
 
-    private static final String PREF_CODIGO = "VinculoCodigo";
-    private static final String KEY_CODIGO = "codigo";
-    private static final String KEY_EXPIRY = "expiry_ms";
-    private static final long DURACION_MS = 30 * 60 * 1000L; // 30 minutos
-
-    private TextView tvCode, tvTimer;
     private TextInputEditText etEmail;
     private TextInputLayout tilEmail;
     private LinearLayout familyContainer;
     private View emptyFamily;
 
     private SessionManager sessionManager;
-    private CountDownTimer countDownTimer;
-    private String codigoActual;
     private boolean irAlHomeAlSalir;
 
     /**
@@ -73,19 +63,15 @@ public class VincularFamiliarActivity extends AppCompatActivity {
         irAlHomeAlSalir = getIntent().getBooleanExtra(EXTRA_IR_AL_HOME, false);
         soyElCuidador = !sessionManager.esAdultoMayor();
 
-        tvCode = findViewById(R.id.tv_code);
-        tvTimer = findViewById(R.id.tv_timer);
         etEmail = findViewById(R.id.et_email);
         tilEmail = findViewById(R.id.til_email);
         familyContainer = findViewById(R.id.family_container);
         emptyFamily = findViewById(R.id.empty_family);
 
         findViewById(R.id.btn_back).setOnClickListener(v -> salir());
-        findViewById(R.id.btn_share_email).setOnClickListener(v -> compartirPorCorreo());
         findViewById(R.id.btn_add_by_email).setOnClickListener(v -> agregarPorCorreo());
 
         adaptarTextosAlRol();
-        if (!soyElCuidador) mostrarCodigo();
         cargarFamiliares();
     }
 
@@ -102,18 +88,12 @@ public class VincularFamiliarActivity extends AppCompatActivity {
         texto(R.id.tv_subtitulo,      "Vas a ver sus tomas del día, sus citas y"
             + " los avisos de olvidos o de stock bajo. Necesita tener una"
             + " cuenta en Vimed.");
-        texto(R.id.tv_seccion_correo, "AGREGAR POR CORREO");
         texto(R.id.tv_seccion_lista,  "PACIENTES A TU CARGO");
         texto(R.id.tv_vacio_titulo,   "Todavía no cuidás a nadie");
         texto(R.id.tv_vacio_detalle,  "Agregá a tu paciente con el correo de su cuenta");
         ((com.google.android.material.button.MaterialButton)
             findViewById(R.id.btn_add_by_email)).setText("Agregar paciente");
         tilEmail.setHint("Correo de tu paciente");
-
-        // El código de invitación dice "invitame a ser tu cuidador": del lado
-        // del cuidador es exactamente al revés, así que no se muestra.
-        findViewById(R.id.card_codigo).setVisibility(View.GONE);
-        findViewById(R.id.btn_share_email).setVisibility(View.GONE);
     }
 
     private void texto(int id, String valor) {
@@ -125,12 +105,6 @@ public class VincularFamiliarActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         cargarFamiliares();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (countDownTimer != null) countDownTimer.cancel();
     }
 
     /** El botón físico "atrás" tiene que hacer lo mismo que la flecha. */
@@ -146,80 +120,6 @@ public class VincularFamiliarActivity extends AppCompatActivity {
     private void salir() {
         if (irAlHomeAlSalir) Router.irAlHome(this);
         else finish();
-    }
-
-    // ─── Código de invitación ───────────────────────────────────────────────
-
-    private void mostrarCodigo() {
-        SharedPreferences prefs = getSharedPreferences(PREF_CODIGO, MODE_PRIVATE);
-        long expiry = prefs.getLong(KEY_EXPIRY, 0);
-        long ahora = System.currentTimeMillis();
-
-        if (expiry == 0 || ahora >= expiry) {
-            // Generar nuevo código
-            codigoActual = generarCodigo();
-            long nuevaExpiry = ahora + DURACION_MS;
-            prefs.edit()
-                .putString(KEY_CODIGO, codigoActual)
-                .putLong(KEY_EXPIRY, nuevaExpiry)
-                .apply();
-            iniciarContador(nuevaExpiry - ahora);
-        } else {
-            codigoActual = prefs.getString(KEY_CODIGO, generarCodigo());
-            iniciarContador(expiry - ahora);
-        }
-
-        tvCode.setText(codigoActual);
-    }
-
-    private String generarCodigo() {
-        int num = new Random().nextInt(900000) + 100000; // 100000–999999
-        String s = String.valueOf(num);
-        return s.substring(0, 3) + "-" + s.substring(3);
-    }
-
-    private void iniciarContador(long msRestantes) {
-        if (countDownTimer != null) countDownTimer.cancel();
-        countDownTimer = new CountDownTimer(msRestantes, 60_000) {
-            @Override
-            public void onTick(long ms) {
-                long mins = ms / 60_000;
-                tvTimer.setText(mins <= 1
-                    ? "Válido por 1 minuto"
-                    : "Válido por " + mins + " minutos");
-            }
-
-            @Override
-            public void onFinish() {
-                tvTimer.setText("Código expirado — generando nuevo...");
-                mostrarCodigo();
-            }
-        }.start();
-    }
-
-    // ─── Compartir por correo ───────────────────────────────────────────────
-
-    private void compartirPorCorreo() {
-        String asunto = "Te invito a seguir mi medicación en Vimed";
-        String cuerpo = "Hola,\n\nTe invito a ser mi cuidador en la app Vimed.\n"
-            + "Mi código de vinculación es: " + codigoActual + "\n\n"
-            + "Válido por 30 minutos. Descarga Vimed e ingresa este código para vincularnos.\n\n"
-            + "Saludos,\n" + sessionManager.getNombre();
-
-        Intent intent = new Intent(Intent.ACTION_SENDTO);
-        intent.setData(Uri.parse("mailto:"));
-        intent.putExtra(Intent.EXTRA_SUBJECT, asunto);
-        intent.putExtra(Intent.EXTRA_TEXT, cuerpo);
-        if (intent.resolveActivity(getPackageManager()) != null) {
-            startActivity(intent);
-        } else {
-            // Fallback: share sheet
-            Intent share = new Intent(Intent.ACTION_SEND);
-            share.setType("text/plain");
-            share.putExtra(Intent.EXTRA_SUBJECT, asunto);
-            share.putExtra(Intent.EXTRA_TEXT, cuerpo);
-            startActivity(Intent.createChooser(share, "Compartir código"));
-        }
     }
 
     // ─── Agregar por correo ─────────────────────────────────────────────────
@@ -318,40 +218,77 @@ public class VincularFamiliarActivity extends AppCompatActivity {
 
     // ─── Cargar lista de familiares ─────────────────────────────────────────
 
+    /**
+     * Trae los vínculos de LOS DOS LADOS y los muestra juntos.
+     *
+     * Antes traía uno solo, según el rol: el cuidador veía la lista de
+     * id_familiar y el adulto la de id_adulto. El problema es que una
+     * solicitud puede llegar del lado que no te corresponde por rol — a un
+     * adulto mayor puede escribirle alguien pidiéndole que lo cuide— y esa
+     * quedaba invisible. El aviso del inicio la contaba (mira los dos
+     * lados) pero esta pantalla no la mostraba: tocabas el aviso, entrabas,
+     * no había nada que aceptar, y el aviso se quedaba pegado para siempre.
+     *
+     * Se piden las dos listas y se juntan. Cada fila ya sabe sola quién es
+     * la otra punta, así que da igual de qué consulta salió.
+     */
     private void cargarFamiliares() {
         familyContainer.removeAllViews();
 
-        VimedRepo.Cb<List<Vinculacion>> cb = new VimedRepo.Cb<List<Vinculacion>>() {
-            @Override
-            public void onOk(List<Vinculacion> vinculos) {
-                if (vinculos.isEmpty()) {
-                    emptyFamily.setVisibility(View.VISIBLE);
-                    familyContainer.setVisibility(View.GONE);
-                    return;
-                }
-                emptyFamily.setVisibility(View.GONE);
-                familyContainer.setVisibility(View.VISIBLE);
+        final List<Vinculacion> todos = new ArrayList<>();
 
-                LayoutInflater inflater = LayoutInflater.from(VincularFamiliarActivity.this);
-                for (Vinculacion v : vinculos) {
-                    View item = inflater.inflate(R.layout.item_family_member,
-                        familyContainer, false);
-                    familyContainer.addView(item);
-                    // El nombre del familiar llega en una segunda consulta
-                    bindFamilyItem(item, v);
-                }
+        VimedRepo.listarMisCuidadores(this, new VimedRepo.Cb<List<Vinculacion>>() {
+            @Override public void onOk(List<Vinculacion> unos) {
+                if (unos != null) todos.addAll(unos);
+                VimedRepo.listarMisPacientes(VincularFamiliarActivity.this,
+                    new VimedRepo.Cb<List<Vinculacion>>() {
+                        @Override public void onOk(List<Vinculacion> otros) {
+                            if (otros != null) todos.addAll(otros);
+                            pintarVinculos(todos);
+                        }
+                        @Override public void onError(String msg) { pintarVinculos(todos); }
+                    });
             }
-
-            @Override
-            public void onError(String msg) {
-                emptyFamily.setVisibility(View.VISIBLE);
-                familyContainer.setVisibility(View.GONE);
+            @Override public void onError(String msg) {
+                // Si la primera falla se intenta la otra igual: puede que
+                // los vínculos estén todos del otro lado.
+                VimedRepo.listarMisPacientes(VincularFamiliarActivity.this,
+                    new VimedRepo.Cb<List<Vinculacion>>() {
+                        @Override public void onOk(List<Vinculacion> otros) {
+                            if (otros != null) todos.addAll(otros);
+                            pintarVinculos(todos);
+                        }
+                        @Override public void onError(String m2) { pintarVinculos(todos); }
+                    });
             }
-        };
+        });
+    }
 
-        // El cuidador ve a sus pacientes; el adulto mayor, a sus cuidadores.
-        if (soyElCuidador) VimedRepo.listarMisPacientes(this, cb);
-        else               VimedRepo.listarMisCuidadores(this, cb);
+    private void pintarVinculos(List<Vinculacion> vinculos) {
+        familyContainer.removeAllViews();
+
+        if (vinculos.isEmpty()) {
+            emptyFamily.setVisibility(View.VISIBLE);
+            familyContainer.setVisibility(View.GONE);
+            return;
+        }
+        emptyFamily.setVisibility(View.GONE);
+        familyContainer.setVisibility(View.VISIBLE);
+
+        // Lo que espera respuesta va PRIMERO: es lo único de esta lista que
+        // pide una acción, y abajo de cinco vínculos aceptados no se ve.
+        List<Vinculacion> ordenados = new ArrayList<>();
+        for (Vinculacion v : vinculos) if (v.esperaRespuestaDe(miId())) ordenados.add(v);
+        for (Vinculacion v : vinculos) if (!v.esperaRespuestaDe(miId())) ordenados.add(v);
+
+        LayoutInflater inflater = LayoutInflater.from(this);
+        for (Vinculacion v : ordenados) {
+            View item = inflater.inflate(R.layout.item_family_member,
+                familyContainer, false);
+            familyContainer.addView(item);
+            // El nombre de la otra persona llega en una segunda consulta
+            bindFamilyItem(item, v);
+        }
     }
 
     private void bindFamilyItem(View item, Vinculacion vinculo) {
@@ -365,10 +302,11 @@ public class VincularFamiliarActivity extends AppCompatActivity {
 
         pintarEstadoDelVinculo(item, vinculo);
 
-        // La otra punta del vínculo: para el cuidador es el adulto, para el
-        // adulto es el familiar. Antes se leía siempre id_familiar, así que
-        // el cuidador se veía a sí mismo repetido en su propia lista.
-        int idDelOtro = soyElCuidador ? vinculo.getIdAdulto() : vinculo.getIdFamiliar();
+        // La otra punta se calcula desde MI id y no desde el rol: ahora la
+        // lista mezcla vínculos de los dos lados, así que suponer "el
+        // cuidador siempre mira id_adulto" haría que en la mitad de las
+        // filas la persona se viera a sí misma.
+        int idDelOtro = vinculo.laOtraPunta(miId());
 
         VimedRepo.buscarPerfilPorId(idDelOtro, new VimedRepo.Cb<UsuarioSupabase>() {
             @Override
