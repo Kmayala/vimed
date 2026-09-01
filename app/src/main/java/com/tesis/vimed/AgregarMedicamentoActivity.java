@@ -1072,18 +1072,50 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
         builder.show();
     }
 
+    /**
+     * Última barrera contra cargar un medicamento ya vencido.
+     *
+     * El calendario del paso 7 ya no deja elegir una fecha pasada, pero eso
+     * no alcanza: la pantalla puede quedar abierta de un día para el otro y
+     * una fecha que era "hoy" al elegirla ya venció al guardar. Y si mañana
+     * el vencimiento llega por otro camino —el lector de la caja, por
+     * ejemplo— este chequeo lo cubre sin tener que acordarse de repetirlo.
+     *
+     * Es un corte, no un aviso: un medicamento vencido no se toma. La app
+     * está para recordarle a alguien que tome sus remedios a horario, y
+     * programarle una alarma a las siete de la mañana para algo que hay que
+     * tirar es exactamente lo contrario de ayudar.
+     *
+     * @return true si se puede seguir guardando.
+     */
+    private boolean dejarGuardarSiVencio(Medicamento med) {
+        if (!med.estaVencido()) return true;
+
+        new AlertDialog.Builder(this)
+            .setTitle("Ese medicamento está vencido")
+            .setMessage(med.vencimientoLegible() + ". No se puede cargar un "
+                + "medicamento vencido: la app te lo recordaría todos los días "
+                + "igual.\n\nSi te equivocaste con la fecha, corregila. Si de "
+                + "verdad venció, lo que hay que hacer es reponerlo.")
+            .setPositiveButton("Corregir la fecha", (d, w) -> mostrarPaso(6))
+            .show();
+        return false;
+    }
+
     // ── Guardar en Supabase ────────────────────────────────────
     private void guardarMedicamento() {
-        MaterialButton btnGuardar = pasos[6].findViewById(R.id.btn_guardar);
-        btnGuardar.setEnabled(false);
-        btnGuardar.setText("Guardando…");
-
         // El id_usuario lo completa el repositorio con el de public.usuarios
         Medicamento med = new Medicamento(
             0, nombre, presentacion,
             dosis, unidad, instrucciones, colorIcono, stockActual, stockMinimo
         );
         med.setFechaVencimiento(fechaVencimiento);   // null si no se cargó
+
+        if (!dejarGuardarSiVencio(med)) return;
+
+        MaterialButton btnGuardar = pasos[6].findViewById(R.id.btn_guardar);
+        btnGuardar.setEnabled(false);
+        btnGuardar.setText("Guardando…");
 
         VimedRepo.Cb<Medicamento> alGuardar = new VimedRepo.Cb<Medicamento>() {
             @Override
