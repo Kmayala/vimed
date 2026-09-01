@@ -324,26 +324,17 @@ public class VincularFamiliarActivity extends AppCompatActivity {
                 // solicitud se cablea recién cuando el perfil llegó.
                 cablearRespuesta(item, vinculo, nombre);
 
-                item.setOnLongClickListener(v -> {
-                    new AlertDialog.Builder(VincularFamiliarActivity.this)
-                        .setTitle(soyElCuidador ? "Dejar de cuidar" : "Desvincular")
-                        .setMessage(soyElCuidador
-                            ? "¿Dejar de seguir la medicación de " + nombre + "?"
-                            : "¿Desvincular a " + nombre + "?")
-                        .setPositiveButton(soyElCuidador ? "Dejar de cuidar" : "Desvincular",
-                            (d, w) ->
-                            VimedRepo.eliminarVinculo(vinculo.getIdVinculo(),
-                                new VimedRepo.Cb<Void>() {
-                                    @Override public void onOk(Void x) { cargarFamiliares(); }
-                                    @Override public void onError(String msg) {
-                                        Toast.makeText(VincularFamiliarActivity.this,
-                                            msg, Toast.LENGTH_LONG).show();
-                                    }
-                                }))
-                        .setNegativeButton("Cancelar", null)
-                        .show();
-                    return true;
-                });
+                // La flecha de la derecha prometía llevar a algún lado y no
+                // hacía nada: desvincular estaba solo en el mantener
+                // apretado, que nadie descubre. Ahora el toque abre eso
+                // mismo, y la flecha dice la verdad.
+                if (vinculo.estaAceptado()) {
+                    item.setOnClickListener(v -> ofrecerDesvincular(vinculo, nombre));
+                    item.setOnLongClickListener(v -> {
+                        ofrecerDesvincular(vinculo, nombre);
+                        return true;
+                    });
+                }
             }
         });
     }
@@ -446,6 +437,34 @@ public class VincularFamiliarActivity extends AppCompatActivity {
                 : "Todavía no respondió. Podés cancelar la solicitud.")
             .setNegativeButton("Dejarla así", null)
             .setPositiveButton(rechazada ? "Borrar" : "Cancelar solicitud", (d, w) ->
+                VimedRepo.eliminarVinculo(vinculo.getIdVinculo(), new VimedRepo.Cb<Void>() {
+                    @Override public void onOk(Void x) { cargarFamiliares(); }
+                    @Override public void onError(String msg) {
+                        Toast.makeText(VincularFamiliarActivity.this,
+                            msg, Toast.LENGTH_LONG).show();
+                    }
+                }))
+            .show();
+    }
+
+    /**
+     * Lo que se puede hacer con un vínculo ya aceptado: cortarlo.
+     *
+     * El texto dice qué se pierde de cada lado, porque no es lo mismo:
+     * el adulto deja de ser mirado, el cuidador deja de poder mirar.
+     */
+    private void ofrecerDesvincular(Vinculacion vinculo, String nombre) {
+        boolean esMiCuidador = vinculo.getIdAdulto() == miId();
+
+        new AlertDialog.Builder(this)
+            .setTitle(esMiCuidador ? "Desvincular a " + nombre : "Dejar de cuidar")
+            .setMessage(esMiCuidador
+                ? nombre + " va a dejar de ver tu medicación y de recibir"
+                    + " avisos si te olvidás de una toma."
+                : "Vas a dejar de ver la medicación de " + nombre
+                    + " y de recibir sus avisos.")
+            .setNegativeButton("Cancelar", null)
+            .setPositiveButton(esMiCuidador ? "Desvincular" : "Dejar de cuidar", (d, w) ->
                 VimedRepo.eliminarVinculo(vinculo.getIdVinculo(), new VimedRepo.Cb<Void>() {
                     @Override public void onOk(Void x) { cargarFamiliares(); }
                     @Override public void onError(String msg) {
