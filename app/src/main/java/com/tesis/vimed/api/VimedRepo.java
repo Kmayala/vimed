@@ -696,6 +696,20 @@ public final class VimedRepo {
             .enqueue(VimedRepo.<CitaMedica>voidCb(cb));
     }
 
+    /**
+     * Qué vínculos propios van a recibir los avisos de verdad.
+     *
+     * Estar vinculado no alcanza: si el cuidador nunca abrió Vimed en su
+     * celular, no hay token de push y los avisos no salen de ninguna
+     * parte. Hasta ahora eso era invisible para las dos puntas.
+     */
+    public static void vinculosRecibenAvisos(
+            Cb<List<com.tesis.vimed.models.AvisoVinculo>> cb) {
+        SupabaseClient.getService()
+            .vinculosRecibenAvisos(new java.util.HashMap<String, String>())
+            .enqueue(lista(cb));
+    }
+
     /** Una cita puntual, para la pantalla de detalle. */
     public static void buscarCita(int idCita, Cb<CitaMedica> cb) {
         SupabaseClient.getService().getCitaPorId("eq." + idCita)

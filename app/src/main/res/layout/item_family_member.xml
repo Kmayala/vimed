@@ -85,6 +85,24 @@
 
     </LinearLayout>
 
+    <!-- "Vinculado" no quiere decir que los avisos lleguen: si el cuidador
+         nunca abrió Vimed en su celular, no hay a dónde mandarlos. Sin
+         este renglón el paciente marca sus tomas creyendo que alguien las
+         ve del otro lado.
+
+         Ámbar y no rojo: no está roto, falta un paso, y lo puede resolver
+         quien lo lee. -->
+    <TextView
+        android:id="@+id/tv_sin_avisos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"
+        android:textColor="@color/warn"
+        android:lineSpacingMultiplier="1.3"
+        android:layout_marginTop="10dp"
+        android:drawablePadding="8dp"
+        android:visibility="gone" />
+
     <!-- Responder la solicitud. Botones grandes y con la palabra completa:
          quien decide esto puede ser un adulto mayor, y de la respuesta
          depende quién ve su medicación. -->

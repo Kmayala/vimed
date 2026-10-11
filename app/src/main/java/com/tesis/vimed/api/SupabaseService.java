@@ -261,6 +261,22 @@ public interface SupabaseService {
     Call<List<UsuarioSupabase>> buscarUsuarioPorCorreo(
         @Body java.util.Map<String, String> cuerpo);
 
+    /**
+     * Por cada vínculo aceptado propio, si el cuidador tiene celular
+     * registrado para recibir los avisos.
+     *
+     * Es una función y no un SELECT porque dispositivos tiene RLS: nadie
+     * puede leer los tokens de otro, y está bien que sea así. La función
+     * devuelve un sí o un no. Ver supabase_avisos_llegan.sql.
+     *
+     * Sin cuerpo: resuelve de quién son los vínculos con el JWT, no con
+     * un parámetro — si el id entrara por parámetro, cualquiera podría
+     * preguntar por los vínculos ajenos.
+     */
+    @POST("rpc/mis_vinculos_reciben_avisos")
+    Call<List<com.tesis.vimed.models.AvisoVinculo>> vinculosRecibenAvisos(
+        @Body java.util.Map<String, String> vacio);
+
     /** Busca un perfil por su id_usuario. */
     @GET("usuarios")
     Call<List<UsuarioSupabase>> getPerfilPorId(@Query("id_usuario") String idEq);

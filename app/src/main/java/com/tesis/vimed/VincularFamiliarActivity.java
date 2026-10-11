@@ -286,9 +286,85 @@ public class VincularFamiliarActivity extends AppCompatActivity {
             View item = inflater.inflate(R.layout.item_family_member,
                 familyContainer, false);
             familyContainer.addView(item);
+
+            // Para reencontrar esta fila cuando vuelva la consulta de los
+            // avisos, que llega después y puede llegar reordenada.
+            item.setTag(v.getIdVinculo());
+            item.setTag(R.id.tv_sin_avisos, v);
+
             // El nombre de la otra persona llega en una segunda consulta
             bindFamilyItem(item, v);
         }
+
+        avisarSiNoLleganLosAvisos();
+    }
+
+    /**
+     * Marca los vínculos donde el cuidador todavía no va a recibir nada.
+     *
+     * "Vinculado" no quiere decir que los avisos lleguen: hace falta que
+     * el cuidador haya abierto Vimed en su celular al menos una vez con
+     * la sesión iniciada, que es cuando se guarda el token de push. Hasta
+     * entonces el paciente marca sus tomas creyendo que alguien las ve
+     * del otro lado, y no las ve nadie.
+     *
+     * Es una consulta aparte y no viene con el vínculo porque la tabla de
+     * dispositivos tiene RLS —nadie lee tokens ajenos, y está bien que
+     * sea así—. La función del servidor contesta un sí o un no.
+     *
+     * Si falla, no se muestra nada. Un aviso de "quizás no le lleguen los
+     * avisos" porque se cayó una consulta asusta sin motivo.
+     */
+    private void avisarSiNoLleganLosAvisos() {
+        VimedRepo.vinculosRecibenAvisos(
+            new VimedRepo.Cb<List<com.tesis.vimed.models.AvisoVinculo>>() {
+                @Override
+                public void onOk(List<com.tesis.vimed.models.AvisoVinculo> estados) {
+                    if (estados == null) return;
+                    for (com.tesis.vimed.models.AvisoVinculo e : estados) {
+                        if (e.recibeAvisos()) continue;
+                        pintarFaltaCelular(e.getIdVinculo());
+                    }
+                }
+                @Override public void onError(String msg) { }
+            });
+    }
+
+    /**
+     * El renglón ámbar en la fila de ese vínculo.
+     *
+     * La fila se busca por el id del vínculo guardado en el tag: la lista
+     * se pudo haber vuelto a pintar mientras la consulta viajaba, y el
+     * orden de las filas no es estable —lo pendiente sube arriba—, así
+     * que acordarse de la posición no serviría.
+     */
+    private void pintarFaltaCelular(int idVinculo) {
+        for (int i = 0; i < familyContainer.getChildCount(); i++) {
+            View fila = familyContainer.getChildAt(i);
+            Object tag = fila.getTag();
+            if (!(tag instanceof Integer) || (Integer) tag != idVinculo) continue;
+
+            TextView aviso = fila.findViewById(R.id.tv_sin_avisos);
+            if (aviso == null) return;
+
+            // El texto depende de quién mira: a uno le falta avisarle al
+            // otro, y el otro tiene que abrir la app en su celular.
+            Vinculacion v = vinculoDe(fila);
+            boolean soyYoElQueNoRecibe = v != null && v.getIdFamiliar() == miId();
+
+            aviso.setText(soyYoElQueNoRecibe
+                ? "No vas a recibir avisos en este celular. Entrá a Vimed con"
+                    + " tu cuenta desde el teléfono donde los querés recibir."
+                : "Todavía no va a recibir tus avisos: tiene que abrir Vimed"
+                    + " en su celular con su cuenta al menos una vez.");
+            aviso.setVisibility(View.VISIBLE);
+            return;
+        }
+    }
+
+    private Vinculacion vinculoDe(View fila) {
+        Object v = fila.getTag(R.id.tv_sin_avisos);
+        return v instanceof Vinculacion ? (Vinculacion) v : null;
     }
 
     private void bindFamilyItem(View item, Vinculacion vinculo) {
