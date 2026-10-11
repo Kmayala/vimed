@@ -55,6 +55,11 @@ public class ConfiguracionActivity extends AppCompatActivity {
 
         modo = ModoPaciente.de(this);
 
+        findViewById(R.id.opt_terminos).setOnClickListener(v ->
+            startActivity(LegalesActivity.terminos(this)));
+        findViewById(R.id.opt_privacidad).setOnClickListener(v ->
+            startActivity(LegalesActivity.privacidad(this)));
+
         findViewById(R.id.opt_peso).setOnClickListener(v -> pedirPeso());
         findViewById(R.id.opt_edad).setOnClickListener(v -> pedirEdad());
         adaptarSeccionClinica();

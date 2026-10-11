@@ -111,6 +111,50 @@ public class SessionManager {
 
     public boolean esAdultoMayor() { return "adulto_mayor".equals(getRol()); }
 
+    // ═══ Términos y privacidad ═════════════════════════════════
+
+    /**
+     * Qué versión de los documentos está vigente.
+     *
+     * SUBILA CADA VEZ QUE CAMBIE EL TEXTO de strings_legales.xml. Lo que
+     * se guarda abajo es qué versión aceptó cada persona; si el texto
+     * cambia y el número no, queda un registro diciendo que aceptó algo
+     * que nunca vio.
+     */
+    public static final int LEGALES_VERSION = 1;
+
+    private static final String KEY_LEGALES_VERSION = "legales_version";
+    private static final String KEY_LEGALES_FECHA   = "legales_fecha";
+
+    /**
+     * Anota que esta persona aceptó los documentos, con la versión y el
+     * momento.
+     *
+     * No basta con un booleano: dentro de un año, "aceptó" sin decir QUÉ
+     * aceptó ni CUÁNDO no sirve para nada. Es justamente el dato que
+     * habría que poder mostrar si alguien pregunta.
+     */
+    public void registrarAceptacionLegal() {
+        prefs.edit()
+            .putInt(KEY_LEGALES_VERSION, LEGALES_VERSION)
+            .putLong(KEY_LEGALES_FECHA, System.currentTimeMillis())
+            .apply();
+    }
+
+    /** Versión que aceptó, o 0 si todavía ninguna. */
+    public int getVersionLegalAceptada() {
+        return prefs.getInt(KEY_LEGALES_VERSION, 0);
+    }
+
+    public long getFechaAceptacionLegal() {
+        return prefs.getLong(KEY_LEGALES_FECHA, 0);
+    }
+
+    /** False si nunca aceptó, o si los documentos cambiaron desde entonces. */
+    public boolean aceptoLegalesVigentes() {
+        return getVersionLegalAceptada() >= LEGALES_VERSION;
+    }
+
     // ═══ Datos clínicos del paciente ═══════════════════════════
     //
     // Copia local de lo que hay en public.usuarios. La fuente de verdad es

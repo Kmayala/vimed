@@ -320,6 +320,47 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical" />
 
+            <!-- Los legales, para releerlos cuando se quiera. Que solo se
+                 puedan ver antes de entrar equivale a no tenerlos: la duda
+                 sobre qué ve el familiar aparece usando la app, no el
+                 primer día. -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="LEGALES"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.08"
+                android:textColor="@color/ink_4"
+                android:layout_marginTop="28dp"
+                android:layout_marginBottom="10dp" />
+
+            <LinearLayout
+                android:id="@+id/opt_terminos"
+                style="@style/OpcionTema">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Términos de uso"
+                    android:textSize="17sp"
+                    android:textColor="@color/ink" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/opt_privacidad"
+                style="@style/OpcionTema">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Política de privacidad"
+                    android:textSize="17sp"
+                    android:textColor="@color/ink" />
+            </LinearLayout>
+
             <!-- Versión de la build. Sirve para saber si el celular tiene
                  la última: en Firebase todas las versiones se ven iguales
                  en la lista, así que sin esto hay que adivinar. -->

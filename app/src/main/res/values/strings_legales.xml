@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Términos de uso y Política de privacidad.
+
+  ESTÁN ACÁ Y NO EN UNA WEB a propósito: una URL se cae, cambia de dueño o
+  queda sin pagar, y entonces la app queda con un enlace muerto donde
+  debería estar lo que la persona aceptó. Adentro del APK, el texto es el
+  mismo que había el día que se instaló.
+
+  QUÉ DICEN: lo que la app hace de verdad. Cada servicio nombrado abajo
+  está efectivamente en el código —Supabase, OpenAI, Firebase, Google— y
+  cada dato listado se guarda de verdad. Una plantilla genérica sería peor
+  que no tener nada: promete cosas que el código no cumple.
+
+  VERSIÓN: si se cambia el texto hay que subir LEGALES_VERSION en
+  SessionManager, porque lo que se guarda es QUÉ versión aceptó cada
+  persona. Cambiar el texto sin subir el número deja un registro que dice
+  que aceptó algo que nunca leyó.
+
+  REVISIÓN PENDIENTE: esto lo escribió quien programó la app, no un
+  abogado. Para la tesis alcanza; antes de publicar en Play Store conviene
+  que lo lea alguien de derecho, sobre todo la parte de datos de salud.
+-->
+<resources>
+
+    <string name="legal_version_visible">Versión 1 — octubre de 2026</string>
+
+    <!-- ══════════════ TÉRMINOS DE USO ══════════════ -->
+    <string name="terminos_titulo">Términos de uso</string>
+    <string name="terminos_texto">
+<![CDATA[
+<b>Qué es Vimed</b>
+
+Vimed es una aplicación que le recuerda a una persona cuándo tomar sus medicamentos, lleva el registro de lo que tomó y le permite a un familiar seguir ese registro.
+
+Fue desarrollada como trabajo final de grado. No es un producto comercial y no cuenta con respaldo de una empresa.
+
+<b>Lo más importante: Vimed no reemplaza a su médico</b>
+
+La aplicación no indica tratamientos, no ajusta dosis, no diagnostica y no interpreta síntomas. Solo le recuerda lo que usted o su médico cargaron.
+
+Vita, la asistente que responde preguntas dentro de la aplicación, da información general sobre medicamentos. No conoce su historia clínica y no puede decirle qué hacer en su caso. Sus respuestas las genera un sistema automático y pueden contener errores.
+
+Ante cualquier duda sobre su tratamiento, consulte a su médico o a su farmacéutico. Ante una urgencia, llame al servicio de emergencias.
+
+<b>Los recordatorios pueden fallar</b>
+
+Vimed depende del celular. Una alarma puede no sonar si el teléfono está apagado, sin batería, en silencio, si el sistema operativo cierra la aplicación para ahorrar energía, o si se desactivaron los permisos de notificación.
+
+Por eso Vimed es una ayuda, no una garantía. No deje de usar los medios que ya le funcionan —un pastillero, una lista en papel, el recordatorio de un familiar— por confiar solamente en la aplicación.
+
+<b>Su responsabilidad</b>
+
+Usted es responsable de cargar correctamente sus medicamentos, sus dosis y sus horarios. Vimed muestra lo que se cargó; no puede saber si un dato es equivocado.
+
+Si usa Vimed para seguir la medicación de otra persona, necesita su permiso. Esa persona puede desvincularlo cuando quiera.
+
+<b>Vinculación con un familiar</b>
+
+Cuando usted acepta vincular a un familiar, esa persona pasa a ver sus medicamentos, sus horarios, sus tomas, sus citas y los avisos de olvidos o de stock bajo. No puede ver sus conversaciones con Vita.
+
+La vinculación requiere que ambos la acepten, y cualquiera de los dos puede cortarla en cualquier momento desde la pantalla de vínculos.
+
+<b>Edad</b>
+
+Vimed está pensada para personas mayores de edad, o para quien cuida a una.
+
+<b>Cambios y cierre</b>
+
+Al ser un trabajo académico, la aplicación puede dejar de actualizarse o de funcionar. Si eso pasa, sus datos dejarían de estar disponibles. Si lleva un registro que le importa conservar, no lo tenga únicamente acá.
+
+<b>Si no está de acuerdo</b>
+
+Si no acepta estos términos, no use la aplicación. Puede desinstalarla y pedir que se borren sus datos en cualquier momento.
+]]>
+    </string>
+
+    <!-- ══════════════ POLÍTICA DE PRIVACIDAD ══════════════ -->
+    <string name="privacidad_titulo">Política de privacidad</string>
+    <string name="privacidad_texto">
+<![CDATA[
+<b>Qué datos guarda Vimed</b>
+
+<b>De su cuenta:</b> su nombre, su correo electrónico y si usa la aplicación como paciente o como familiar.
+
+<b>De su salud:</b> los medicamentos que carga, sus dosis, sus horarios, las unidades que le quedan, la fecha de vencimiento, qué tomas marcó como tomadas u olvidadas y a qué hora, y sus citas médicas con la especialidad, el profesional, el lugar y —si lo elige en el mapa— sus coordenadas.
+
+<b>De su perfil clínico:</b> su peso y su año de nacimiento, si los carga. Se usan para avisar cuando una dosis parece alta para la edad.
+
+<b>De sus conversaciones con Vita:</b> lo que escribe o dice en el chat.
+
+Vimed no pide ni guarda su documento de identidad, ni datos bancarios, ni su ubicación en tiempo real.
+
+<b>Dónde se guardan</b>
+
+Sus datos se guardan en dos lugares: en su propio celular, y en servidores de Supabase, que es el servicio de base de datos que usa la aplicación. Los servidores no están en Paraguay.
+
+<b>Quién más los ve</b>
+
+<b>El familiar que usted vincule</b>, y solo si usted aceptó la vinculación. Ve su medicación, sus tomas y sus citas. No ve sus conversaciones con Vita.
+
+<b>OpenAI</b>, cuando usa a Vita. Se le envía su pregunta junto con la lista de sus medicamentos y sus próximas citas, para que pueda responder sobre ellos. Si le habla por voz, se envía también la grabación para convertirla en texto; el archivo de audio se borra del celular apenas se transcribe.
+
+<b>Google</b>, si entra con su cuenta de Google, y para mostrar el mapa cuando elige el lugar de una cita.
+
+<b>Firebase</b>, de Google, para enviar los avisos a su familiar.
+
+Nadie más. Vimed no vende sus datos, no los comparte con laboratorios, farmacias, obras sociales ni aseguradoras, y no muestra publicidad.
+
+<b>La foto de la caja no se envía a ningún lado</b>
+
+Cuando usa la cámara para leer el nombre de un medicamento, la lectura ocurre dentro de su celular. La foto no se sube a internet y no se guarda: se usa para sacar el texto y se descarta.
+
+<b>Cuánto tiempo se guardan</b>
+
+Mientras tenga la cuenta. El registro de tomas se conserva aunque borre un medicamento, porque el sentido de la aplicación es poder mirar para atrás qué se tomó y qué no.
+
+<b>Sus derechos</b>
+
+Puede pedir ver, corregir o borrar sus datos. También puede desvincular a un familiar cuando quiera, sin dar explicaciones, desde la pantalla de vínculos.
+
+Para pedir que se borre su cuenta, escriba al correo de contacto que figura abajo. Tenga en cuenta que el borrado es definitivo: el historial de tomas no se puede recuperar.
+
+<b>Seguridad</b>
+
+La conexión con el servidor va cifrada y cada persona solo puede leer sus propios datos y los de quien la haya vinculado. Aun así, ningún sistema es completamente seguro, y éste es un trabajo académico, no un sistema auditado.
+
+<b>Contacto</b>
+
+Escriba a karen.ayala@neura.com.py para cualquier consulta sobre sus datos.
+]]>
+    </string>
+
+</resources>
