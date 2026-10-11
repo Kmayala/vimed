@@ -201,7 +201,7 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
         // Reflejar lo que ya está elegido (puede venir precargado del catálogo)
         // La unidad puede haber cambiado en el paso 1 al elegir del catálogo,
         // así que el resaltado se refresca al entrar y no solo al crear.
-        if (index == 1) resaltarSeleccion(pasos[1], UNIDADES, unidad);
+        if (index == 1) reflejarDosisElegida();
         if (index == 2) resaltarSeleccion(pasos[2], PRESENTACIONES, presentacion);
         if (index == 3) resaltarSeleccion(pasos[3], INSTRUCCIONES_TAGS, instrucciones);
 
@@ -949,6 +949,41 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
     }
 
     /** Abre el campo de dosis a mano, para corregir sin salir del paso. */
+    /**
+     * Muestra en el paso 2 la dosis que ya se conoce.
+     *
+     * HACÍA FALTA PORQUE NO SE VEÍA. Tanto el escáner de la caja como la
+     * precarga del catálogo guardaban la dosis en el estado, pero el paso
+     * 2 solo repintaba la UNIDAD. La persona sacaba la foto, leía "10 mg"
+     * en el aviso, entraba al paso siguiente y encontraba el campo vacío:
+     * tenía que escribir de nuevo lo que la app ya sabía, que es
+     * exactamente lo que el escáner venía a evitar.
+     *
+     * Solo precarga si el campo está vacío. Si la persona ya escribió
+     * algo, eso es más nuevo que lo leído y no se pisa.
+     */
+    private void reflejarDosisElegida() {
+        resaltarSeleccion(pasos[1], UNIDADES, unidad);
+        if (dosis <= 0) return;
+
+        TextInputEditText etDosis = pasos[1].findViewById(R.id.et_dosis_manual);
+        if (etDosis == null) return;
+
+        String actual = etDosis.getText() != null ? etDosis.getText().toString().trim() : "";
+        if (!actual.isEmpty()) return;
+
+        // Sin el ".0" de más: la caja dice "10 mg", no "10.0 mg".
+        String txt = dosis == (int) dosis
+            ? String.valueOf((int) dosis) : String.valueOf(dosis);
+        etDosis.setText(txt);
+        etDosis.setSelection(txt.length());
+
+        // El campo manual arranca oculto detrás de "Otra dosis". Con una
+        // dosis ya cargada hay que abrirlo, o el valor queda escrito en un
+        // campo que nadie ve.
+        mostrarCampoDosisManual();
+    }
+
     private void mostrarCampoDosisManual() {
         pasos[1].findViewById(R.id.til_dosis_manual).setVisibility(View.VISIBLE);
         pasos[1].findViewById(R.id.fila_unidades).setVisibility(View.VISIBLE);
