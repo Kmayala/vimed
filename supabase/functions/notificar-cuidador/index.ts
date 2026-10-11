@@ -55,10 +55,16 @@ Deno.serve(async (req) => {
     if (!perfil) return json({ error: "Perfil no encontrado" }, 404);
 
     // ── 3. Sus cuidadores ─────────────────────────────────────
+    // Solo los ACEPTADOS. Sin este filtro, alguien que mandó una
+    // solicitud y todavía no fue aceptado —o que fue rechazado— recibe
+    // igual los avisos de medicación: basta con pedir el vínculo para
+    // empezar a ver cuándo toma sus remedios una persona que nunca dijo
+    // que sí.
     const { data: vinculos } = await admin
       .from("vinculacion_familiar")
       .select("id_familiar")
-      .eq("id_adulto", perfil.id_usuario);
+      .eq("id_adulto", perfil.id_usuario)
+      .eq("estado", "aceptado");
 
     const idsCuidadores = (vinculos ?? []).map((v) => v.id_familiar);
     if (idsCuidadores.length === 0) {
