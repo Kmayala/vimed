@@ -29,6 +29,7 @@ import com.tesis.vimed.models.Medicamento;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class ChatbotActivity extends AppCompatActivity {
 
@@ -88,6 +89,20 @@ public class ChatbotActivity extends AppCompatActivity {
     private boolean medicamentosCargados = false;
 
     /**
+     * Las citas que Vita conoce.
+     *
+     * NO VIAJABAN AL MODELO. El prompt llevaba las reglas y los
+     * medicamentos, y nada más: preguntarle "¿cuándo es mi próxima cita?"
+     * era preguntarle a alguien que no tiene la agenda. Las citas son la
+     * otra mitad de lo que la app sabe de la persona.
+     */
+    private final List<com.tesis.vimed.models.CitaMedica> misCitas = new ArrayList<>();
+    private boolean citasCargadas = false;
+
+    /** Más que esto no es una agenda, es un listado. */
+    private static final int CITAS_EN_EL_PROMPT = 5;
+
+    /**
      * De quién es la medicación de la que habla Vita. Puede ser la del
      * paciente cuando abre el chat el cuidador.
      */
@@ -142,6 +157,7 @@ public class ChatbotActivity extends AppCompatActivity {
         // Cargar historial existente
         cargarHistorial();
         cargarMedicamentos();
+        cargarCitas();
     }
 
     /**
@@ -156,6 +172,35 @@ public class ChatbotActivity extends AppCompatActivity {
      * preguntas generales, que son la mayoría; quedarse sin chat porque no
      * se pudo leer la lista sería peor que quedarse sin la lista.
      */
+    /**
+     * Trae las citas, por el mismo camino y por el mismo motivo que los
+     * medicamentos: Vita tiene que poder contestar cuándo es la próxima.
+     *
+     * Se guardan todas y el filtro de "cuál va al prompt" queda para
+     * después: cuál es próxima depende del día, y el chat puede quedar
+     * abierto cruzando la medianoche.
+     */
+    private void cargarCitas() {
+        if (idUsuario == -1) { citasCargadas = true; return; }
+
+        com.tesis.vimed.api.VimedRepo.Cb<List<com.tesis.vimed.models.CitaMedica>> cb =
+            new com.tesis.vimed.api.VimedRepo.Cb<List<com.tesis.vimed.models.CitaMedica>>() {
+                @Override public void onOk(List<com.tesis.vimed.models.CitaMedica> citas) {
+                    misCitas.clear();
+                    if (citas != null) misCitas.addAll(citas);
+                    citasCargadas = true;
+                }
+                // Sin citas el chat sigue sirviendo para todo lo demás.
+                @Override public void onError(String msg) { citasCargadas = true; }
+            };
+
+        if (modo.esDeOtro()) {
+            com.tesis.vimed.api.VimedRepo.listarCitasDe(modo.idUsuario, cb);
+        } else {
+            com.tesis.vimed.api.VimedRepo.listarCitas(this, cb);
+        }
+    }
+
     private void cargarMedicamentos() {
         if (idUsuario == -1) { medicamentosCargados = true; return; }
 
@@ -475,13 +520,23 @@ public class ChatbotActivity extends AppCompatActivity {
         // corra exactamente las mismas. Ver la nota de esa clase.
         sb.append(PromptVita.REGLAS);
 
+        // Las dos listas van SIEMPRE, y por separado. Antes esto era un
+        // solo bloque que cortaba con return cuando no había medicamentos;
+        // con las citas en el mismo bloque, alguien sin medicamentos
+        // cargados tampoco tendría agenda.
+        agregarMedicamentos(sb);
+        agregarCitas(sb);
+        return sb.toString();
+    }
+
+    private void agregarMedicamentos(StringBuilder sb) {
         if (!medicamentosCargados) {
             // Distinto de "no tiene ninguno": acá todavía no sabemos. Se lo
             // decimos así para que no afirme que no tiene nada cargado.
             sb.append("La lista de medicamentos todavía se está cargando. Si "
                 + "te preguntan por ella, pedí que prueben de nuevo en un "
                 + "momento. No digas que no tiene ninguno.\n");
-            return sb.toString();
+            return;
         }
 
         if (misMedicamentos.isEmpty()) {
@@ -491,7 +546,7 @@ public class ChatbotActivity extends AppCompatActivity {
             sb.append("El usuario NO tiene ningún medicamento cargado en la "
                 + "app todavía. No se los pidas: ofrecele cargarlos desde la "
                 + "pantalla de Medicamentos.\n");
-            return sb.toString();
+            return;
         }
 
         // Con quién está hablando. Sin esto, abierto por el cuidador, Vita
@@ -531,7 +586,87 @@ public class ChatbotActivity extends AppCompatActivity {
             }
             sb.append("\n");
         }
-        return sb.toString();
+    }
+
+    /**
+     * Las citas que todavía no pasaron, con la fecha escrita en palabras.
+     *
+     * EN PALABRAS Y NO "2026-10-14": el modelo tendría que traducir la
+     * fecha para leerla en voz alta, y ahí es donde inventa. Si el texto
+     * ya viene armado, lo único que hace es repetirlo.
+     *
+     * Solo las próximas, y hasta cinco: la pregunta real es "¿cuándo es la
+     * próxima?", no "leeme el año". Las que ya pasaron se pueden ver en la
+     * pantalla de Citas, que es su lugar.
+     */
+    private void agregarCitas(StringBuilder sb) {
+        if (!citasCargadas) {
+            sb.append("\nLa agenda de citas todavía se está cargando. Si te "
+                + "preguntan por una cita, pedí que prueben de nuevo en un "
+                + "momento. No digas que no tiene ninguna.\n");
+            return;
+        }
+
+        String hoy = new java.text.SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            .format(new java.util.Date());
+
+        List<com.tesis.vimed.models.CitaMedica> proximas = new ArrayList<>();
+        for (com.tesis.vimed.models.CitaMedica c : misCitas) {
+            if (c.esProxima(hoy)) proximas.add(c);
+            if (proximas.size() >= CITAS_EN_EL_PROMPT) break;
+        }
+
+        if (proximas.isEmpty()) {
+            sb.append(modo.esDeOtro()
+                ? "\nEl paciente no tiene ninguna cita médica próxima cargada.\n"
+                : "\nNo tiene ninguna cita médica próxima cargada. Si te "
+                    + "pregunta por una, puede agendarla desde la pantalla "
+                    + "de Citas.\n");
+            return;
+        }
+
+        sb.append(modo.esDeOtro()
+            ? "\nPróximas citas médicas del paciente:\n"
+            : "\nSus próximas citas médicas:\n");
+
+        for (com.tesis.vimed.models.CitaMedica c : proximas) {
+            sb.append("- ").append(fechaEnPalabras(c.fechaYMD()));
+            String hora = c.horaHM();
+            if (!hora.isEmpty()) sb.append(" a las ").append(hora);
+
+            String esp = c.getEspecialidad();
+            sb.append(", ").append(esp != null && !esp.isEmpty() ? esp : "consulta médica");
+
+            String medico = c.getMedico();
+            if (medico != null && !medico.isEmpty()) sb.append(" con ").append(medico);
+
+            String lugar = c.getLugar();
+            if (lugar != null && !lugar.trim().isEmpty()) sb.append(", en ").append(lugar.trim());
+
+            if (c.estaConfirmada()) sb.append(" (confirmada)");
+            sb.append("\n");
+        }
+
+        sb.append("Contá estas citas si te preguntan por ellas: ya están "
+            + "cargadas y son de quien te habla. Lo que no podés es decidir "
+            + "si tiene que ir, ni cambiarle la fecha.\n");
+    }
+
+    private static final String[] MESES_TEXTO = {
+        "enero", "febrero", "marzo", "abril", "mayo", "junio",
+        "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
+    };
+
+    /** "2026-10-14" → "el 14 de octubre". Vacío si la fecha no se entiende. */
+    private String fechaEnPalabras(String ymd) {
+        if (ymd == null || ymd.length() < 10) return "";
+        try {
+            int mes = Integer.parseInt(ymd.substring(5, 7));
+            int dia = Integer.parseInt(ymd.substring(8, 10));
+            return "el " + dia + " de " + MESES_TEXTO[mes - 1];
+        } catch (Exception e) {
+            return ymd;
+        }
     }
 
     /** "17:00, 01:00 y 09:00" — todas las tomas del día. */

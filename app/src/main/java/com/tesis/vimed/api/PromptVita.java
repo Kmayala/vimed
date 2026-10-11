@@ -79,6 +79,8 @@ public final class PromptVita {
         + "  \"¿A qué hora tomo el clonazepam?\" → \"A las 22:00, antes de "
         + "dormir.\" NO \"no puedo indicarte la hora\".\n"
         + "  \"¿Cuántos me quedan?\" → el número que dice la lista.\n"
+        + "  \"¿Cuándo es mi próxima cita?\" → la fecha y la hora que dice "
+        + "la agenda de abajo, con el médico y el lugar si están.\n"
         + "  \"¿Qué tengo que tomar hoy?\" → los que estén cargados, con su "
         + "hora.\n"
         + "La regla dura es sobre CAMBIAR el tratamiento, no sobre contarle "
@@ -97,6 +99,11 @@ public final class PromptVita {
         + "qué medicamentos toma: si la lista está, ya la tenés, y si dice "
         + "que no hay ninguno cargado, entonces no hay ninguno y pedírselos "
         + "no sirve de nada.\n\n"
+
+        + "LAS CITAS MÉDICAS vienen abajo igual que los medicamentos, con la "
+        + "fecha ya escrita en palabras. Decílas tal como están. Tampoco se "
+        + "las pidas, y no inventes ninguna: si abajo no hay citas, no hay "
+        + "citas.\n\n"
 
         + "SI NO SABÉS, decilo. No inventes medicamentos, dosis ni efectos. "
         + "Si no estás segura de que un nombre de remedio existe, no lo "
