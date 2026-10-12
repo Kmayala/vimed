@@ -49,9 +49,9 @@
     <string name="hint_nombre_med">Escribí o elegí de la lista…</string>
 
     <!-- Paso 2 — Dosis -->
-    <string name="paso2_pregunta">¿Cuál es la dosis?</string>
+    <string name="paso2_pregunta">¿Cuánto es cada toma?</string>
     <string name="btn_otra_dosis">Otra dosis</string>
-    <string name="hint_dosis_manual">Cantidad</string>
+    <string name="hint_dosis_manual">Cantidad (ej: 5 para un jarabe)</string>
     <string name="hint_unidad">Unidad</string>
 
     <!-- Paso 3 — Presentación -->

@@ -612,8 +612,16 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
         });
 
         // Mostrar campo manual
-        pasos[1].findViewById(R.id.btn_otra_dosis).setOnClickListener(v ->
-            mostrarCampoDosisManual());
+        // EL CAMPO Y LAS UNIDADES SE VEN DESDE EL PRINCIPIO.
+        //
+        // Estaban escondidos detrás de "Otra dosis", y arriba había tres
+        // atajos que dicen mg: la pantalla entera parecía ser de
+        // miligramos. Para cargar un jarabe de 5 ml había que adivinar
+        // que ese botón —que suena a "otra dosis distinta"— era el
+        // camino a elegir la unidad. Con el campo a la vista, los
+        // atajos siguen siendo atajos y lo demás deja de estar oculto.
+        mostrarCampoDosisManual();
+        pasos[1].findViewById(R.id.btn_otra_dosis).setVisibility(View.GONE);
 
         // Confirmar dosis manual
         btnSiguiente2.setOnClickListener(v -> {
