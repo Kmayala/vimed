@@ -98,14 +98,17 @@ public final class TomaManager {
     }
 
     private static void descontarStock(Context ctx, Medicamento med) {
-        int nuevoStock = Math.max(0, med.getStockActual() - 1);
+        // Un jarabe gasta los mililitros de la dosis, no "uno". Ver la
+        // nota en Medicamento.consumoPorToma().
+        int nuevoStock = Math.max(0, med.getStockActual() - med.consumoPorToma());
         VimedRepo.actualizarStock(med.getId(), nuevoStock, new VimedRepo.Cb<Void>() {
             @Override public void onOk(Void v) {
                 // La alarma de mañana mira la caché para decidir si suena.
                 MedCache.guardarStock(ctx, med.getId(), nuevoStock);
 
                 if (nuevoStock <= med.getStockMinimo()) {
-                    String msgStock = "Quedan " + nuevoStock + " unidades de "
+                    String msgStock = "Quedan " + nuevoStock + " "
+                        + med.unidadDeStock() + " de "
                         + med.getNombre() + ". Acordate de comprar más.";
                     NotificationHelper.mostrarNotificacion(ctx,
                         "Stock bajo — " + med.getNombre(), msgStock,
@@ -168,12 +171,13 @@ public final class TomaManager {
         Medicamento med = VimedRepo.buscarMedicamentoSync(idMedicamento);
         if (med == null) return;
 
-        int nuevoStock = Math.max(0, med.getStockActual() - 1);
+        int nuevoStock = Math.max(0, med.getStockActual() - med.consumoPorToma());
         VimedRepo.actualizarStockSync(med.getId(), nuevoStock);
         MedCache.guardarStock(ctx, med.getId(), nuevoStock);
 
         if (nuevoStock <= med.getStockMinimo()) {
-            String msgStock = "Quedan " + nuevoStock + " unidades de "
+            String msgStock = "Quedan " + nuevoStock + " "
+                + med.unidadDeStock() + " de "
                 + med.getNombre() + ". Acordate de comprar más.";
             NotificationHelper.mostrarNotificacion(ctx,
                 "Stock bajo — " + med.getNombre(), msgStock, idMedicamento + 10_000);

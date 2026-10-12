@@ -130,6 +130,54 @@ public class Medicamento {
     public void setColorIcono(String colorIcono) { this.colorIcono = colorIcono; }
     public int getStockActual() { return stockActual; }
     public void setStockActual(int stockActual) { this.stockActual = stockActual; }
+
+    // ═══ Cuánto gasta una toma ═════════════════════════════════
+    //
+    // UN JARABE NO SE GASTA DE A UNO. Antes cada toma descontaba 1 del
+    // stock, viniera de donde viniera: un frasco de 120 ml con una dosis
+    // de 5 ml duraba 120 tomas en la cuenta de la app, cuando en la
+    // realidad dura 24. La persona se quedaba sin jarabe con la pantalla
+    // diciéndole que le sobraba.
+    //
+    // La regla sale de la UNIDAD de la dosis y no de la presentación: si
+    // la dosis está en mililitros, el stock está en mililitros y la toma
+    // gasta esos mililitros. Comprimidos, cápsulas y parches se cuentan
+    // de a uno. Y si alguien carga un jarabe diciendo la dosis en mg
+    // —"250 mg cada 5 ml"— no hay forma de saber los ml, así que se
+    // cuenta de a uno: es lo mismo que hacíamos antes, y al menos no
+    // inventa una conversión.
+
+    /** Lo que se descuenta del stock al confirmar una toma. Nunca menos de 1. */
+    public int consumoPorToma() {
+        if (!seMideEnMl()) return 1;
+        return Math.max(1, Math.round(dosis));
+    }
+
+    /** True si el stock de este medicamento se cuenta en mililitros. */
+    public boolean seMideEnMl() {
+        return "ml".equalsIgnoreCase(unidad) && dosis > 0;
+    }
+
+    /** "ml" o "unidades", para no decirle unidades a un jarabe. */
+    public String unidadDeStock() {
+        return seMideEnMl() ? "ml" : "unidades";
+    }
+
+    /** El stock con su unidad: "120 ml", "1 unidad", "30 unidades". */
+    public String stockLegible() {
+        if (seMideEnMl()) return stockActual + " ml";
+        return stockActual + (stockActual == 1 ? " unidad" : " unidades");
+    }
+
+    /**
+     * True si lo que queda no alcanza para la próxima toma.
+     *
+     * No es lo mismo que estar en cero: con 3 ml en el frasco y una dosis
+     * de 5 ml ya no hay toma posible, y la alarma tiene que decirlo.
+     */
+    public boolean noAlcanzaParaUnaToma() {
+        return stockActual < consumoPorToma();
+    }
     public int getStockMinimo() { return stockMinimo; }
     public void setStockMinimo(int stockMinimo) { this.stockMinimo = stockMinimo; }
     public boolean isActivo() { return activo; }

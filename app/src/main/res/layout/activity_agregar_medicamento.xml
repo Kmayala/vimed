@@ -1085,6 +1085,7 @@
                     android:layout_marginBottom="10dp" />
 
                 <TextView
+                    android:id="@+id/tv_paso6_ayuda"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Te avisamos cuando esté por acabarse."

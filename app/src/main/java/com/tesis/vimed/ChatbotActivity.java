@@ -582,7 +582,7 @@ public class ChatbotActivity extends AppCompatActivity {
             if (!inst.isEmpty()) sb.append(" (").append(inst).append(")");
 
             if (med.getStockActual() > 0) {
-                sb.append(", quedan ").append(med.getStockActual());
+                sb.append(", quedan ").append(med.stockLegible());
             }
             sb.append("\n");
         }

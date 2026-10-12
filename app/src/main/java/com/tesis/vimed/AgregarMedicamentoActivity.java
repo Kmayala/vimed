@@ -202,6 +202,7 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
         // La unidad puede haber cambiado en el paso 1 al elegir del catálogo,
         // así que el resaltado se refresca al entrar y no solo al crear.
         if (index == 1) reflejarDosisElegida();
+        if (index == 6) preguntarElStockEnSuUnidad();
         if (index == 2) resaltarSeleccion(pasos[2], PRESENTACIONES, presentacion);
         if (index == 3) resaltarSeleccion(pasos[3], INSTRUCCIONES_TAGS, instrucciones);
 
@@ -982,6 +983,48 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
         // dosis ya cargada hay que abrirlo, o el valor queda escrito en un
         // campo que nadie ve.
         mostrarCampoDosisManual();
+    }
+
+    /**
+     * Pregunta el stock en la unidad que corresponde a lo que se cargó.
+     *
+     * A UN JARABE NO SE LE CUENTAN UNIDADES. La pregunta era siempre
+     * "¿cuántas unidades tenés ahora?", y frente a un frasco eso no tiene
+     * respuesta: una persona pone 1 —el frasco— y otra pone 120 —los
+     * mililitros—. Las dos cosas se guardaban en el mismo número, y el
+     * descuento después no podía ser correcto para ninguna de las dos.
+     *
+     * Con la dosis en mililitros se pregunta por mililitros, que es lo
+     * que dice la etiqueta del frasco y lo que la app sabe descontar.
+     */
+    private void preguntarElStockEnSuUnidad() {
+        boolean enMl = "ml".equalsIgnoreCase(unidad) && dosis > 0;
+
+        TextView pregunta = pasos[6].findViewById(R.id.tv_paso6_pregunta);
+        TextInputEditText etStock = pasos[6].findViewById(R.id.et_stock);
+        TextInputEditText etMinimo = pasos[6].findViewById(R.id.et_stock_minimo);
+
+        if (!enMl) return;   // comprimidos y cápsulas: el texto del XML ya sirve
+
+        String deQuien = idUsuarioDestino > 0 ? "tiene" : "tenés";
+        if (pregunta != null) {
+            pregunta.setText("¿Cuántos mililitros " + deQuien + " en el frasco?");
+        }
+
+        // El número de la etiqueta del frasco, que es lo que la persona
+        // tiene delante mientras carga.
+        if (etStock != null)  etStock.setHint("Mililitros del frasco (ej: 120)");
+
+        // El mínimo también cambia de escala: avisar "cuando queden 5"
+        // con un jarabe es avisar cuando falta una sola toma.
+        if (etMinimo != null) etMinimo.setHint("Avisarme cuando queden (ej: 30)");
+
+        TextView ayuda = pasos[6].findViewById(R.id.tv_paso6_ayuda);
+        if (ayuda != null) {
+            int porToma = Math.max(1, Math.round(dosis));
+            ayuda.setText("Cada toma descuenta " + porToma + " ml. "
+                + "Te avisamos cuando esté por acabarse.");
+        }
     }
 
     private void mostrarCampoDosisManual() {

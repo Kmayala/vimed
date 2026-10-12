@@ -48,6 +48,12 @@ public final class MedCache {
             .putString(clave(med.getId(), "dosis"), dosisLegible(med))
             .putInt(clave(med.getId(), "usuario"), med.getIdUsuario())
             .putInt(clave(med.getId(), "stock"), med.getStockActual())
+            // Cuánto gasta una toma. Para un comprimido es 1; para un
+            // jarabe son los mililitros de la dosis. Sin este número la
+            // alarma no puede saber si lo que queda alcanza: con 3 ml en
+            // el frasco y una dosis de 5, el stock no es cero pero la
+            // toma no se puede dar.
+            .putInt(clave(med.getId(), "consumo"), med.consumoPorToma())
             .apply();
     }
 
@@ -73,9 +79,23 @@ public final class MedCache {
         return prefs(ctx).getInt(clave(idMedicamento, "stock"), -1);
     }
 
-    /** True solo si sabemos con certeza que no queda nada. */
+    /** Lo que gasta una toma, o 1 si no lo sabemos. */
+    public static int consumoPorToma(Context ctx, int idMedicamento) {
+        return Math.max(1, prefs(ctx).getInt(clave(idMedicamento, "consumo"), 1));
+    }
+
+    /**
+     * True solo si sabemos con certeza que lo que queda no alcanza para
+     * una toma.
+     *
+     * NO ES "igual a cero". Un frasco con 3 ml y una dosis de 5 ml tiene
+     * stock y aun así no hay toma posible. El -1 de "no sé" queda afuera
+     * a propósito: ante la duda, la alarma suena.
+     */
     public static boolean sinStock(Context ctx, int idMedicamento) {
-        return stock(ctx, idMedicamento) == 0;
+        int quedan = stock(ctx, idMedicamento);
+        if (quedan < 0) return false;
+        return quedan < consumoPorToma(ctx, idMedicamento);
     }
 
     /** @return nombre guardado, o null si nunca se cacheó. */

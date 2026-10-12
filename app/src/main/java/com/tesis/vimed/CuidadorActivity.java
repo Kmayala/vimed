@@ -759,7 +759,7 @@ public class CuidadorActivity extends AppCompatActivity {
 
     /** "Quedan 12 · Vence en 2 días", con los avisos que correspondan. */
     private String inventarioDe(Medicamento m) {
-        StringBuilder sb = new StringBuilder("Quedan ").append(m.getStockActual());
+        StringBuilder sb = new StringBuilder("Quedan ").append(m.stockLegible());
         if (m.isStockBajo()) sb.append(" ⚠ por acabarse");
 
         String vence = m.vencimientoLegible();

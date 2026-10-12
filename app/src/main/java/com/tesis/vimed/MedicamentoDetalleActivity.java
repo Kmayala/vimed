@@ -164,8 +164,9 @@ public class MedicamentoDetalleActivity extends AppCompatActivity {
         // fila aparte: "quedan 3" y "por acabarse" separados obligan a
         // relacionarlos, y quien mira esta pantalla quiere saber de una si
         // tiene que ir a la farmacia.
-        String stock = med.getStockActual()
-            + (med.getStockActual() == 1 ? " unidad" : " unidades");
+        // stockLegible() dice "120 ml" para un jarabe y "30 unidades" para
+        // un comprimido: a un frasco no se le cuentan unidades.
+        String stock = med.stockLegible();
         if (med.isStockBajo()) stock += "  ·  Por acabarse";
         agregarDato(card, "Cuántas quedan", stock,
             med.isStockBajo() ? R.color.warn : 0);
