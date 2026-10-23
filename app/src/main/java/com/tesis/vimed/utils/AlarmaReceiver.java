@@ -256,8 +256,24 @@ public class AlarmaReceiver extends BroadcastReceiver {
     private void onConfirm(Context ctx, int idMedicamento, int idHorario,
                            int idRegistro, String hora, int indice) {
         if (idMedicamento == -1) return;
-        TomaManager.confirmarSync(ctx, idMedicamento, idRegistro, idHorario, hora);
+
+        // LA NOTIFICACIÓN SE VA PRIMERO.
+        //
+        // Antes se cancelaba al final, después de confirmarSync, que son
+        // varios viajes a la red. Con la conexión lenta eso son segundos
+        // en los que la persona ya tocó "Confirmar toma", el sonido se
+        // cortó —eso pasa aparte, al instante— y la notificación sigue
+        // ahí, igual que antes. Para quien mira la pantalla el botón no
+        // hizo nada, así que vuelve a tocarlo, y a veces tres veces,
+        // hasta terminar posponiendo.
+        //
+        // Peor todavía: esto corre en un BroadcastReceiver, que tiene
+        // unos diez segundos antes de que el sistema mate el proceso. Si
+        // la red tardaba, la cancelación era justo lo que no llegaba a
+        // ejecutarse, y la notificación quedaba para siempre.
         NotificationHelper.cancelarNotificacion(ctx, idMedicamento, indice);
+
+        TomaManager.confirmarSync(ctx, idMedicamento, idRegistro, idHorario, hora);
     }
 
     // ═══ Botón "Posponer 15 min" ═══════════════════════════════
@@ -265,25 +281,31 @@ public class AlarmaReceiver extends BroadcastReceiver {
                           int idRegistro, String hora, int indice) {
         if (idMedicamento == -1) return;
 
-        if (idRegistro > 0) {
-            VimedRepo.actualizarEstadoTomaSync(idRegistro, "pospuesta", null);
-        }
+        // Primero lo que no necesita red, por el mismo motivo que en
+        // onConfirm: son los diez segundos del BroadcastReceiver, y lo
+        // que la persona ve tiene que pasar ya.
+        NotificationHelper.cancelarNotificacion(ctx, idMedicamento, indice);
 
         long enSnoozeMs = System.currentTimeMillis()
             + NotificationHelper.SNOOZE_MINUTOS * 60L * 1000L;
         NotificationHelper.reagendarEn(ctx, idMedicamento, idHorario, hora, indice, enSnoozeMs);
 
-        NotificationHelper.cancelarNotificacion(ctx, idMedicamento, indice);
-
         // Esto SÍ le importa al cuidador: la dosis quedó sin tomar.
         // Llega acá tanto si la persona tocó "Posponer" como si no respondió
         // la alarma y AlarmaActivity la pospuso sola.
-        Medicamento med = VimedRepo.buscarMedicamentoSync(idMedicamento);
-        String nombreMed = med != null && med.getNombre() != null
-            ? med.getNombre() : "su medicamento";
+        //
+        // El nombre sale de la caché: buscar el medicamento en el servidor
+        // era un viaje de red ANTES del aviso, y con la conexión lenta el
+        // aviso se perdía por esperar un dato que ya teníamos.
+        String nombreMed = MedCache.nombre(ctx, idMedicamento);
+        if (nombreMed == null || nombreMed.isEmpty()) nombreMed = "su medicamento";
         NotificacionSync.registrar(ctx, Notificacion.TIPO_TOMA,
             "No confirmó la toma de " + nombreMed
                 + (hora != null ? " de las " + hora : "") + ".", true);
+
+        if (idRegistro > 0) {
+            VimedRepo.actualizarEstadoTomaSync(idRegistro, "pospuesta", null);
+        }
     }
 
     // ═══ Recordatorio de cita médica ═══════════════════════════

@@ -166,8 +166,26 @@ public final class TomaManager {
             }
         }
 
-        // De acá para abajo es todo secundario: descontar stock y avisar.
-        // Si falla, la toma ya quedó registrada igual.
+        // EL AVISO AL CUIDADOR VA ANTES QUE EL STOCK, a propósito.
+        //
+        // Todo esto corre dentro de un BroadcastReceiver, que tiene unos
+        // diez segundos antes de que el sistema mate el proceso. Y cada
+        // línea de acá es un viaje a la red: registrar la toma, buscar el
+        // medicamento, actualizar el stock, anotar la notificación, y
+        // recién ahí el push —que además puede necesitar renovar el token
+        // primero—. El aviso al cuidador era el ÚLTIMO de la fila, así
+        // que era el primero en perderse cuando la conexión andaba lenta.
+        //
+        // Avisar que tomó su medicación es lo que el cuidador está
+        // esperando; descontar el stock puede esperar al próximo rato.
+        // El nombre sale de la caché para no gastar una consulta antes
+        // del aviso.
+        String nombreCache = MedCache.nombre(ctx, idMedicamento);
+        NotificacionSync.registrar(ctx, Notificacion.TIPO_TOMA,
+            "Toma confirmada: " + (nombreCache != null ? nombreCache : "su medicamento"));
+
+        // De acá para abajo es secundario: la toma ya quedó registrada y
+        // el cuidador ya fue avisado.
         Medicamento med = VimedRepo.buscarMedicamentoSync(idMedicamento);
         if (med == null) return;
 
@@ -183,8 +201,6 @@ public final class TomaManager {
                 "Stock bajo — " + med.getNombre(), msgStock, idMedicamento + 10_000);
             NotificacionSync.registrar(ctx, Notificacion.TIPO_STOCK, msgStock);
         }
-        NotificacionSync.registrar(ctx, Notificacion.TIPO_TOMA,
-            "Toma confirmada: " + med.getNombre());
     }
 
     /** Construye "yyyy-MM-dd HH:mm:00" para el día de hoy con la hora dada. */
