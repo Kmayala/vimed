@@ -68,6 +68,13 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
 
     /** Unidades por toma. 1 salvo que la persona elija otra cosa. */
     private int cantidadPorToma = 1;
+
+    /**
+     * Días en que suena, como máscara de 7 caracteres desde el domingo.
+     * null = todos los días, que es lo que elige cualquier frecuencia que
+     * no sea la personalizada.
+     */
+    private String diasSemana = null;
     private String presentacion = "Comprimido";
     private String instrucciones = "sin_restriccion";
     private String horaInicio = "08:00";
@@ -715,6 +722,7 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
                 horaInicio = datos.getString(PersonalizadoBottomSheet.RESULT_HORA, horaInicio);
                 intervaloHoras = datos.getInt(PersonalizadoBottomSheet.RESULT_INTERVALO,
                     intervaloHoras);
+                diasSemana = datos.getString(PersonalizadoBottomSheet.RESULT_DIAS);
                 personalizado = true;
                 mostrarPaso(6);
             });
@@ -1266,6 +1274,7 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
                 // así que el horario se crea encadenado.
                 Horario horario = new Horario(
                     creado.getId(), horaInicio, intervaloHoras, personalizado);
+                horario.setDiasSemana(diasSemana);
 
                 VimedRepo.crearHorario(horario, new VimedRepo.Cb<Horario>() {
                     @Override
@@ -1277,7 +1286,7 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
                             NotificationHelper.programarAlarmas(
                                 AgregarMedicamentoActivity.this,
                                 creado.getId(), horCreado.getId(),
-                                horaInicio, intervaloHoras);
+                                horaInicio, intervaloHoras, diasSemana);
                         }
 
                         Toast.makeText(AgregarMedicamentoActivity.this,

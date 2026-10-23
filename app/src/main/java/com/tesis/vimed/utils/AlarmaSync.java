@@ -49,7 +49,8 @@ public final class AlarmaSync {
 
                     for (Horario h : VimedRepo.listarHorariosSync(m.getId())) {
                         NotificationHelper.programarAlarmas(appCtx,
-                            m.getId(), h.getId(), h.getHoraInicio(), h.getIntervaloHoras());
+                            m.getId(), h.getId(), h.getHoraInicio(),
+                            h.getIntervaloHoras(), h.getDiasSemana());
                     }
                 }
 

@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.TimePicker;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
@@ -38,6 +39,9 @@ public class PersonalizadoBottomSheet extends BottomSheetDialogFragment {
     public static final String RESULT_HORA = "hora";
     /** Cada cuántas horas se repite la toma (1..24). */
     public static final String RESULT_INTERVALO = "intervalo";
+
+    /** Máscara de 7 caracteres 0/1 desde el domingo, o null = todos los días. */
+    public static final String RESULT_DIAS = "dias";
 
     private static final String ARG_HORA_ACTUAL = "hora_actual";
 
@@ -70,6 +74,31 @@ public class PersonalizadoBottomSheet extends BottomSheetDialogFragment {
             tp.setMinute(0);
         }
 
+        // Los días: arrancan todos marcados, que es lo que la app hacía
+        // antes de que esto existiera. Se destildan los que no van.
+        final boolean[] dias = {true, true, true, true, true, true, true};
+        final com.google.android.material.button.MaterialButton[] botones =
+            new com.google.android.material.button.MaterialButton[7];
+        final int[] ids = {R.id.dia_0, R.id.dia_1, R.id.dia_2, R.id.dia_3,
+                           R.id.dia_4, R.id.dia_5, R.id.dia_6};
+        final TextView resumenDias = view.findViewById(R.id.tv_dias_resumen);
+
+        for (int i = 0; i < 7; i++) {
+            final int n = i;
+            botones[i] = view.findViewById(ids[i]);
+            botones[i].setOnClickListener(b -> {
+                // Nunca se pueden apagar los siete: un horario sin días no
+                // suena nunca, y nadie elige eso a propósito.
+                int encendidos = 0;
+                for (boolean d : dias) if (d) encendidos++;
+                if (dias[n] && encendidos == 1) return;
+
+                dias[n] = !dias[n];
+                pintarDias(botones, dias, resumenDias);
+            });
+        }
+        pintarDias(botones, dias, resumenDias);
+
         TextInputLayout tilIntervalo = view.findViewById(R.id.til_intervalo);
         TextInputEditText etIntervalo = view.findViewById(R.id.et_intervalo_horas);
         Button btnConfirmar = view.findViewById(R.id.btn_confirmar_personalizado);
@@ -99,11 +128,47 @@ public class PersonalizadoBottomSheet extends BottomSheetDialogFragment {
             resultado.putString(RESULT_HORA,
                 String.format(Locale.getDefault(), "%02d:%02d", tp.getHour(), tp.getMinute()));
             resultado.putInt(RESULT_INTERVALO, intervalo);
+
+            // Los siete días se guardan como null: "no se eligieron días"
+            // y "se eligieron todos" significan lo mismo para la alarma, y
+            // null deja el dato más limpio.
+            StringBuilder mascara = new StringBuilder();
+            boolean todos = true;
+            for (boolean d : dias) {
+                mascara.append(d ? '1' : '0');
+                if (!d) todos = false;
+            }
+            resultado.putString(RESULT_DIAS, todos ? null : mascara.toString());
             getParentFragmentManager().setFragmentResult(REQUEST_KEY, resultado);
             dismiss();
         });
 
         return view;
+    }
+
+    /** Marca los días elegidos y escribe el resumen en palabras. */
+    private void pintarDias(com.google.android.material.button.MaterialButton[] botones,
+                            boolean[] dias, TextView resumen) {
+        int marcado = androidx.core.content.ContextCompat.getColor(
+            requireContext(), R.color.brand_600);
+        int apagado = androidx.core.content.ContextCompat.getColor(
+            requireContext(), R.color.ink_4);
+
+        StringBuilder mascara = new StringBuilder();
+        for (int i = 0; i < 7; i++) {
+            boolean on = dias[i];
+            mascara.append(on ? '1' : '0');
+            botones[i].setTextColor(on ? marcado : apagado);
+            botones[i].setStrokeColor(android.content.res.ColorStateList.valueOf(
+                on ? marcado : apagado));
+            botones[i].setAlpha(on ? 1f : 0.55f);
+        }
+
+        // El resumen en palabras: siete letras sueltas no se leen de un
+        // vistazo, y "Solo los sábados" sí.
+        com.tesis.vimed.models.Horario vista = new com.tesis.vimed.models.Horario();
+        vista.setDiasSemana(mascara.toString());
+        resumen.setText(vista.diasLegibles());
     }
 
     /**

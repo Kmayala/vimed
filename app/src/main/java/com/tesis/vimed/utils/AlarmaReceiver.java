@@ -52,6 +52,7 @@ public class AlarmaReceiver extends BroadcastReceiver {
         final int idRegistro    = intent.getIntExtra(NotificationHelper.EXTRA_ID_REG, -1);
         final String hora       = intent.getStringExtra(NotificationHelper.EXTRA_HORA);
         final int indice        = intent.getIntExtra(NotificationHelper.EXTRA_INDICE, 0);
+        final String diasSemana = intent.getStringExtra(NotificationHelper.EXTRA_DIAS);
 
         // Extras propios del recordatorio de cita.
         final int idCita        = intent.getIntExtra(RecordatorioCita.EXTRA_ID_CITA, -1);
@@ -73,7 +74,7 @@ public class AlarmaReceiver extends BroadcastReceiver {
             try {
                 switch (accion) {
                     case NotificationHelper.ACTION_FIRE:
-                        onFire(appCtx, idMedicamento, idHorario, hora, indice);
+                        onFire(appCtx, idMedicamento, idHorario, hora, indice, diasSemana);
                         break;
                     case NotificationHelper.ACTION_CONFIRM:
                         onConfirm(appCtx, idMedicamento, idHorario, idRegistro, hora, indice);
@@ -97,7 +98,7 @@ public class AlarmaReceiver extends BroadcastReceiver {
 
     // ═══ Disparo de alarma ═════════════════════════════════════
     private void onFire(Context ctx, int idMedicamento, int idHorario,
-                        String hora, int indice) {
+                        String hora, int indice, String diasSemana) {
         if (idMedicamento == -1) return;
 
         // 0) ¿ESTE MEDICAMENTO TODAVÍA EXISTE?
@@ -126,8 +127,10 @@ public class AlarmaReceiver extends BroadcastReceiver {
         //    La de mañana va a la MISMA hora del horario, no 24h después de
         //    este disparo: si hoy se pospuso, mañana tiene que volver a su
         //    hora, no quedarse con el corrimiento (ver proximaOcurrencia).
+        //    Y si el horario es de días sueltos —solo los sábados—, la
+        //    próxima salta al día que corresponda en vez de a mañana.
         NotificationHelper.reagendarEn(ctx, idMedicamento, idHorario, hora, indice,
-            NotificationHelper.proximaOcurrencia(hora));
+            NotificationHelper.proximaOcurrencia(hora, diasSemana), diasSemana);
 
         // 2) SONAR, con lo que tengamos guardado localmente.
         //    Nada de esto toca la red: a la hora de la toma el celular puede

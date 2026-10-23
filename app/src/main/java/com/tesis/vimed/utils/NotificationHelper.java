@@ -58,7 +58,10 @@ public class NotificationHelper {
     // Acciones que reconoce AlarmaReceiver
     public static final String ACTION_FIRE    = "com.tesis.vimed.FIRE";      // dispara la alarma
     public static final String ACTION_CONFIRM = "com.tesis.vimed.CONFIRM";   // botón "Confirmar toma"
-    public static final String ACTION_SNOOZE  = "com.tesis.vimed.SNOOZE";    // botón "Posponer 15 min"
+    public static final String ACTION_SNOOZE  = "com.tesis.vimed.SNOOZE";
+
+    /** Máscara de días del horario, para poder reagendar sin consultar. */
+    public static final String EXTRA_DIAS = "extra_dias_semana";    // botón "Posponer 15 min"
 
     // Extras
     public static final String EXTRA_ID_MED    = "id_medicamento";
@@ -213,6 +216,17 @@ public class NotificationHelper {
     public static void programarAlarmas(Context context, int idMedicamento,
                                         int idHorario, String horaInicio,
                                         int intervaloHoras) {
+        programarAlarmas(context, idMedicamento, idHorario, horaInicio,
+            intervaloHoras, null);
+    }
+
+    /**
+     * @param diasSemana máscara de 7 caracteres 0/1 desde el domingo, o
+     *        null para todos los días. Ver Horario.
+     */
+    public static void programarAlarmas(Context context, int idMedicamento,
+                                        int idHorario, String horaInicio,
+                                        int intervaloHoras, String diasSemana) {
         String[] partes = horaInicio.split(":");
         int hora = Integer.parseInt(partes[0]);
         int minuto = Integer.parseInt(partes[1]);
@@ -230,8 +244,33 @@ public class NotificationHelper {
             if (i > 0) cal.add(Calendar.HOUR_OF_DAY, intervaloHoras * i);
             if (cal.before(Calendar.getInstance())) cal.add(Calendar.DAY_OF_YEAR, 1);
 
+            // Si este horario es de días sueltos —solo los sábados, por
+            // ejemplo— se adelanta hasta el próximo día que corresponda.
+            avanzarHastaUnDiaQueAplique(cal, diasSemana);
+
             agendarUna(context, am, idMedicamento, idHorario,
-                horaFormato(cal), i, cal.getTimeInMillis());
+                horaFormato(cal), i, cal.getTimeInMillis(), diasSemana);
+        }
+    }
+
+    /**
+     * Corre el calendario hacia adelante hasta caer en un día permitido.
+     *
+     * El tope de siete vueltas no es defensivo por las dudas: una máscara
+     * de siete ceros haría girar esto para siempre. La base ya la prohíbe
+     * con un CHECK, pero este código también corre con datos que vienen de
+     * la red, y un bucle infinito dentro del reagendado de una alarma
+     * dejaría a la persona sin recordatorios y sin saber por qué.
+     */
+    static void avanzarHastaUnDiaQueAplique(Calendar cal, String diasSemana) {
+        if (diasSemana == null || !diasSemana.matches("[01]{7}")
+                || diasSemana.equals("0000000")) {
+            return;
+        }
+        for (int vueltas = 0; vueltas < 7; vueltas++) {
+            int dia = cal.get(Calendar.DAY_OF_WEEK);   // 1=domingo … 7=sábado
+            if (diasSemana.charAt(dia - 1) == '1') return;
+            cal.add(Calendar.DAY_OF_YEAR, 1);
         }
     }
 
@@ -250,6 +289,11 @@ public class NotificationHelper {
      * Anclando a la hora del horario, posponer afecta un solo día.
      */
     public static long proximaOcurrencia(String horaHHMM) {
+        return proximaOcurrencia(horaHHMM, null);
+    }
+
+    /** Igual, pero saltando los días en que este horario no aplica. */
+    public static long proximaOcurrencia(String horaHHMM, String diasSemana) {
         int hora = 0, minuto = 0;
         if (horaHHMM != null && horaHHMM.length() >= 5) {
             try {
@@ -272,26 +316,48 @@ public class NotificationHelper {
         if (cal.getTimeInMillis() <= System.currentTimeMillis() + 60_000L) {
             cal.add(Calendar.DAY_OF_YEAR, 1);
         }
+        avanzarHastaUnDiaQueAplique(cal, diasSemana);
         return cal.getTimeInMillis();
     }
 
     /** Reagenda una alarma específica para X ms desde ahora (usado por SNOOZE). */
     public static void reagendarEn(Context context, int idMedicamento, int idHorario,
                                     String horaOriginal, int indice, long triggerAtMillis) {
+        reagendarEn(context, idMedicamento, idHorario, horaOriginal, indice,
+            triggerAtMillis, null);
+    }
+
+    public static void reagendarEn(Context context, int idMedicamento, int idHorario,
+                                    String horaOriginal, int indice, long triggerAtMillis,
+                                    String diasSemana) {
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if (am == null) return;
-        agendarUna(context, am, idMedicamento, idHorario, horaOriginal, indice, triggerAtMillis);
+        agendarUna(context, am, idMedicamento, idHorario, horaOriginal, indice,
+            triggerAtMillis, diasSemana);
     }
 
     private static void agendarUna(Context context, AlarmManager am,
                                     int idMedicamento, int idHorario,
                                     String hora, int indice, long triggerAtMillis) {
+        agendarUna(context, am, idMedicamento, idHorario, hora, indice,
+            triggerAtMillis, null);
+    }
+
+    private static void agendarUna(Context context, AlarmManager am,
+                                    int idMedicamento, int idHorario,
+                                    String hora, int indice, long triggerAtMillis,
+                                    String diasSemana) {
         Intent intent = new Intent(context, com.tesis.vimed.utils.AlarmaReceiver.class);
         intent.setAction(ACTION_FIRE);
         intent.putExtra(EXTRA_ID_MED, idMedicamento);
         intent.putExtra(EXTRA_ID_HORARIO, idHorario);
         intent.putExtra(EXTRA_HORA, hora);
         intent.putExtra(EXTRA_INDICE, indice);
+        // Viaja con la alarma: cuando suene, el receiver reagenda la
+        // siguiente y necesita saber qué días corresponden. Leerlo del
+        // servidor en ese momento seria otra consulta de red dentro de
+        // los diez segundos del BroadcastReceiver.
+        intent.putExtra(EXTRA_DIAS, diasSemana);
 
         PendingIntent pi = PendingIntent.getBroadcast(context,
             requestCodeFor(idMedicamento, indice), intent,
