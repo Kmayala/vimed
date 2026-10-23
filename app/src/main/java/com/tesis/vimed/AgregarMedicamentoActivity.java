@@ -65,6 +65,9 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
     private String nombre = "";
     private float dosis = 0;
     private String unidad = "mg";
+
+    /** Unidades por toma. 1 salvo que la persona elija otra cosa. */
+    private int cantidadPorToma = 1;
     private String presentacion = "Comprimido";
     private String instrucciones = "sin_restriccion";
     private String horaInicio = "08:00";
@@ -595,6 +598,8 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
             btn.setOnClickListener(v -> {
                 unidad = u;
                 resaltarSeleccion(pasos[1], UNIDADES, unidad);
+                // Pasar a ml esconde la cantidad; volver a mg la trae.
+                pintarCantidadPorToma();
             });
         }
         resaltarSeleccion(pasos[1], UNIDADES, unidad);
@@ -971,8 +976,53 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
      * Solo precarga si el campo está vacío. Si la persona ya escribió
      * algo, eso es más nuevo que lo leído y no se pisa.
      */
+    /**
+     * "¿Cuántas toma por vez?" — solo para sólidos.
+     *
+     * En un líquido la cantidad SON los mililitros de la dosis, y
+     * preguntar las dos cosas invita a cargar "2" y "5 ml" sin que quede
+     * claro si son dos cucharadas o diez mililitros. Para un jarabe se
+     * carga la dosis total y listo.
+     */
+    private void pintarCantidadPorToma() {
+        View fila = pasos[1].findViewById(R.id.fila_cantidad);
+        if (fila == null) return;
+
+        boolean enMl = "ml".equalsIgnoreCase(unidad);
+        fila.setVisibility(enMl ? View.GONE : View.VISIBLE);
+        if (enMl) { cantidadPorToma = 1; return; }
+
+        for (int i = 1; i <= 4; i++) {
+            View btn = pasos[1].findViewWithTag(String.valueOf(i));
+            if (btn == null) continue;
+            final int n = i;
+            btn.setOnClickListener(v -> {
+                cantidadPorToma = n;
+                pintarCantidadPorToma();
+            });
+        }
+        resaltarSeleccion(pasos[1], new String[]{"1", "2", "3", "4"},
+            String.valueOf(cantidadPorToma));
+
+        // El resumen en palabras: el número solo no dice si son dos
+        // comprimidos o dos cajas.
+        TextView resumen = pasos[1].findViewById(R.id.tv_cantidad_resumen);
+        if (resumen == null) return;
+        if (cantidadPorToma <= 1 || dosis <= 0) {
+            resumen.setText("");
+            return;
+        }
+        Medicamento vista = new Medicamento();
+        vista.setPresentacion(presentacion);
+        vista.setDosis(dosis);
+        vista.setUnidad(unidad);
+        vista.setCantidadPorToma(cantidadPorToma);
+        resumen.setText("Cada toma: " + vista.indicacionDeToma());
+    }
+
     private void reflejarDosisElegida() {
         resaltarSeleccion(pasos[1], UNIDADES, unidad);
+        pintarCantidadPorToma();
         if (dosis <= 0) return;
 
         TextInputEditText etDosis = pasos[1].findViewById(R.id.et_dosis_manual);
@@ -1195,6 +1245,7 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
             0, nombre, presentacion,
             dosis, unidad, instrucciones, colorIcono, stockActual, stockMinimo
         );
+        med.setCantidadPorToma(cantidadPorToma);
         med.setFechaVencimiento(fechaVencimiento);   // null si no se cargó
 
         if (!dejarGuardarSiVencio(med)) return;

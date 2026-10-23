@@ -507,6 +507,105 @@
                         app:rippleColor="@color/brand_50" />
                 </LinearLayout>
 
+                <!-- Cuántas unidades por vez. Aparece solo en sólidos: en un
+                     jarabe la cantidad son los mililitros de la dosis, y
+                     preguntar las dos cosas invita a cargar "2" y "5 ml"
+                     sin saber si son dos cucharadas o diez mililitros. -->
+                <LinearLayout
+                    android:id="@+id/fila_cantidad"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginTop="22dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="¿Cuántas toma por vez?"
+                        android:textSize="19sp"
+                        android:fontFamily="@font/atkinson"
+                        android:textColor="@color/ink"
+                        android:layout_marginBottom="10dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_cant_1"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:tag="1"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="58dp"
+                            android:layout_marginEnd="8dp"
+                            android:text="1"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:textAllCaps="false"
+                            android:textColor="@color/ink_2"
+                            app:strokeColor="@color/ink_7"
+                            app:cornerRadius="14dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_cant_2"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:tag="2"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="58dp"
+                            android:layout_marginEnd="8dp"
+                            android:text="2"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:textAllCaps="false"
+                            android:textColor="@color/ink_2"
+                            app:strokeColor="@color/ink_7"
+                            app:cornerRadius="14dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_cant_3"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:tag="3"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="58dp"
+                            android:layout_marginEnd="8dp"
+                            android:text="3"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:textAllCaps="false"
+                            android:textColor="@color/ink_2"
+                            app:strokeColor="@color/ink_7"
+                            app:cornerRadius="14dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_cant_4"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:tag="4"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="58dp"
+                            android:text="4"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:textAllCaps="false"
+                            android:textColor="@color/ink_2"
+                            app:strokeColor="@color/ink_7"
+                            app:cornerRadius="14dp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tv_cantidad_resumen"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="16sp"
+                        android:textColor="@color/ink_3"
+                        android:layout_marginTop="10dp" />
+                </LinearLayout>
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_siguiente_2"
                     android:layout_width="match_parent"

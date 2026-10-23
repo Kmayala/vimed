@@ -99,6 +99,56 @@ public class ConsumoPorTomaTest {
         assertEquals(1, med(0, null, 10).consumoPorToma());
     }
 
+    // ── Mas de una unidad por toma ─────────────────────────────
+
+    private static Medicamento conCantidad(int cantidad, String presentacion) {
+        Medicamento m = med(500, "mg", 60);
+        m.setPresentacion(presentacion);
+        m.setCantidadPorToma(cantidad);
+        return m;
+    }
+
+    @Test
+    public void dosComprimidosGastanDosDelStock() {
+        assertEquals(2, conCantidad(2, "Comprimido").consumoPorToma());
+    }
+
+    @Test
+    public void laIndicacionDiceCuantosYDeCuanto() {
+        assertEquals("2 comprimidos de 500 mg",
+            conCantidad(2, "Comprimido").indicacionDeToma());
+    }
+
+    @Test
+    public void conUnaSolaUnidadNoSeDiceLaCantidad() {
+        // "1 comprimido de 500 mg" es ruido: alcanza con la dosis.
+        assertEquals("500 mg", conCantidad(1, "Comprimido").indicacionDeToma());
+    }
+
+    @Test
+    public void lasCapsulasPluralizanBien() {
+        assertEquals("3 cápsulas de 500 mg",
+            conCantidad(3, "Cápsula").indicacionDeToma());
+    }
+
+    @Test
+    public void enUnLiquidoLaCantidadNoSeAplica() {
+        // La cantidad de un jarabe son los mililitros de su dosis: "2 de
+        // 5 ml" se carga como 10 ml, no como cantidad 2.
+        Medicamento jarabe = med(5, "ml", 100);
+        jarabe.setCantidadPorToma(2);
+        assertEquals(5, jarabe.consumoPorToma());
+        assertEquals("5 ml", jarabe.indicacionDeToma());
+    }
+
+    @Test
+    public void unaCantidadInvalidaCaeEnUno() {
+        // Si llega un 0 de una fila vieja, la toma sigue gastando algo.
+        Medicamento m = med(500, "mg", 30);
+        m.setCantidadPorToma(0);
+        assertEquals(1, m.consumoPorToma());
+    }
+
     @Test
     public void laUnidadEnMayusculaTambienCuenta() {
         // La unidad llega de la base o del lector de la caja, no siempre

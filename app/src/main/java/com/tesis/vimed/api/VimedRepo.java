@@ -199,6 +199,9 @@ public final class VimedRepo {
             med.getDosis(), med.getUnidad(), med.getInstrucciones(),
             med.getColorIcono(), med.getStockActual(), med.getStockMinimo());
         copia.setFechaVencimiento(med.getFechaVencimiento());
+        // Sin esto, editar cualquier cosa de un medicamento de dos
+        // comprimidos lo devolvía a uno sin que nadie lo pidiera.
+        copia.setCantidadPorToma(med.getCantidadPorToma());
 
         SupabaseClient.getService()
             .actualizarMedicamentoCompleto("eq." + idMedicamento, copia)

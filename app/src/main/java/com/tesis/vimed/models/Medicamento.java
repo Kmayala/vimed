@@ -23,6 +23,22 @@ public class Medicamento {
     private boolean activo;
 
     /**
+     * Cuántas unidades se toman por vez: 2 = dos comprimidos de la dosis
+     * indicada.
+     *
+     * Hasta ahora no existía. Había dosis y unidad —500 mg— pero no la
+     * cantidad, así que la alarma decía "500 mg" a quien tenía que tomar
+     * dos, y el stock descontaba 1: el frasco se le acababa al doble de
+     * velocidad de lo que la app creía.
+     *
+     * Arranca en 1 y no en 0 para que un objeto recién construido, o una
+     * fila vieja que llega sin el campo, describa lo que la app venía
+     * haciendo.
+     */
+    @SerializedName("cantidad_por_toma")
+    private int cantidadPorToma = 1;
+
+    /**
      * Vencimiento del envase, "yyyy-MM-dd", o null si no se cargó.
      *
      * Es opcional: mucha gente no tiene la caja a mano cuando carga el
@@ -147,10 +163,64 @@ public class Medicamento {
     // cuenta de a uno: es lo mismo que hacíamos antes, y al menos no
     // inventa una conversión.
 
-    /** Lo que se descuenta del stock al confirmar una toma. Nunca menos de 1. */
+    public int getCantidadPorToma() { return cantidadPorToma < 1 ? 1 : cantidadPorToma; }
+    public void setCantidadPorToma(int v) { this.cantidadPorToma = v < 1 ? 1 : v; }
+
+    /** True si cada toma lleva más de una unidad. */
+    public boolean esMasDeUnaUnidad() {
+        return !seMideEnMl() && getCantidadPorToma() > 1;
+    }
+
+    /**
+     * Lo que se descuenta del stock al confirmar una toma. Nunca menos de 1.
+     *
+     * En un líquido la cantidad SON los mililitros de la dosis, así que
+     * cantidadPorToma no se aplica: "2 de 5 ml" se carga como 10 ml. En
+     * un sólido la dosis describe cada comprimido y la cantidad dice
+     * cuántos se toman.
+     */
     public int consumoPorToma() {
-        if (!seMideEnMl()) return 1;
-        return Math.max(1, Math.round(dosis));
+        if (seMideEnMl()) return Math.max(1, Math.round(dosis));
+        return getCantidadPorToma();
+    }
+
+    /**
+     * La indicación completa: "2 comprimidos de 500 mg", "5 ml", "500 mg".
+     *
+     * Es lo que se lee en la alarma, medio dormido y a las siete de la
+     * mañana. "500 mg" a secas, cuando hay que tomar dos, es exactamente
+     * la clase de dato incompleto que hace que alguien tome uno.
+     */
+    public String indicacionDeToma() {
+        String cuanto = dosisLegible();
+        if (!esMasDeUnaUnidad()) return cuanto;
+
+        String cosa = nombrePresentacion(getCantidadPorToma());
+        return getCantidadPorToma() + " " + cosa + " de " + cuanto;
+    }
+
+    /** "500 mg", "5 ml". Vacío si no se cargó la dosis. */
+    public String dosisLegible() {
+        if (dosis <= 0) return "";
+        String num = dosis == (int) dosis
+            ? String.valueOf((int) dosis) : String.valueOf(dosis);
+        return (num + " " + (unidad != null ? unidad : "")).trim();
+    }
+
+    /** "comprimido"/"comprimidos" según la presentación y la cantidad. */
+    private String nombrePresentacion(int cantidad) {
+        String p = presentacion != null ? presentacion.toLowerCase() : "";
+        String singular;
+        switch (p) {
+            case "comprimido": singular = "comprimido"; break;
+            case "cápsula":
+            case "capsula":    singular = "cápsula";    break;
+            case "parche":     singular = "parche";     break;
+            case "gotas":      return "gotas";
+            default:           singular = "unidad";     break;
+        }
+        if (cantidad == 1) return singular;
+        return singular.equals("cápsula") ? "cápsulas" : singular + "s";
     }
 
     /** True si el stock de este medicamento se cuenta en mililitros. */

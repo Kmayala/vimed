@@ -29,13 +29,17 @@ public final class MedCache {
             .getSharedPreferences(PREFS, Context.MODE_PRIVATE);
     }
 
-    /** Texto de dosis listo para mostrar: "50 mg". */
+    /**
+     * Texto de dosis listo para mostrar: "50 mg", "2 comprimidos de 500 mg".
+     *
+     * Incluye la cantidad porque esto es lo que se lee en la alarma, medio
+     * dormido y a las siete de la mañana. "500 mg" a secas, cuando hay que
+     * tomar dos, es la clase de dato incompleto que hace que alguien tome
+     * uno y lo dé por cumplido.
+     */
     public static String dosisLegible(Medicamento med) {
         if (med == null) return "";
-        float d = med.getDosis();
-        String num = d == (int) d ? String.valueOf((int) d) : String.valueOf(d);
-        String unidad = med.getUnidad() != null ? med.getUnidad() : "";
-        return (num + " " + unidad).trim();
+        return med.indicacionDeToma();
     }
 
     public static void guardar(Context ctx, Medicamento med) {
