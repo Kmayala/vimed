@@ -144,6 +144,32 @@
                     android:lineSpacingMultiplier="1.35"
                     android:layout_marginTop="10dp" />
 
+                <!-- Corregir una toma que sí se tomó.
+                     Hasta ahora el único camino a esa pantalla era un
+                     banner del inicio que aparece solo cuando hay
+                     olvidos recientes; quien mira el porcentaje acá y se
+                     da cuenta de que le falta una no tenía a dónde ir.
+                     Se muestra solo si hay algo que corregir. -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_corregir_tomas"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:paddingLeft="0dp"
+                    android:paddingRight="12dp"
+                    android:insetLeft="0dp"
+                    android:insetTop="0dp"
+                    android:insetRight="0dp"
+                    android:insetBottom="0dp"
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+                    android:textAllCaps="false"
+                    android:textColor="@color/brand_600"
+                    app:backgroundTint="@android:color/transparent"
+                    android:layout_marginTop="6dp"
+                    android:visibility="gone" />
+
                 <com.google.android.material.progressindicator.LinearProgressIndicator
                     android:id="@+id/progress_semana"
                     android:layout_width="match_parent"

@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.tesis.vimed.adherencia.EstadisticasProgreso;
 import com.tesis.vimed.adherencia.ResumenAdherencia;
@@ -26,6 +27,7 @@ import com.tesis.vimed.utils.NavInferior;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -71,6 +73,59 @@ public class DashboardActivity extends AppCompatActivity {
         configurarSelector();
         cargarDatos();
         setupBottomNav();
+    }
+
+    /**
+     * Al volver de corregir una toma, el porcentaje tiene que reflejarlo.
+     * Y el botón se esconde solo si ya no queda nada por corregir.
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        ofrecerCorregirTomas();
+    }
+
+    /**
+     * El acceso a corregir las tomas que sí se tomaron.
+     *
+     * Hasta ahora el único camino a esa pantalla era un banner del inicio
+     * que aparece solo cuando hay olvidos recientes. Quien miraba el
+     * porcentaje acá —que es justo donde uno nota que falta una toma— no
+     * tenía a dónde ir, y el número arrastraba para siempre un olvido que
+     * no había pasado.
+     *
+     * Solo aparece si hay algo que corregir: un botón que lleva a una
+     * lista vacía promete trabajo que no existe. Y los mismos siete días
+     * que usan el banner y la pantalla de olvidos — a los diez días nadie
+     * se acuerda de si tomó, y una adivinanza registrada como dato es
+     * peor que un olvido registrado como olvido.
+     */
+    private void ofrecerCorregirTomas() {
+        MaterialButton btn = findViewById(R.id.btn_corregir_tomas);
+        if (btn == null) return;
+        btn.setVisibility(View.GONE);
+
+        Calendar desde = Calendar.getInstance();
+        desde.add(Calendar.DAY_OF_YEAR, -7);
+        String desdeYMD = new SimpleDateFormat("yyyy-MM-dd", Locale.US)
+            .format(desde.getTime());
+
+        int idPaciente = modo.esDeOtro() ? modo.idUsuario : -1;
+        VimedRepo.listarOlvidos(this, idPaciente, desdeYMD,
+            new VimedRepo.Cb<List<RegistroToma>>() {
+                @Override public void onOk(List<RegistroToma> olvidos) {
+                    if (isFinishing() || olvidos.isEmpty()) return;
+
+                    btn.setText(olvidos.size() == 1
+                        ? "Corregir 1 toma sin confirmar"
+                        : "Corregir " + olvidos.size() + " tomas sin confirmar");
+                    btn.setVisibility(View.VISIBLE);
+                    btn.setOnClickListener(v -> startActivity(
+                        modo.intent(DashboardActivity.this, OlvidosActivity.class)));
+                }
+                // Sin red no se ofrece nada. El botón ya está oculto.
+                @Override public void onError(String msg) { }
+            });
     }
 
     private void mostrarCartelDePaciente() {
