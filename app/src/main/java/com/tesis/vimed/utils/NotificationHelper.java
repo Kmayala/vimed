@@ -58,10 +58,10 @@ public class NotificationHelper {
     // Acciones que reconoce AlarmaReceiver
     public static final String ACTION_FIRE    = "com.tesis.vimed.FIRE";      // dispara la alarma
     public static final String ACTION_CONFIRM = "com.tesis.vimed.CONFIRM";   // botón "Confirmar toma"
-    public static final String ACTION_SNOOZE  = "com.tesis.vimed.SNOOZE";
+    public static final String ACTION_SNOOZE  = "com.tesis.vimed.SNOOZE";    // botón "Posponer 15 min"
 
     /** Máscara de días del horario, para poder reagendar sin consultar. */
-    public static final String EXTRA_DIAS = "extra_dias_semana";    // botón "Posponer 15 min"
+    public static final String EXTRA_DIAS = "extra_dias_semana";
 
     // Extras
     public static final String EXTRA_ID_MED    = "id_medicamento";

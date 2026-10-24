@@ -189,6 +189,12 @@
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+                <!-- Al reemplazar el APK, Android CANCELA todas las alarmas
+                     pendientes de la app. Sin esto, cada actualizacion dejaba
+                     a la persona sin recordatorios hasta que volviera a abrir
+                     la app, y nadie abre una app de recordatorios si no le
+                     recuerda nada. -->
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
                 <action android:name="com.tesis.vimed.FIRE" />
                 <action android:name="com.tesis.vimed.CONFIRM" />
                 <action android:name="com.tesis.vimed.SNOOZE" />

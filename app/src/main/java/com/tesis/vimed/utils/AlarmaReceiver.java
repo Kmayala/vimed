@@ -87,6 +87,9 @@ public class AlarmaReceiver extends BroadcastReceiver {
                         break;
                     case Intent.ACTION_BOOT_COMPLETED:
                     case Intent.ACTION_LOCKED_BOOT_COMPLETED:
+                    // Actualizar la app cancela sus alarmas igual que
+                    // apagar el telefono, asi que se reconstruyen igual.
+                    case Intent.ACTION_MY_PACKAGE_REPLACED:
                         onBoot(appCtx);
                         break;
                 }
@@ -336,7 +339,8 @@ public class AlarmaReceiver extends BroadcastReceiver {
             MedCache.guardar(ctx, m);   // así la alarma puede sonar sin red
             for (Horario h : VimedRepo.listarHorariosSync(m.getId())) {
                 NotificationHelper.programarAlarmas(ctx,
-                    m.getId(), h.getId(), h.getHoraInicio(), h.getIntervaloHoras());
+                    m.getId(), h.getId(), h.getHoraInicio(),
+                    h.getIntervaloHoras(), h.getDiasSemana());
             }
         }
 
