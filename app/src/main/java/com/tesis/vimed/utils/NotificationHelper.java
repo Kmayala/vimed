@@ -363,16 +363,46 @@ public class NotificationHelper {
             requestCodeFor(idMedicamento, indice), intent,
             PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        // Si tenemos permiso de exactas, la usamos. Si no, fallback inexacto
-        // (mejor tarde que nunca).
+        // SE PROGRAMA COMO UN DESPERTADOR, no como una alarma cualquiera.
+        //
+        // setAlarmClock es el mecanismo que usa la app de Reloj. Android lo
+        // trata como la maxima prioridad: queda exento de Doze, y —esto es
+        // lo que importa acá— los sistemas que matan apps en segundo plano,
+        // como MIUI de Xiaomi, lo respetan. No pueden romperlo sin romper
+        // el despertador del telefono.
+        //
+        // Con setExactAndAllowWhileIdle, en esos equipos la alarma
+        // simplemente no sonaba si la app no estaba abierta. Para una app
+        // de medicacion eso no es un detalle: es la app entera no
+        // cumpliendo lo unico que promete.
+        //
+        // Ventaja extra: setAlarmClock NO necesita el permiso de alarmas
+        // exactas. Si la persona nunca lo concedio, o el sistema se lo
+        // revoco en una actualizacion, el recordatorio suena igual.
+        //
+        // El costo es el icono de despertador en la barra de estado. Es un
+        // precio razonable —y hasta honesto: avisa que hay un recordatorio
+        // puesto—.
+        PendingIntent piVer = PendingIntent.getActivity(context,
+            requestCodeFor(idMedicamento, indice) + 4_000_000,
+            new Intent(context, com.tesis.vimed.MainActivity.class),
+            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !am.canScheduleExactAlarms()) {
+            am.setAlarmClock(
+                new AlarmManager.AlarmClockInfo(triggerAtMillis, piVer), pi);
+        } catch (RuntimeException e) {
+            // Respaldo, por si algun equipo lo rechaza: lo de siempre.
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                        && !am.canScheduleExactAlarms()) {
+                    am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pi);
+                } else {
+                    am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pi);
+                }
+            } catch (SecurityException e2) {
                 am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pi);
-            } else {
-                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pi);
             }
-        } catch (SecurityException e) {
-            am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pi);
         }
     }
 
