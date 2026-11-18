@@ -1,8 +1,11 @@
 {
   "hosting": {
     "public": "web",
-    "cleanUrls": true,
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      { "source": "/privacidad", "destination": "/privacidad.html" },
+      { "source": "/terminos", "destination": "/terminos.html" }
+    ],
     "headers": [
       {
         "source": "**/*.@(html|png)",
