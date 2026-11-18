@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="es">
+<head>
+<title>Política de privacidad · Vimed</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="icono.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+  :root{
+    --acento:#5b34e8; --papel:#faf9fc; --tinta:#171320;
+    --tinta-2:#3b3448; --tinta-3:#6a6179; --linea:#e4e0ec;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --acento:#a996ff; --papel:#13111a; --tinta:#f2eff8;
+      --tinta-2:#c7c0d6; --tinta-3:#8d85a0; --linea:#2c2739;
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--papel); color:var(--tinta-2);
+    /* Atkinson Hyperlegible: la diseñó el Braille Institute para baja
+       visión, y es la misma tipografía de la app. */
+    font-family:"Atkinson Hyperlegible",Verdana,sans-serif;
+    font-size:18px; line-height:1.65; -webkit-font-smoothing:antialiased;
+  }
+  .hoja{max-width:44rem; margin:0 auto; padding:40px 22px 80px}
+  header{display:flex; align-items:center; gap:14px; margin-bottom:34px}
+  header img{width:52px; height:52px; border-radius:13px}
+  header .marca{font-size:1.5rem; font-weight:700; color:var(--tinta)}
+  header .sub{font-size:.9rem; color:var(--tinta-3)}
+  h1{font-size:2rem; line-height:1.15; color:var(--tinta); margin:0 0 6px; text-wrap:balance}
+  .fecha{font-size:.92rem; color:var(--tinta-3); margin:0 0 30px}
+  h2{font-size:1.18rem; color:var(--tinta); margin:32px 0 8px; text-wrap:balance}
+  p{margin:0 0 14px}
+  b{color:var(--tinta)}
+  a{color:var(--acento)}
+  nav{margin-top:46px; padding-top:20px; border-top:1px solid var(--linea); font-size:.95rem}
+  nav a{margin-right:18px}
+  footer{margin-top:14px; font-size:.86rem; color:var(--tinta-3)}
+</style>
+</head>
+<body>
+  <div class="hoja">
+  <header>
+    <img src="icono.png" alt="">
+    <div>
+      <div class="marca">Vimed</div>
+      <div class="sub">Recordatorio de medicación</div>
+    </div>
+  </header>
+  <h1>Política de privacidad</h1>
+  <p class="fecha">Versión 1 — octubre de 2026</p>
+    <h2>Qué datos guarda Vimed</h2>
+    <p><b>De su cuenta:</b> su nombre, su correo electrónico y si usa la aplicación como paciente o como familiar.</p>
+    <p><b>De su salud:</b> los medicamentos que carga, sus dosis, sus horarios, las unidades que le quedan, la fecha de vencimiento, qué tomas marcó como tomadas u olvidadas y a qué hora, y sus citas médicas con la especialidad, el profesional, el lugar y —si lo elige en el mapa— sus coordenadas.</p>
+    <p><b>De su perfil clínico:</b> su peso y su año de nacimiento, si los carga. Se usan para avisar cuando una dosis parece alta para la edad.</p>
+    <p><b>De sus conversaciones con Vita:</b> lo que escribe o dice en el chat.</p>
+    <p>Vimed no pide ni guarda su documento de identidad, ni datos bancarios, ni su ubicación en tiempo real.</p>
+    <h2>Dónde se guardan</h2>
+    <p>Sus datos se guardan en dos lugares: en su propio celular, y en servidores de Supabase, que es el servicio de base de datos que usa la aplicación. Los servidores no están en Paraguay.</p>
+    <h2>Quién más los ve</h2>
+    <p><b>El familiar que usted vincule</b>, y solo si usted aceptó la vinculación. Ve su medicación, sus tomas y sus citas. No ve sus conversaciones con Vita.</p>
+    <p><b>OpenAI</b>, cuando usa a Vita. Se le envía su pregunta junto con la lista de sus medicamentos y sus próximas citas, para que pueda responder sobre ellos. Si le habla por voz, se envía también la grabación para convertirla en texto; el archivo de audio se borra del celular apenas se transcribe.</p>
+    <p><b>Google</b>, si entra con su cuenta de Google, y para mostrar el mapa cuando elige el lugar de una cita.</p>
+    <p><b>Firebase</b>, de Google, para enviar los avisos a su familiar.</p>
+    <p>Nadie más. Vimed no vende sus datos, no los comparte con laboratorios, farmacias, obras sociales ni aseguradoras, y no muestra publicidad.</p>
+    <h2>La foto de la caja no se envía a ningún lado</h2>
+    <p>Cuando usa la cámara para leer el nombre de un medicamento, la lectura ocurre dentro de su celular. La foto no se sube a internet y no se guarda: se usa para sacar el texto y se descarta.</p>
+    <h2>Cuánto tiempo se guardan</h2>
+    <p>Mientras tenga la cuenta. El registro de tomas se conserva aunque borre un medicamento, porque el sentido de la aplicación es poder mirar para atrás qué se tomó y qué no.</p>
+    <h2>Sus derechos</h2>
+    <p>Puede pedir ver, corregir o borrar sus datos. También puede desvincular a un familiar cuando quiera, sin dar explicaciones, desde la pantalla de vínculos.</p>
+    <p>Para pedir que se borre su cuenta, escriba al correo de contacto que figura abajo. Tenga en cuenta que el borrado es definitivo: el historial de tomas no se puede recuperar.</p>
+    <h2>Seguridad</h2>
+    <p>La conexión con el servidor va cifrada y cada persona solo puede leer sus propios datos y los de quien la haya vinculado. Aun así, ningún sistema es completamente seguro, y éste es un trabajo académico, no un sistema auditado.</p>
+    <h2>Contacto</h2>
+    <p>Escriba a karen.ayala@neura.com.py para cualquier consulta sobre sus datos.</p>
+  <nav>
+    <a href="./">Inicio</a>
+    <a href="privacidad.html">Política de privacidad</a>
+    <a href="terminos.html">Términos de uso</a>
+  </nav>
+  <footer>
+    Trabajo de conclusión de carrera · Ingeniería en Informática ·
+    San Lorenzo, Paraguay. Contacto:
+    <a href="mailto:karen.ayala@neura.com.py">karen.ayala@neura.com.py</a>
+  </footer>
+  </div>
+</body>
+</html>
