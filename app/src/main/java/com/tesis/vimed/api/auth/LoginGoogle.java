@@ -72,6 +72,28 @@ public final class LoginGoogle {
             .addCredentialOption(opcion)
             .build();
 
+        // SI GOOGLE NO CONTESTA NUNCA, igual hay que soltar la pantalla.
+        //
+        // getCredentialAsync promete llamar al callback, pero en la
+        // practica puede quedarse colgado: Play Services desactualizado, la
+        // hoja de cuentas que no llega a abrirse, el proceso del sistema
+        // reiniciandose. El boton quedaba en "Entrando..." para siempre y
+        // la unica salida era cerrar la app.
+        //
+        // Treinta segundos es mucho mas de lo que tarda una hoja de cuentas
+        // y mucho menos de lo que alguien espera mirando un boton trabado.
+        final java.util.concurrent.atomic.AtomicBoolean respondido =
+            new java.util.concurrent.atomic.AtomicBoolean(false);
+
+        final android.os.Handler reloj = new android.os.Handler(
+            android.os.Looper.getMainLooper());
+        reloj.postDelayed(() -> {
+            if (respondido.compareAndSet(false, true)) {
+                cb.onError("Google tardó demasiado en responder. Probá de "
+                    + "nuevo, o entrá con tu correo y contraseña.", false);
+            }
+        }, 30_000L);
+
         CredentialManager.create(activity).getCredentialAsync(
             activity, pedido, new CancellationSignal(),
             Executors.newSingleThreadExecutor(),
@@ -81,9 +103,13 @@ public final class LoginGoogle {
                     try {
                         GoogleIdTokenCredential cred = GoogleIdTokenCredential
                             .createFrom(respuesta.getCredential().getData());
+                        if (!respondido.compareAndSet(false, true)) return;
+                        reloj.removeCallbacksAndMessages(null);
                         activity.runOnUiThread(
                             () -> cb.onToken(cred.getIdToken(), nonce));
                     } catch (Exception e) {
+                        if (!respondido.compareAndSet(false, true)) return;
+                        reloj.removeCallbacksAndMessages(null);
                         activity.runOnUiThread(() -> cb.onError(
                             "Google devolvió una credencial inesperada", false));
                     }
@@ -91,15 +117,33 @@ public final class LoginGoogle {
 
                 @Override
                 public void onError(@NonNull GetCredentialException e) {
-                    // NoCredentialException: el celular no tiene ninguna
-                    // cuenta de Google configurada. Es el caso más común y
-                    // no es una falla de la app, así que se explica aparte.
                     String tipo = e.getClass().getSimpleName();
                     boolean cancelado = tipo.contains("Cancel");
-                    String msg = tipo.contains("NoCredential")
-                        ? "No hay ninguna cuenta de Google en este celular. "
-                            + "Agregala desde Ajustes o entrá con tu correo."
-                        : "No se pudo entrar con Google: " + e.getMessage();
+
+                    // NoCredentialException NO SIGNIFICA SOLO "no hay
+                    // cuenta". Credential Manager la lanza igual cuando la
+                    // configuración de OAuth está mal: falta el cliente de
+                    // Android, la huella de firma no coincide, o la
+                    // pantalla de consentimiento está en modo prueba y la
+                    // persona no está en la lista.
+                    //
+                    // El mensaje anterior afirmaba la primera causa y
+                    // descartaba las otras, así que a alguien con su cuenta
+                    // bien configurada la app le decía que no tenía ninguna
+                    // — y mandaba a buscar el problema al lugar equivocado.
+                    String msg;
+                    if (tipo.contains("NoCredential")) {
+                        msg = "Google no devolvió ninguna cuenta. Puede que "
+                            + "este celular no tenga una configurada, o que "
+                            + "esta versión de la app todavía no esté "
+                            + "habilitada para entrar con Google. Probá con "
+                            + "tu correo y contraseña.";
+                    } else {
+                        msg = "No se pudo entrar con Google (" + tipo + ")"
+                            + (e.getMessage() != null ? ": " + e.getMessage() : "");
+                    }
+                    if (!respondido.compareAndSet(false, true)) return;
+                    reloj.removeCallbacksAndMessages(null);
                     activity.runOnUiThread(() -> cb.onError(msg, cancelado));
                 }
             });
